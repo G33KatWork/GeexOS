@@ -6,7 +6,13 @@ SRC =  kernel/DebugDisplay.cpp \
        kernel/entry.cpp \
        kernel/main.cpp \
        lib/cstd.cpp \
-       lib/string.cpp
+       lib/string.cpp \
+	   lib/stdio.cpp \
+	   hal/cpu.cpp \
+	   hal/gdt.cpp \
+	   hal/hal.cpp \
+	   hal/idt.cpp
+	   
 
 # List Assembler to be assembled with NASM here
 ASRC = kernel/start.S
@@ -32,7 +38,7 @@ DEPFLAGS = -MD -MP -MF .dep/$(@F).d
 # C compiler flags
 CFLAGS += -g -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs $(DEPFLAGS)
 CFLAGS += -Wall #-Wextra -Werror
-CFLAGS += -DARCH_X86 #-fasm-blocks
+CFLAGS += -DARCH_X86 -D_DEBUG #-fasm-blocks
 CFLAGS += $(addprefix -I,$(INCLUDES))
 
 # C++ compiler flags
@@ -42,7 +48,7 @@ CXXFLAGS = $(CFLAGS)
 ASFLAGS = -f elf
 
 # Linker flags
-LDFLAGS = -T linker.ld -e main
+LDFLAGS = -T linker.ld
 
 # Determinte objects to be created
 OBJECTS += $(SRC:.cpp=.o)

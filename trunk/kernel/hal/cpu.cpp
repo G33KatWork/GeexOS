@@ -1,15 +1,24 @@
+//****************************************************************************
+//**
+//**    cpu.cpp
+//**
+//**	This is the processor interface. Everything outside of this module
+//**	must use this interface when working on processor data.
+//**
+//**	A processor is a module that manages the very basic data structures
+//**	and data within the system. The processor interface provides the interface
+//**	for managing processors, processor cores, accessing processor structures,
+//**	and more
+//**
+//****************************************************************************
 
-//****************************************************************************
-//**
-//**    [string.cpp]
-//**    - [Standard C string routine implimentation]
-//**
-//****************************************************************************
 //============================================================================
 //    IMPLEMENTATION HEADERS
 //============================================================================
 
-#include <string.h>
+#include "cpu.h"
+#include "gdt.h"
+#include "idt.h"
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -39,47 +48,22 @@
 //    INTERFACE FUNCTIONS
 //============================================================================
 
-//! copies string s2 to s1
-char *strcpy(char *s1, const char *s2)
-{
-    char *s1_p = s1;
-    while ((*s1++ = *s2++));
-    return s1_p;
+//! Initializes cpu resources
+int i86_cpu_initialize () {
+
+	//! initialize processor tables
+	i86_gdt_initialize ();
+	i86_idt_initialize (0x8);
+
+	return 0;
 }
 
-//! returns length of string
-size_t strlen ( const char* str ) {
+//! shuts down cpu resources...Nothing to do yet
+void i86_cpu_shutdown () {
 
-	size_t	len=0;
-	while (str[len++]);
-	return len;
+
 }
 
-//! copies count bytes from src to dest
-void *memcpy(void *dest, const void *src, size_t count)
-{
-    const char *sp = (const char *)src;
-    char *dp = (char *)dest;
-    for(; count != 0; count--) *dp++ = *sp++;
-    return dest;
-}
-
-//! sets count bytes of dest to val
-void *memset(void *dest, char val, size_t count)
-{
-    unsigned char *temp = (unsigned char *)dest;
-	for( ; count != 0; count--, temp[count] = val);
-	return dest;
-}
-
-//! sets count bytes of dest to val
-unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count)
-{
-    unsigned short *temp = (unsigned short *)dest;
-    for( ; count != 0; count--)
-		*temp++ = val;
-    return dest;
-}
 
 //============================================================================
 //    INTERFACE CLASS BODIES

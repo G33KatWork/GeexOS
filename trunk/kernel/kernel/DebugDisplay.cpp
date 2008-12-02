@@ -11,6 +11,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "DebugDisplay.h"
+#include <hal.h>
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -28,17 +29,15 @@
 //    IMPLEMENTATION PRIVATE DATA
 //============================================================================
 
-// Note: Some systems may require 0xB0000 Instead of 0xB8000
-// We dont care for portability here, so pick either one
-#define VID_MEMORY	0xB8000
+//! video memory
+uint16_t *video_memory = (uint16_t *)0xB8000;
 
-// these vectors together act as a corner of a bounding rect
-// This allows GotoXY() to reposition all the text that follows it
-static unsigned int _xPos=0, _yPos=0;
-static unsigned _startX=0, _startY=0;
+//! current position
+uint8_t cursor_x = 0;
+uint8_t cursor_y = 0;
 
-// current color
-static unsigned _color=0;
+//! current color
+uint8_t	_color=0;
 
 //============================================================================
 //    INTERFACE DATA
@@ -50,32 +49,46 @@ static unsigned _color=0;
 //    IMPLEMENTATION PRIVATE FUNCTIONS
 //============================================================================
 
-#ifdef _MSC_VER
-#pragma warning (disable:4244)
-#endif
-
+//! Displays a character
 void DebugPutc (unsigned char c) {
 
-	if (c==0)
-		return;
+    uint16_t attribute = _color << 8;
 
-	if (c == '\n'||c=='\r') {	/* start new line */
-		_yPos+=2;
-		_xPos=_startX;
-		return;
+    //! backspace character
+    if (c == 0x08 && cursor_x)
+        cursor_x--;
+
+    //! tab character
+    else if (c == 0x09)
+        cursor_x = (cursor_x+8) & ~(8-1);
+
+    //! carriage return
+    else if (c == '\r')
+        cursor_x = 0;
+
+    //! new line
+	else if (c == '\n') {
+        cursor_x = 0;
+        cursor_y++;
 	}
 
-	if (_xPos > 79) {			/* start new line */
-		_yPos+=2;
-		_xPos=_startX;
-		return;
-	}
+    //! printable characters
+    else if(c >= ' ') {
 
-	/* draw the character */
-	unsigned char* p = (unsigned char*)VID_MEMORY + (_xPos++)*2 + _yPos * 80;
-	*p++ = c;
-	*p =_color;
+		//! display character on screen
+        uint16_t* location = video_memory + (cursor_y*80 + cursor_x);
+        *location = c | attribute;
+        cursor_x++;
+    }
+
+    //! if we are at edge of row, go to new line
+    if (cursor_x >= 80) {
+
+        cursor_x = 0;
+        cursor_y++;
+    }
 }
+
 
 char tbuf[32];
 char bchars[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
@@ -116,6 +129,7 @@ void itoa_s(int i,unsigned base,char* buf) {
 //    INTERFACE FUNCTIONS
 //============================================================================
 
+//! Sets new font color
 unsigned DebugSetColor (const unsigned c) {
 
 	unsigned t=_color;
@@ -123,39 +137,39 @@ unsigned DebugSetColor (const unsigned c) {
 	return t;
 }
 
+//! Sets new position
 void DebugGotoXY (unsigned x, unsigned y) {
 
-	// reposition starting vectors for next text to follow
-	// multiply by 2 do to the video modes 2byte per character layout
-	_xPos = x*2;
-	_yPos = y*2;
-	_startX=_xPos;
-	_startY=_yPos;
+	if (cursor_x <= 80)
+	    cursor_x = x;
+
+	if (cursor_y <= 25)
+	    cursor_y = y;
 }
 
+//! Clear screen
 void DebugClrScr (const unsigned short c) {
 
-	unsigned char* p = (unsigned char*)VID_MEMORY;
+	//! clear video memory by writing space characters to it
+	for (int i = 0; i < 80*25; i++)
+        video_memory[i] = ' ' | (c << 8);
 
-	for (int i=0; i<160*30; i+=2) {
-
-		p[i] = ' ';  /* Need to watch out for MSVC++ optomization memset() call */
-		p[i+1] = c;
-	}
-
-	// go to start of previous set vector
-	_xPos=_startX;_yPos=_startY;
+    //! move position back to start
+    DebugGotoXY (0,0);
 }
 
-void DebugPuts (char* str) {
+//! Displays a string
+void DebugPuts (const char* str) {
 
 	if (!str)
 		return;
 
-	for (size_t i=0; i<strlen (str); i++)
-		DebugPutc (str[i]);
+	//! err... displays a string
+    for (unsigned int i=0; i<strlen(str); i++)
+        DebugPutc (str[i]);
 }
 
+//! Displays a formatted string
 int DebugPrintf (const char* str, ...) {
 
 	if(!str)
@@ -163,8 +177,8 @@ int DebugPrintf (const char* str, ...) {
 
 	va_list		args;
 	va_start (args, str);
-
-	for (size_t i=0; i<strlen(str);i++) {
+	size_t i;
+	for (i=0; i<strlen(str);i++) {
 
 		switch (str[i]) {
 
@@ -183,8 +197,8 @@ int DebugPrintf (const char* str, ...) {
 					/*** address of ***/
 					case 's': {
 						int c = (int&) va_arg (args, char);
-						char str[32]={0};
-						itoa_s (c, 16, str);
+						char str[64];
+						strcpy (str,(const char*)c);
 						DebugPuts (str);
 						i++;		// go to next character
 						break;
@@ -227,7 +241,7 @@ int DebugPrintf (const char* str, ...) {
 	}
 
 	va_end (args);
-	return 1;
+	return i;
 }
 
 //============================================================================

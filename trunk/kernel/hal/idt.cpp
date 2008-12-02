@@ -1,15 +1,22 @@
+//****************************************************************************
+//**
+//**    Idt.cpp
+//**		Interrupt Descriptor Table. The IDT is responsible for providing
+//**	the interface for managing interrupts, installing, setting, requesting,
+//**	generating, and interrupt callback managing.
+//**
+//****************************************************************************
 
-//****************************************************************************
-//**
-//**    [string.cpp]
-//**    - [Standard C string routine implimentation]
-//**
-//****************************************************************************
 //============================================================================
 //    IMPLEMENTATION HEADERS
 //============================================================================
 
+#include "idt.h"
 #include <string.h>
+#include <hal.h>
+#ifdef _DEBUG
+#include "../kernel/DebugDisplay.h"
+#endif
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -20,65 +27,127 @@
 //============================================================================
 //    IMPLEMENTATION PRIVATE STRUCTURES / UTILITY CLASSES
 //============================================================================
+
+#pragma pack (push, 1)
+
+//! describes the structure for the processors idtr register
+struct idtr {
+
+	//! size of the interrupt descriptor table (idt)
+	uint16_t		limit;
+
+	//! base address of idt
+	uint32_t		base;
+};
+
+#pragma pack (pop)
+
 //============================================================================
 //    IMPLEMENTATION REQUIRED EXTERNAL REFERENCES (AVOID)
 //============================================================================
 //============================================================================
 //    IMPLEMENTATION PRIVATE DATA
 //============================================================================
+
+//! interrupt descriptor table
+static struct idt_descriptor	_idt [I86_MAX_INTERRUPTS];
+
+//! idtr structure used to help define the cpu's idtr register
+static struct idtr				_idtr;
+
 //============================================================================
 //    INTERFACE DATA
 //============================================================================
 //============================================================================
 //    IMPLEMENTATION PRIVATE FUNCTION PROTOTYPES
 //============================================================================
+
+//! installs idtr into processors idtr register
+static void idt_install ();
+
+//! default int handler used to catch unregistered interrupts
+static void i86_default_handler ();
+
 //============================================================================
 //    IMPLEMENTATION PRIVATE FUNCTIONS
 //============================================================================
+
+//! installs idtr into processors idtr register
+static void idt_install () {
+	asm("lidt	%0" : "=m" (_idtr));
+}
+
+
+//! default handler to catch unhandled system interrupts.
+static void i86_default_handler () {
+
+#ifdef _DEBUG
+	DebugClrScr (0x18);
+	DebugGotoXY (0,0);
+	DebugSetColor (0x1e);
+	DebugPuts ("*** [i86 Hal] i86_default_handler: Unhandled Exception");
+#endif
+
+
+	for(;;);
+}
+
 //============================================================================
 //    INTERFACE FUNCTIONS
 //============================================================================
 
-//! copies string s2 to s1
-char *strcpy(char *s1, const char *s2)
-{
-    char *s1_p = s1;
-    while ((*s1++ = *s2++));
-    return s1_p;
+//! returns interrupt descriptor
+idt_descriptor* i86_get_ir (uint32_t i) {
+
+	if (i>I86_MAX_INTERRUPTS)
+		return 0;
+
+	return &_idt[i];
 }
 
-//! returns length of string
-size_t strlen ( const char* str ) {
 
-	size_t	len=0;
-	while (str[len++]);
-	return len;
+//! installs a new interrupt handler
+int i86_install_ir (uint32_t i, uint16_t flags, uint16_t sel, I86_IRQ_HANDLER irq) {
+
+	if (i>I86_MAX_INTERRUPTS)
+		return 0;
+
+	if (!irq)
+		return 0;
+
+	//! get base address of interrupt handler
+	uint64_t		uiBase = (uint64_t)&(*irq);
+
+	//! store base address into idt
+	_idt[i].baseLo		=	uint16_t(uiBase & 0xffff);
+	_idt[i].baseHi		=	uint16_t((uiBase >> 16) & 0xffff);
+	_idt[i].reserved	=	0;
+	_idt[i].flags		=	uint8_t(flags);
+	_idt[i].sel			=	sel;
+
+	return	0;
 }
 
-//! copies count bytes from src to dest
-void *memcpy(void *dest, const void *src, size_t count)
-{
-    const char *sp = (const char *)src;
-    char *dp = (char *)dest;
-    for(; count != 0; count--) *dp++ = *sp++;
-    return dest;
-}
 
-//! sets count bytes of dest to val
-void *memset(void *dest, char val, size_t count)
-{
-    unsigned char *temp = (unsigned char *)dest;
-	for( ; count != 0; count--, temp[count] = val);
-	return dest;
-}
+//! initialize idt
+int i86_idt_initialize (uint16_t codeSel) {
 
-//! sets count bytes of dest to val
-unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count)
-{
-    unsigned short *temp = (unsigned short *)dest;
-    for( ; count != 0; count--)
-		*temp++ = val;
-    return dest;
+	//! set up idtr for processor
+	_idtr.limit = sizeof (struct idt_descriptor) * I86_MAX_INTERRUPTS -1;
+	_idtr.base	= (uint32_t)&_idt[0];
+
+	//! null out the idt
+	memset ((void*)&_idt[0], 0, sizeof (idt_descriptor) * I86_MAX_INTERRUPTS-1);
+
+	//! register default handlers
+	for (int i=0; i<I86_MAX_INTERRUPTS; i++)
+		i86_install_ir (i, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32,
+			codeSel, (I86_IRQ_HANDLER)i86_default_handler);
+
+	//! install our idt
+	idt_install ();
+
+	return 0;
 }
 
 //============================================================================
@@ -86,6 +155,6 @@ unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count)
 //============================================================================
 //****************************************************************************
 //**
-//**    END[String.cpp]
+//**    END[idt.cpp]
 //**
 //****************************************************************************

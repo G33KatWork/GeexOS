@@ -27,13 +27,8 @@ int main () {
 		);
 #endif
 
-	//! Execute global constructors
 	InitializeConstructors();
-
-	//!	Call kernel entry point
 	kmain ();
-
-	//! Cleanup all dynamic dtors
 	Exit();
 
 #ifdef ARCH_X86

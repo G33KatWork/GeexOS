@@ -10,6 +10,9 @@
 //============================================================================
 //    INTERFACE REQUIRED HEADERS
 //============================================================================
+
+#include <stdint.h>
+
 //============================================================================
 //    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
 //============================================================================
@@ -26,8 +29,9 @@
 //    INTERFACE FUNCTION PROTOTYPES
 //============================================================================
 
+extern void DebugPutc (unsigned char c);
 extern void DebugClrScr (const unsigned short c);
-extern void DebugPuts (char* str);
+extern void DebugPuts (const char* str);
 extern int DebugPrintf (const char* str, ...);
 extern unsigned DebugSetColor (const unsigned c);
 extern void DebugGotoXY (unsigned x, unsigned y);

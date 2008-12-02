@@ -1,16 +1,29 @@
-#ifndef _STRING_H
-#define _STRING_H
+#ifndef _CPU_H_INCLUDED
+# define _CPU_H_INCLUDED
 //****************************************************************************
 //**
-//**    [string.h]
-//**    - Standard C String routines
+//**    cpu.h
+//**
+//**	This is the processor interface. Everything outside of this module
+//**	must use this interface when working on processor data.
+//**
+//**	A processor is a module that manages the very basic data structures
+//**	and data within the system. The processor interface provides the interface
+//**	for managing processors, processor cores, accessing processor structures,
+//**	and more
 //**
 //****************************************************************************
+
+#ifndef ARCH_X86
+#error "[cpu.h] platform not implimented. Define ARCH_X86 for HAL"
+#endif
+
 //============================================================================
 //    INTERFACE REQUIRED HEADERS
 //============================================================================
 
-#include <size_t.h>
+#include <stdint.h>
+#include "regs.h"
 
 //============================================================================
 //    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -28,12 +41,11 @@
 //    INTERFACE FUNCTION PROTOTYPES
 //============================================================================
 
-extern char *strcpy(char *s1, const char *s2);
-extern size_t strlen ( const char* str );
+//! initialize the processors
+extern int i86_cpu_initialize ();
 
-extern void* memcpy(void *dest, const void *src, size_t count);
-extern void *memset(void *dest, char val, size_t count);
-extern unsigned short* memsetw(unsigned short *dest, unsigned short val, size_t count);
+//! shutdown the processors
+extern void i86_cpu_shutdown ();
 
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS
@@ -43,8 +55,7 @@ extern unsigned short* memsetw(unsigned short *dest, unsigned short val, size_t 
 //============================================================================
 //****************************************************************************
 //**
-//**    END [string.h]
+//**    END [FILE NAME]
 //**
 //****************************************************************************
-
 #endif
