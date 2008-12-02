@@ -28,14 +28,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>17</integer>
+				<integer>18</integer>
 				<key>line</key>
-				<integer>54</integer>
+				<integer>32</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>51</integer>
+			<integer>8</integer>
 		</dict>
 		<key>kernel/kernel/entry.cpp</key>
 		<dict>
@@ -165,18 +165,10 @@
 	<key>showFileHierarchyDrawer</key>
 	<false/>
 	<key>showFileHierarchyPanel</key>
-	<true/>
+        <true/>
 	<key>treeState</key>
-	<dict>
-		<key>os</key>
-		<dict>
-			<key>isExpanded</key>
-			<true/>
-			<key>subItems</key>
-			<dict/>
-		</dict>
-	</dict>
+	<dict/>
 	<key>windowFrame</key>
-	<string>{{362, 79}, {918, 699}}</string>
+	<string>{{56, 79}, {918, 699}}</string>
 </dict>
 </plist>
