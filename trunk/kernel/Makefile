@@ -19,7 +19,8 @@ SRC =  kernel/DebugDisplay.cpp \
 	   
 
 # List Assembler to be assembled with NASM here
-ASRC = kernel/start.S
+ASRC = kernel/start.S \
+	   hal/irqWrapper.S
 
 # Addiotional include paths to consider
 INCLUDES = inc

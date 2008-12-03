@@ -58,8 +58,8 @@ int hal_initialize () {
 	//! intialize i86 specific devices
 	i86_cpu_initialize ();
 	i86_pic_initialize (0x20, 0x28); // first PIC IRQ begin: 0x20, sencond PIC: 0x28
-	//i86_pit_initialize ();
-	//i86_pit_start_counter (100,I86_PIT_OCW_COUNTER_0, I86_PIT_OCW_MODE_SQUAREWAVEGEN);
+	i86_pit_initialize ();
+	i86_pit_start_counter (100,I86_PIT_OCW_COUNTER_0, I86_PIT_OCW_MODE_SQUAREWAVEGEN);
 	
 	//! enable interrupts
 	enable();

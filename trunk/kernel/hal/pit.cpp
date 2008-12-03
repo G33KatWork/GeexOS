@@ -54,8 +54,8 @@ static bool							_pit_bIsInit=false;
 //============================================================================
 
 //! pit timer interrupt handler
-void i86_pit_irq (void);
-
+extern "C" { void i86_pit_irq (void); }
+extern "C" { void i86_pit_irq_wrapper (void); }
 //============================================================================
 //    IMPLEMENTATION PRIVATE FUNCTIONS
 //============================================================================
@@ -63,8 +63,8 @@ void i86_pit_irq (void);
 //!	pit timer interrupt handler
 void i86_pit_irq (void) {
 
-	asm("add $12, %esp");
-	asm("pusha");
+//	asm("add $12, %esp");
+//	asm("pusha");
 
 	//! increment tick count
 	_pit_ticks++;
@@ -72,9 +72,9 @@ void i86_pit_irq (void) {
 	//! tell hal we are done
 	interruptdone(0);
 
-	asm("popa");
-	asm("iret");
-}
+//	asm("popa");
+//	asm("iret")
+};
 
 //============================================================================
 //    INTERFACE FUNCTIONS
@@ -151,7 +151,7 @@ void i86_pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode) {
 void i86_pit_initialize () {
 
 	//! Install our interrupt handler (irq 0 uses interrupt 32)
-	setvect (32, i86_pit_irq);
+	setvect (32, i86_pit_irq_wrapper);
 
 	//! we are initialized
 	_pit_bIsInit = true;
