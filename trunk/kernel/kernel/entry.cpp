@@ -6,9 +6,9 @@
 ====================================================
 */
 
-extern int kmain () __attribute__ ((cdecl));
-extern void InitializeConstructors() __attribute__ ((cdecl));
-extern void Exit () __attribute__ ((cdecl));
+extern int kmain ();// __attribute__ ((cdecl));
+extern void InitializeConstructors();// __attribute__ ((cdecl));
+extern void Exit ();// __attribute__ ((cdecl));
 
 int main () {
 

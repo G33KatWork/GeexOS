@@ -28,6 +28,11 @@
 //============================================================================
 //    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
 //============================================================================
+
+#define cpuid(func,ax,bx,cx,dx)\
+	__asm__ __volatile__ ("cpuid":\
+	"=a" (ax), "=b" (bx), "=c" (cx), "=d" (dx) : "a" (func));
+	
 //============================================================================
 //    INTERFACE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
 //============================================================================
@@ -46,6 +51,9 @@ extern int i86_cpu_initialize ();
 
 //! shutdown the processors
 extern void i86_cpu_shutdown ();
+
+//! get cpu vender
+extern char* i86_cpu_get_vendor ();
 
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS

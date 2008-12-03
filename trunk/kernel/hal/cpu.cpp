@@ -61,7 +61,17 @@ int i86_cpu_initialize () {
 //! shuts down cpu resources...Nothing to do yet
 void i86_cpu_shutdown () {
 
+}
 
+//! returns vendor name of cpu
+char* i86_cpu_get_vendor () {
+
+	static char	vendor[32] = {0};
+	int a;
+
+	cpuid(0x0, a, vendor[0], vendor[4], vendor[8]);
+
+	return vendor;
 }
 
 

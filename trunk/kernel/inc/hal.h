@@ -28,12 +28,6 @@
 //    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
 //============================================================================
 
-#ifdef _MSC_VER
-#define interrupt __declspec (naked)
-#else
-#define interrupt
-#endif
-
 #define far
 #define near
 
@@ -58,6 +52,36 @@ extern	int				hal_shutdown ();
 
 //! generates interrupt
 extern	void			geninterrupt (int n);
+
+//! notifies hal interrupt is done
+extern  void			interruptdone (unsigned int intno);
+
+//! output sound to speaker
+extern	void			sound (unsigned frequency);
+
+//! read byte from device using port mapped io
+extern	unsigned char	inportb (unsigned short portid);
+
+//! write byte to device through port mapped io
+extern void				outportb (unsigned short portid, unsigned char value);
+
+//! enables all hardware interrupts
+extern void				enable ();
+
+//! disable all hardware interrupts
+extern void				disable ();
+
+//! sets new interrupt vector
+extern void				setvect (int intno, void (far &vect) ( ) );
+
+//! returns current interrupt vector
+extern void				(far *	getvect (int intno)) ( );
+
+//! returns cpu vender
+extern const char*		get_cpu_vendor ();
+
+//! returns current tick count (only for demo)
+extern int				get_tick_count ();
 
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS

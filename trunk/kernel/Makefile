@@ -5,13 +5,17 @@ TARGET = kernel
 SRC =  kernel/DebugDisplay.cpp \
        kernel/entry.cpp \
        kernel/main.cpp \
+       kernel/exception.cpp \
+       kernel/panic.cpp \
        lib/cstd.cpp \
        lib/string.cpp \
 	   lib/stdio.cpp \
 	   hal/cpu.cpp \
 	   hal/gdt.cpp \
 	   hal/hal.cpp \
-	   hal/idt.cpp
+	   hal/idt.cpp \
+	   hal/pic.cpp \
+	   hal/pit.cpp
 	   
 
 # List Assembler to be assembled with NASM here
@@ -30,7 +34,8 @@ RM = rm -f
 CP = cp
 MOUNT = mount
 UMOUNT = umount
-BOCHS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
+#BOCHS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
+BOCHS = /Users/andy/Documents/devstuff/oskrempel/os/kernel/resources/bochs.app/Contents/MacOS/bochs
 
 # Flags for automatic generation for dependencies
 DEPFLAGS = -MD -MP -MF .dep/$(@F).d
@@ -51,8 +56,8 @@ ASFLAGS = -f elf
 LDFLAGS = -T linker.ld
 
 # Determinte objects to be created
-OBJECTS += $(SRC:.cpp=.o)
 OBJECTS += $(ASRC:.S=.o)
+OBJECTS += $(SRC:.cpp=.o)
 
 # Main targets
 all: $(TARGET).elf
@@ -73,6 +78,9 @@ bootfloppy: all
 # Start bochs
 debug:
 	$(BOCHS) -f resources/bochsrc.txt -q
+
+gdb:
+	gdb -q $(TARGET).elf -x resources/gdbinit
 
 # Cleaning
 clean:
