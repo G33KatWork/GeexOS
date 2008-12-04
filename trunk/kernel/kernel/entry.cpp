@@ -6,33 +6,21 @@
 ====================================================
 */
 
-extern int kmain ();// __attribute__ ((cdecl));
-extern void InitializeConstructors();// __attribute__ ((cdecl));
-extern void Exit ();// __attribute__ ((cdecl));
+#include <bootinfo.h>
 
-int main () {
+extern int kmain (multiboot_info* bootinfo);
+extern void InitializeConstructors();
+extern void Exit ();
 
-#ifdef ARCH_X86
-	asm (
-		"cli				\n\t"	// clear interrupts--Do not enable them yet
-		"mov $0x10, %ax		\n\t"	// offset 0x10 in gdt for data selector, remember?
-		"mov %ax, %ds		\n\t"
-		"mov %ax, %es		\n\t"
-		"mov %ax, %fs		\n\t"
-		"mov %ax, %gs		\n\t"
-		"mov %ax, %ss		\n\t"	// Set up base stack
-		"mov $0x90000, %esp	\n\t"
-		"mov %esp, %ebp		\n\t"	// store current stack pointer
-		"push %ebp				"
-		);
-#endif
+extern "C" int entry (multiboot_info* bootinfo) {
 
 	InitializeConstructors();
-	kmain ();
+	kmain (bootinfo);
 	Exit();
 
 #ifdef ARCH_X86
-	asm("cli				\n\t");
+	asm("cli");
+	asm("hlt");
 #endif
 
 	for (;;) ;

@@ -13,6 +13,7 @@ MBOOT_CHECKSUM      equ -(MBOOT_HEADER_MAGIC + MBOOT_HEADER_FLAGS)
 [EXTERN code]                   ; Start of the '.text' section.
 [EXTERN bss]                    ; Start of the .bss section.
 [EXTERN end]                    ; End of the last loadable section.
+[EXTERN entry]                  ; C++ entry point to kernel
 
 mboot:
   dd  MBOOT_HEADER_MAGIC
@@ -24,13 +25,19 @@ mboot:
   dd  bss
   dd  end
   dd  start
-
-[GLOBAL start]
-[EXTERN main]
-
+  
 start:
-  push    ebx                   ; Load multiboot header location
+    cli
+    mov ax, 0x10                ; Segment setup
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+	mov esp, 0x90000            ; Stack setup
+    mov ebp, esp
+    push ebp                    ; ?
 
-  cli
-  call main
-  jmp $
+    push ebx                    ; push muliboot information from grub
+    call entry                  ; Jump to kernel
+    

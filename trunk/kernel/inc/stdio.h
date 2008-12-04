@@ -2,6 +2,7 @@
 #ifndef _STDIO_H
 #define _STDIO_H
 
+#include <size_t.h>
 #include <stdarg.h>
 
 extern int vprintf(const char *format, va_list ap);

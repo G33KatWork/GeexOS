@@ -5,32 +5,37 @@
 //****************************************************************************
 
 #include <hal.h>
-#include <stdarg.h>
+#include <stdio.h>
 #include "DebugDisplay.h"
 
-//! something is wrong--bail out
+const char* sickpc = " \
+                               _______      \n\
+                               |.-----.|    \n\
+                               ||x . x||    \n\
+                               ||_.-._||    \n\
+                               `--)-(--`    \n\
+                              __[=== o]___  \n\
+                             |:::::::::::|\\ \n\
+                             `-=========-`()\n\
+                                G. O. S.\n\n";
+const char* panic="Kernel panic:\n\n";
+
 void kernel_panic (const char* fmt, ...) {
 
 	disable ();
 
-	va_list		args;
-	va_start (args, fmt);
-
-// We will need a vsprintf() here. I will see if I can write
-// one before the tutorial release
-
-	va_end (args);
-
-	const char* disclamer="We apologize, GOS has encountered a problem and has been shut down\n\
-to prevent damage to your computer. Any unsaved work might be lost.\n\
-We are sorry for the inconvenience this might have caused.\n\n\
-Please report the following information and restart your computer.\n\
-The system has been halted.\n\n";
-
-	DebugClrScr (0x1f);
+	DebugClrScr (0x13);
 	DebugGotoXY (0,0);
-	DebugSetColor (0x1f);
-	DebugPuts (disclamer);
+	DebugSetColor (0x17);
+	DebugPuts (sickpc);
+	DebugPuts (panic);
+
+	va_list		args;
+	char buf[1024];
+	
+	va_start (args, fmt);
+	vsprintf (buf, fmt, args);
+	va_end (args);
 
 	DebugPrintf ("*** STOP: %s", fmt);
 
