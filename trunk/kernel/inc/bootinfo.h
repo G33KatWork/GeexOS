@@ -59,20 +59,33 @@
      84      | vbe_interface_off |
      86      | vbe_interface_len |
              +-------------------+										*/
+
 #pragma pack (push, 1)
+
+//! format of a memory region
+struct memory_region {
+	uint32_t	size;
+	uint32_t	startLo;
+	uint32_t	startHi;
+	uint32_t	sizeLo;
+	uint32_t	sizeHi;
+	uint32_t	type;
+};
+
 struct multiboot_info {
 	uint32_t	m_flags;
 	uint32_t	m_memoryLo;
 	uint32_t	m_memoryHi;
 	uint32_t	m_bootDevice;
-	const char*	m_cmdLine;
+	uint32_t	m_cmdLine;
 	uint32_t	m_modsCount;
 	uint32_t	m_modsAddr;
 	uint32_t	m_syms0;
 	uint32_t	m_syms1;
 	uint32_t	m_syms2;
+	uint32_t	reserved;
 	uint32_t	m_mmap_length;
-	uint32_t	m_mmap_addr;
+	memory_region*	m_mmap_addr;
 	uint32_t	m_drives_length;
 	uint32_t	m_drives_addr;
 	uint32_t	m_config_table;

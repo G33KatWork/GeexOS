@@ -10,12 +10,24 @@
 #include <bootinfo.h>
 #include "DebugDisplay.h"
 #include "exception.h"
+#include "mmgr_phys.h"
 
 #include "debugIrqHandler.h"
+
+//! different memory regions (in memory_region.type)
+const char* strMemoryTypes[] = {
+	"Available",			//memory_region.type==0
+	"Reserved",				//memory_region.type==1
+	"ACPI Reclaim",			//memory_region.type==2
+	"ACPI NVS Memory"		//memory_region.type==3
+};
 
 void setupDebugHandler();
 
 int kmain (multiboot_info* bootinfo) {
+	//TODO: get size from loader
+	int kernelSize = 200000;
+	
 	hal_initialize ();
 	
 	//! install our exception handlers
@@ -43,6 +55,9 @@ int kmain (multiboot_info* bootinfo) {
 	
 	uint32_t memSize = bootinfo->m_memoryLo + bootinfo->m_memoryHi;
 	uint32_t multibootFlags = bootinfo->m_flags;
+	
+	// 200000 = kernelSize
+	pmmngr_init (memSize, 0x100000 + kernelSize*512);
 
 	DebugGotoXY (0,0);
 	DebugSetColor (0x70);
@@ -52,15 +67,58 @@ int kmain (multiboot_info* bootinfo) {
 	DebugPrintf (" GeexOS Starting Up...\n");
 	DebugPrintf (" Installed memory: %iKB\n", memSize);
 	DebugPrintf (" Multiboot flags: %x\n", multibootFlags);
+	DebugPrintf (" Kernel commandline: %s\n\n", (const char*)(bootinfo->m_cmdLine));
 	
-	DebugPrintf (" Kernel commandline: %s", bootinfo->m_cmdLine);
+	DebugPrintf ("Physical Memory Map Size: 0x%x\n",bootinfo->m_mmap_length);
 	
-	DebugGotoXY(0, 10);
+	
+	memory_region* mmap = bootinfo->m_mmap_addr;
+	for(uint32_t i = 0; i < bootinfo->m_mmap_length / sizeof(memory_region); i++) {
+		DebugPrintf (" size = 0x%x, base_addr = 0x%x%x, length = 0x%x%x, type = 0x%x\n",
+			(uint32_t)mmap->size,
+			(uint32_t)mmap->startHi,
+			(uint32_t)mmap->startLo,
+			(uint32_t)mmap->sizeHi,
+			(uint32_t)mmap->sizeLo,
+			(uint32_t)mmap->type);
+		
+		if (mmap->type==1)
+			pmmngr_init_region (mmap->startLo, mmap->sizeLo);
+		
+		mmap = (memory_region*) ( (uint32_t)mmap + mmap->size + sizeof(uint32_t) );	
+	}
+	
+	//! deinit the region the kernel is in as it is currently being used
+	pmmngr_deinit_region (0x100000, kernelSize);
+	
+	DebugPrintf ("\npmm regions initialized: %i allocation blocks; used or reserved blocks: %i\nfree blocks: %i\n",
+		pmmngr_get_block_count (),  pmmngr_get_use_block_count (), pmmngr_get_free_block_count () );
+	
+	DebugSetColor (0x12);
+	
+	uint32_t* p = (uint32_t*)pmmngr_alloc_block ();
+	DebugPrintf ("\np allocated at 0x%x", p);
+
+	uint32_t* p2 = (uint32_t*)pmmngr_alloc_blocks (2);
+	DebugPrintf ("\nallocated 2 blocks for p2 at 0x%x", p2);
+
+	pmmngr_free_block (p);
+	p = (uint32_t*)pmmngr_alloc_block ();
+	DebugPrintf ("\nUnallocated p to free block 1. p is reallocated to 0x%x", p);
+	DebugPrintf ("\npmm regions initialized: %i allocation blocks; used or reserved blocks: %i\nfree blocks: %i\n",
+		pmmngr_get_block_count (),  pmmngr_get_use_block_count (), pmmngr_get_free_block_count () );
+
+	pmmngr_free_block (p);
+	pmmngr_free_blocks (p2, 2);
+	
+	
+	DebugSetColor (0x19);
+	DebugGotoXY(0, 23);
 	DebugPrintf(" Processor vendor: ");
 	DebugPrintf(get_cpu_vendor());
-	int a = 10/0;
+	
 	for(;;) {
-		DebugGotoXY (0,14);
+		DebugGotoXY (0,24);
 		DebugPrintf (" Current tick count: %i", get_tick_count());
 	}
 

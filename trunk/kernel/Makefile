@@ -7,6 +7,7 @@ SRC =  kernel/DebugDisplay.cpp \
        kernel/main.cpp \
        kernel/exception.cpp \
        kernel/panic.cpp \
+	   kernel/mmgr_phys.cpp \
        lib/cstd.cpp \
        lib/string.cpp \
 	   lib/stdio.cpp \

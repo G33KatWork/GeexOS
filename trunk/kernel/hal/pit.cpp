@@ -62,18 +62,11 @@ extern "C" { void i86_pit_irq_wrapper (void); }
 
 //!	pit timer interrupt handler
 void i86_pit_irq (void) {
-
-//	asm("add $12, %esp");
-//	asm("pusha");
-
 	//! increment tick count
 	_pit_ticks++;
 
 	//! tell hal we are done
 	interruptdone(0);
-
-//	asm("popa");
-//	asm("iret")
 };
 
 //============================================================================
