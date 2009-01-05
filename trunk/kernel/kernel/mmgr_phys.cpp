@@ -156,7 +156,7 @@ void	pmmngr_init (size_t memSize, physical_addr bitmap) {
 	_mmngr_used_blocks	=	_mmngr_max_blocks;
 
 	//! By default, all of memory is in use
-	memset (_mmngr_memory_map, 0xf, pmmngr_get_block_count() / PMMNGR_BLOCKS_PER_BYTE );
+	memset (_mmngr_memory_map, 0xff, pmmngr_get_block_count() / PMMNGR_BLOCKS_PER_BYTE );
 }
 
 void	pmmngr_init_region (physical_addr base, size_t size) {
@@ -164,14 +164,14 @@ void	pmmngr_init_region (physical_addr base, size_t size) {
 	int align = base / PMMNGR_BLOCK_SIZE;
 	int blocks = size / PMMNGR_BLOCK_SIZE;
 
-	for (; blocks>=0; blocks--) {
+	for (; blocks>=0 && align < pmmngr_get_block_count(); blocks--) {
+			
 		mmap_unset (align++);
 		_mmngr_used_blocks--;
-
-
 	}
 
 	mmap_set (0);	//first block is always set. This insures allocs cant be 0
+	_mmngr_used_blocks++;
 }
 
 void	pmmngr_deinit_region (physical_addr base, size_t size) {

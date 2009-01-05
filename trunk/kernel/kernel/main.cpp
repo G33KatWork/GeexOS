@@ -26,7 +26,8 @@ void setupDebugHandler();
 
 int kmain (multiboot_info* bootinfo) {
 	//TODO: get size from loader
-	int kernelSize = 200000;
+	//! size of kernel in words (= 16 bit)
+	int kernelSize = 200;
 	
 	hal_initialize ();
 	
@@ -56,7 +57,6 @@ int kmain (multiboot_info* bootinfo) {
 	uint32_t memSize = bootinfo->m_memoryLo + bootinfo->m_memoryHi;
 	uint32_t multibootFlags = bootinfo->m_flags;
 	
-	// 200000 = kernelSize
 	pmmngr_init (memSize, 0x100000 + kernelSize*512);
 
 	DebugGotoXY (0,0);
@@ -67,7 +67,8 @@ int kmain (multiboot_info* bootinfo) {
 	DebugPrintf (" GeexOS Starting Up...\n");
 	DebugPrintf (" Installed memory: %iKB\n", memSize);
 	DebugPrintf (" Multiboot flags: %x\n", multibootFlags);
-	DebugPrintf (" Kernel commandline: %s\n\n", (const char*)(bootinfo->m_cmdLine));
+	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->m_cmdLine));
+	DebugPrintf(" Processor vendor: %s\n\n", get_cpu_vendor());
 	
 	DebugPrintf ("Physical Memory Map Size: 0x%x\n",bootinfo->m_mmap_length);
 	
@@ -89,9 +90,9 @@ int kmain (multiboot_info* bootinfo) {
 	}
 	
 	//! deinit the region the kernel is in as it is currently being used
-	pmmngr_deinit_region (0x100000, kernelSize);
+	pmmngr_deinit_region (0x100000, kernelSize*512);
 	
-	DebugPrintf ("\npmm regions initialized: %i allocation blocks; used or reserved blocks: %i\nfree blocks: %i\n",
+	/*DebugPrintf ("\npmm regions initialized: %i allocation blocks; used or reserved blocks: %i\nfree blocks: %i\n",
 		pmmngr_get_block_count (),  pmmngr_get_use_block_count (), pmmngr_get_free_block_count () );
 	
 	DebugSetColor (0x12);
@@ -105,20 +106,16 @@ int kmain (multiboot_info* bootinfo) {
 	pmmngr_free_block (p);
 	p = (uint32_t*)pmmngr_alloc_block ();
 	DebugPrintf ("\nUnallocated p to free block 1. p is reallocated to 0x%x", p);
-	DebugPrintf ("\npmm regions initialized: %i allocation blocks; used or reserved blocks: %i\nfree blocks: %i\n",
-		pmmngr_get_block_count (),  pmmngr_get_use_block_count (), pmmngr_get_free_block_count () );
 
 	pmmngr_free_block (p);
-	pmmngr_free_blocks (p2, 2);
+	pmmngr_free_blocks (p2, 2);*/
 	
-	
-	DebugSetColor (0x19);
-	DebugGotoXY(0, 23);
-	DebugPrintf(" Processor vendor: ");
-	DebugPrintf(get_cpu_vendor());
 	
 	for(;;) {
-		DebugGotoXY (0,24);
+		DebugGotoXY (0,21);
+		pmmngr_alloc_blocks (1);
+		DebugPrintf ("\npmm regions initialized: %i allocation blocks; used or reserved blocks: %i\nfree blocks: %i    \n",
+			pmmngr_get_block_count (),  pmmngr_get_use_block_count (), pmmngr_get_free_block_count () );
 		DebugPrintf (" Current tick count: %i", get_tick_count());
 	}
 
