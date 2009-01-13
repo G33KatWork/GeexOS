@@ -37,7 +37,7 @@ void kernel_panic (const char* fmt, ...) {
 	vsprintf (buf, fmt, args);
 	va_end (args);
 
-	DebugPrintf ("*** STOP: %s", fmt);
+	DebugPrintf ("*** STOP: %s", buf);
 
 	for (;;);
 }

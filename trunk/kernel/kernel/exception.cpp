@@ -125,12 +125,7 @@ void  page_fault (unsigned int cs,unsigned int err, unsigned int eip, unsigned i
 	intstart ();
 	
 	int faultAddr = 0;
-	
-	asm (
-		"mov %%eax, %%cr2;"
-		"mov %0, %%eax;"
-		: "=g" (faultAddr)
-		);
+	asm volatile("mov %%cr2, %0" : "=r" (faultAddr));	
 	
 	kernel_panic ("Page Fault at 0x%x:0x%x refrenced memory at 0x%x", cs, eip, faultAddr);
 	for (;;);

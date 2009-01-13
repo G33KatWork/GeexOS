@@ -8,6 +8,7 @@ SRC =  kernel/DebugDisplay.cpp \
        kernel/exception.cpp \
        kernel/panic.cpp \
        kernel/kmalloc.cpp \
+       kernel/paging.cpp \
        lib/cstd.cpp \
        lib/string.cpp \
 	   lib/stdio.cpp \
@@ -44,7 +45,7 @@ BOCHS = /usr/bin/bochs
 DEPFLAGS = -MD -MP -MF .dep/$(@F).d
 
 # C compiler flags
-CFLAGS += -g -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs $(DEPFLAGS)
+CFLAGS += -g -fno-builtin -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs $(DEPFLAGS)
 CFLAGS += -Wall #-Wextra -Werror
 CFLAGS += -DARCH_X86 -D_DEBUG #-fasm-blocks
 CFLAGS += $(addprefix -I,$(INCLUDES))

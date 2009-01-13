@@ -11,7 +11,6 @@
 //============================================================================
 
 #include <stdint.h>
-#include "regs.h"
 
 //============================================================================
 //    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -23,7 +22,7 @@
 //    INTERFACE STRUCTURES / UTILITY CLASSES
 //============================================================================
 
-struct page
+typedef struct page
 {
    unsigned present    : 1;   // Page present in memory
    unsigned rw         : 1;   // Read-only if clear, readwrite if set
@@ -32,17 +31,17 @@ struct page
    unsigned dirty      : 1;   // Has the page been written to since last refresh?
    unsigned unused     : 7;   // Amalgamation of unused and reserved bits
    unsigned frame      : 20;  // Frame address (shifted right 12 bits)
-};
+} page_t;
 
-struct page_table
+typedef struct page_table
 {
-   page pages[1024];
-};
+   page_t pages[1024];
+} page_table_t;
 
-struct page_directory
+typedef struct page_directory
 {
    // Array of pointers to pagetables.
-   page_table *tables[1024];
+   page_table_t *tables[1024];
 
    /**
 	  Array of pointers to the pagetables above, but gives their
@@ -56,7 +55,7 @@ struct page_directory
       may be in a different location in virtual memory.
    **/
    unsigned physicalAddr;
-};
+} page_directory_t;
 
 //============================================================================
 //    INTERFACE DATA DECLARATIONS
@@ -66,20 +65,20 @@ struct page_directory
 //============================================================================
 
 // Sets up the environment, page directories etc and enables paging.
-void initialise_paging();
+void paging_initialize();
 
 // Causes the specified page directory to be loaded into the CR3 register.
-void switch_page_directory(page_directory *new);
+void switch_page_directory(page_directory_t *new_directory);
 
 /**
   Retrieves a pointer to the page required.
   If make == 1, if the page-table in which this page should
   reside isn't created, create it!
 **/
-page *get_page(unsigned address, int make, page_directory *dir);
+page_t *get_page(unsigned address, int make, page_directory_t *dir);
 
-// Handler for page faults.
-void page_fault(registers regs); 
+// Handler for page faults. See exception.h
+extern void page_fault (unsigned int cs, unsigned int err, unsigned int eip, unsigned int eflags);
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS
 //============================================================================

@@ -10,23 +10,14 @@
 #include <bootinfo.h>
 #include "DebugDisplay.h"
 #include "exception.h"
-
-#include "../hal/paging.h"
-
+#include "paging.h"
 #include "debugIrqHandler.h"
-
-//! different memory regions (in memory_region.type)
-const char* strMemoryTypes[] = {
-	"Available",			//memory_region.type==0
-	"Reserved",				//memory_region.type==1
-	"ACPI Reclaim",			//memory_region.type==2
-	"ACPI NVS Memory"		//memory_region.type==3
-};
 
 void setupDebugHandler();
 
 int kmain (multiboot_info* bootinfo) {
 	hal_initialize ();
+	paging_initialize();
 	
 	//! install our exception handlers
 	setvect (0,(void (&)(void))divide_by_zero_fault);
@@ -63,9 +54,10 @@ int kmain (multiboot_info* bootinfo) {
 	DebugPrintf (" Installed memory: %iKB\n", memSize);
 	DebugPrintf (" Multiboot flags: %x\n", multibootFlags);
 	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->m_cmdLine));
-	DebugPrintf(" Processor vendor: %s\n\n", get_cpu_vendor());
-	
-	DebugPrintf ("Physical Memory Map Size: 0x%x\n",bootinfo->m_mmap_length);
+	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
+
+	//unsigned *ptr = (unsigned*)0xA0000000;
+    //unsigned do_page_fault = *ptr;
 
 	for(;;) {
 	}
