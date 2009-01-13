@@ -1,9 +1,10 @@
-#ifndef _KMALLOC_H
-#define _KMALLOC_H
+#ifndef _SORTEDARRAY_H
+#define _SORTEDARRAY_H
 //****************************************************************************
 //**
-//**    kmalloc.h
-//**    - Simple placement memory management for kernel objects.
+//**    sortedArray.h
+//**    - This array is insertion sorted - it always remains in a sorted state (between calls).
+//**      It can store anything that can be cast to a void* -- so a unsigned, or any pointer.
 //**
 //****************************************************************************
 //============================================================================
@@ -15,12 +16,25 @@
 //============================================================================
 //    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
 //============================================================================
+
+typedef void* type_t;
+typedef char (*lessthan_predicate_t)(type_t,type_t);
+
 //============================================================================
 //    INTERFACE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
 //============================================================================
 //============================================================================
 //    INTERFACE STRUCTURES / UTILITY CLASSES
 //============================================================================
+
+typedef struct
+{
+    type_t *array;
+    unsigned size;
+    unsigned max_size;
+    lessthan_predicate_t less_than;
+} sorted_array_t;
+
 //============================================================================
 //    INTERFACE DATA DECLARATIONS
 //============================================================================
@@ -28,17 +42,21 @@
 //    INTERFACE FUNCTION PROTOTYPES
 //============================================================================
 
-//page aligned
-unsigned kmalloc_a(unsigned size);
+// Create an sorted array.
+sorted_array_t create_sorted_array(unsigned max_size, lessthan_predicate_t less_than);
+sorted_array_t place_sorted_array(void *addr, unsigned max_size, lessthan_predicate_t less_than);
 
-//returns physical address
-unsigned kmalloc_p(unsigned size, unsigned *phys);
+// Destroy an sorted array.
+void destroy_sorted_array(sorted_array_t *array);
 
-//page aligned and returns physical address
-unsigned kmalloc_ap(unsigned size, unsigned *phys);
+// Add an item into the array.
+void insert_sorted_array(type_t item, sorted_array_t *array);
 
-//normal
-unsigned kmalloc(unsigned size);
+// Lookup the item at index i.
+type_t lookup_sorted_array(unsigned i, sorted_array_t *array);
+
+// Deletes the item at location i from the array.
+void remove_sorted_array(unsigned i, sorted_array_t *array);
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS
 //============================================================================

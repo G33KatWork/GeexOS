@@ -10,13 +10,20 @@
 #include <bootinfo.h>
 #include "DebugDisplay.h"
 #include "exception.h"
-#include "paging.h"
+#include "paging.h"#include "kheap.h"
+
 #include "debugIrqHandler.h"
 
 void setupDebugHandler();
 
+char smaller(void* a, void* b)
+{
+	return (a<b)?1:0;
+}
+
 int kmain (multiboot_info* bootinfo) {
 	hal_initialize ();
+	unsigned a = kmalloc(8);
 	paging_initialize();
 	
 	//! install our exception handlers
@@ -55,6 +62,30 @@ int kmain (multiboot_info* bootinfo) {
 	DebugPrintf (" Multiboot flags: %x\n", multibootFlags);
 	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->m_cmdLine));
 	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
+
+    
+    unsigned b = kmalloc(8);
+    unsigned c = kmalloc(8);
+    DebugPrintf("a: %x\n", a);
+    DebugPrintf("b: %x\n", b);
+    DebugPrintf("c: %x\n", c);
+    kfree((void*)c);
+    kfree((void*)b);
+    unsigned d = kmalloc(12);
+    DebugPrintf("d: %x\n", d);
+
+	//unsigned *k = (unsigned*)kmalloc(8);
+	//*k = 10;
+
+	//unsigned a = 1, b= 10, c=5;
+
+	//sorted_array_t arr = create_sorted_array(10, &smaller);
+	/*insert_sorted_array((void*)a, &arr);
+	insert_sorted_array((void*)b, &arr);	
+	insert_sorted_array((void*)c, &arr);
+	DebugPrintf ("%i\n", lookup_sorted_array(5, &arr));
+	remove_sorted_array(5, &arr);	
+	DebugPrintf ("%i\n", lookup_sorted_array(5, &arr));*/
 
 	//unsigned *ptr = (unsigned*)0xA0000000;
     //unsigned do_page_fault = *ptr;

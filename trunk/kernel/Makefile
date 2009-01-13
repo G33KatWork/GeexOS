@@ -7,8 +7,9 @@ SRC =  kernel/DebugDisplay.cpp \
        kernel/main.cpp \
        kernel/exception.cpp \
        kernel/panic.cpp \
-       kernel/kmalloc.cpp \
        kernel/paging.cpp \
+       kernel/sortedArray.cpp \
+       kernel/kheap.cpp \
        lib/cstd.cpp \
        lib/string.cpp \
 	   lib/stdio.cpp \
