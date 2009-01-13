@@ -28,7 +28,7 @@ mboot:
   
 start:
     cli
-    mov ax, 0x10                ; Segment setup
+    mov ax, 0x10                ; Segment setup - 0x10 = Kernel data GDT descriptor
 	mov ds, ax
 	mov es, ax
 	mov fs, ax

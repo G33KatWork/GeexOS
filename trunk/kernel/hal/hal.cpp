@@ -140,8 +140,7 @@ void disable () {
 void setvect (int intno, void (far &vect) ( ) ) {
 
 	//! install interrupt handler! This overwrites prev interrupt descriptor
-	i86_install_ir (intno, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32,
-		0x8, vect);
+	i86_install_ir (intno, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32, 0x8, vect);
 }
 
 

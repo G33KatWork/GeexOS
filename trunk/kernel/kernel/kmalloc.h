@@ -1,18 +1,11 @@
-#ifndef _REGS_H_INCLUDED
-# define _REGS_H_INCLUDED
+#ifndef _KMALLOC_H
+#define _KMALLOC_H
 //****************************************************************************
 //**
-//**    regs.h
-//**
-//**	processor register structures and declarations. This interface abstracts
-//**	register names behind a common, portable interface
+//**    kmalloc.h
+//**    - Simple placement memory management for kernel objects.
 //**
 //****************************************************************************
-
-#ifndef ARCH_X86
-#error "[regs.h] platform not implimented. Define ARCH_X86 for HAL"
-#endif
-
 //============================================================================
 //    INTERFACE REQUIRED HEADERS
 //============================================================================
@@ -28,20 +21,24 @@
 //============================================================================
 //    INTERFACE STRUCTURES / UTILITY CLASSES
 //============================================================================
-struct registers
-{
-    unsigned ds;                  // Data segment selector
-    unsigned edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
-    unsigned int_no, err_code;    // Interrupt number and error code (if applicable)
-    unsigned eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
-};
-
 //============================================================================
 //    INTERFACE DATA DECLARATIONS
 //============================================================================
 //============================================================================
 //    INTERFACE FUNCTION PROTOTYPES
 //============================================================================
+
+//page aligned
+unsigned kmalloc_a(unsigned size);
+
+//returns physical address
+unsigned kmalloc_p(unsigned size, unsigned *phys);
+
+//page aligned and returns physical address
+unsigned kmalloc_ap(unsigned size, unsigned *phys);
+
+//normal
+unsigned kmalloc(unsigned size);
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS
 //============================================================================
@@ -50,7 +47,7 @@
 //============================================================================
 //****************************************************************************
 //**
-//**    END regs.h
+//**    END kmalloc.h
 //**
 //****************************************************************************
 #endif

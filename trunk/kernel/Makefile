@@ -7,7 +7,7 @@ SRC =  kernel/DebugDisplay.cpp \
        kernel/main.cpp \
        kernel/exception.cpp \
        kernel/panic.cpp \
-	   kernel/mmgr_phys.cpp \
+       kernel/kmalloc.cpp \
        lib/cstd.cpp \
        lib/string.cpp \
 	   lib/stdio.cpp \
@@ -37,7 +37,8 @@ CP = cp
 MOUNT = mount
 UMOUNT = umount
 #BOCHS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
-BOCHS = /Users/andy/Documents/devstuff/oskrempel/os/kernel/resources/bochs.app/Contents/MacOS/bochs
+#BOCHS = /Users/andy/Documents/devstuff/oskrempel/os/kernel/resources/bochs.app/Contents/MacOS/bochs
+BOCHS = /usr/bin/bochs
 
 # Flags for automatic generation for dependencies
 DEPFLAGS = -MD -MP -MF .dep/$(@F).d
@@ -70,16 +71,20 @@ $(TARGET).elf: $(OBJECTS)
 
 # Create bootfloppy
 bootfloppy: all
-	$(MKDIR) tmp
-	$(CP) resources/floppy.img .
-	$(MOUNT) -o loop floppy.img tmp
-	$(CP) kernel.elf tmp/kernel
-	$(UMOUNT) tmp
-	$(RMDIR) tmp
+	sudo $(MKDIR) tmp
+	sudo $(CP) resources/floppy.img .
+	sudo $(MOUNT) -o loop floppy.img tmp
+	sudo $(CP) kernel.elf tmp/kernel
+	sudo $(UMOUNT) tmp
+	sudo $(RMDIR) tmp
 	
 # Start bochs
-debug:
+bochs:
 	$(BOCHS) -f resources/bochsrc.txt -q
+
+# Start bochs with debugging support
+debug:
+	$(BOCHS) -f resources/bochsrcgdb.txt -q
 
 gdb:
 	gdb -q $(TARGET).elf -x resources/gdbinit
