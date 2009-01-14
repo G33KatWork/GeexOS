@@ -59,53 +59,61 @@ OBJECTS += $(SOURCES:.cpp=.o)
 all: toolchain $(TARGET).elf
 
 $(TARGET).elf: $(OBJECTS)
-	$(CXX) $(LDFLAGS) $(CXXFLAGS) -o $@ $^
-	$(OBJDUMP) --source $(TARGET).elf > source
+	$(call cmd_msg,LINK,$(@))
+	$(Q)$(CXX) $(LDFLAGS) $(CXXFLAGS) -o $@ $^
+	$(call cmd_msg,OBJDUMP,$(@) -> source)
+	$(Q)$(OBJDUMP) --source $(TARGET).elf > source
 
 # Toolchain
 toolchain: $(CC)
 
 $(CC):
-	cd toolchain; make all
+	$(call cmd_msg,SUBDIR,toolchain)
+	$(Q)cd toolchain; make all
 
 # Create bootfloppy
 bootfloppy: all
-	sudo mkdir tmp
-	sudo cp resources/floppy.img .
-	sudo mount -o loop floppy.img tmp
-	sudo cp kernel.elf tmp/kernel
-	sudo umount tmp
-	sudo rm -Rf tmp
+	$(call cmd_msg,MKFLOPPY,floppy.img)
+	$(Q)sudo mkdir tmp
+	$(Q)sudo cp resources/floppy.img .
+	$(Q)sudo mount -o loop floppy.img tmp
+	$(Q)sudo cp kernel.elf tmp/kernel
+	$(Q)sudo umount tmp
+	$(Q)sudo rm -Rf tmp
 	
 # Start bochs
 bochs: bootfloppy
-	$(BOCHS) -f resources/bochsrc.txt -q
+	$(call cmd_msg,BOCHS,floppy.img)
+	$(Q)$(BOCHS) -f resources/bochsrc.txt -q $(QOUTPUT)
 
 # Start bochs with debugging support
-debug:
-	$(BOCHS) -f resources/bochsrcgdb.txt -q
-
-gdb:
-	gdb -q $(TARGET).elf -x resources/gdbinit
+debug: bootfloppy
+	$(call cmd_msg,BOCHSDBG,floppy.img)
+	$(Q)$(BOCHS) -f resources/bochsrcgdb.txt -q $(QOUTPUT) &
+	$(Q)sleep 2
+	$(call cmd_msg,GDB,Attaching debugger)
+	$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
 
 # Cleaning
 clean:
-	rm -f $(foreach ext,elf,$(TARGET).$(ext)) \
+	$(Q)rm -f $(foreach ext,elf,$(TARGET).$(ext)) \
 	$(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
-	rm -f floppy.img
-	rm -f bochsout.txt
-	rm -f source
-	rm -Rf tmp
+	$(Q)rm -f floppy.img
+	$(Q)rm -f bochsout.txt
+	$(Q)rm -f source
+	$(Q)rm -Rf tmp
 
 distclean: clean
-	cd toolchain; make distclean
-	cd toolchain; make toolchain-clean
+	$(Q)cd toolchain; make distclean
+	$(Q)cd toolchain; make toolchain-clean
 
 # Compile cpp files
-%.o: $.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+%.o: %.cpp
+	$(call cmd_msg,CXX,$@)
+	$(Q)$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Assembler S files
 %.o: %.S
-	$(NASM) $(ASFLAGS) -o $@ $<
+	$(call cmd_msg,NASM,$@)
+	$(Q)$(NASM) $(ASFLAGS) -o $@ $<
 
