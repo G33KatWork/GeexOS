@@ -36,6 +36,7 @@ INCLUDES =	inc
 #BOCHS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
 #BOCHS = /Users/andy/Documents/devstuff/oskrempel/os/kernel/resources/bochs.app/Contents/MacOS/bochs
 BOCHS = /usr/bin/bochs
+QEMU = qemu
 
 # C compiler flags
 CFLAGS += -g -fno-builtin -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs
@@ -101,9 +102,21 @@ bochs: bootfloppy
 	$(Q)$(BOCHS) -f resources/bochsrc.txt -q $(QOUTPUT)
 
 # Start bochs with debugging support
-debug: bootfloppy
+bochsdebug: bootfloppy
 	$(call cmd_msg,BOCHSDBG,floppy.img)
 	$(Q)$(BOCHS) -f resources/bochsrcgdb.txt -q $(QOUTPUT) &
+	$(Q)sleep 2
+	$(call cmd_msg,GDB,Attaching debugger)
+	$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
+
+# Start qemu
+qemu: bootfloppy
+	$(call cmd_msg,QEMU,floppy.img)
+	$(Q)$(QEMU) -fda floppy.img $(QOUTPUT)
+
+qemudebug: bootfloppy
+	$(call cmd_msg,QEMU,floppy.img)
+	$(Q)$(QEMU) -fda floppy.img -s $(QOUTPUT) &
 	$(Q)sleep 2
 	$(call cmd_msg,GDB,Attaching debugger)
 	$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
