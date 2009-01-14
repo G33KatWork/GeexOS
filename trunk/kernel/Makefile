@@ -5,33 +5,32 @@ include build/base.mak
 TARGET = kernel
 
 # List C++ source files here.
-SOURCES =  kernel/DebugDisplay.cpp \
-       kernel/entry.cpp \
-       kernel/main.cpp \
-       kernel/exception.cpp \
-       kernel/panic.cpp \
-       kernel/paging.cpp \
-       kernel/sortedArray.cpp \
-       kernel/kheap.cpp \
-       kernel/fs.cpp \
-       kernel/initrd.cpp \
-       lib/cstd.cpp \
-       lib/string.cpp \
-	   lib/stdio.cpp \
-	   hal/cpu.cpp \
-	   hal/gdt.cpp \
-	   hal/hal.cpp \
-	   hal/idt.cpp \
-	   hal/pic.cpp \
-	   hal/pit.cpp
-	   
+SOURCES =	kernel/DebugDisplay.cpp \
+			kernel/entry.cpp \
+			kernel/main.cpp \
+			kernel/exception.cpp \
+			kernel/panic.cpp \
+			kernel/paging.cpp \
+			kernel/sortedArray.cpp \
+			kernel/kheap.cpp \
+			kernel/fs.cpp \
+			kernel/initrd.cpp \
+			lib/cstd.cpp \
+			lib/string.cpp \
+			lib/stdio.cpp \
+			hal/cpu.cpp \
+			hal/gdt.cpp \
+			hal/hal.cpp \
+			hal/idt.cpp \
+			hal/pic.cpp \
+			hal/pit.cpp
 
 # List Assembler to be assembled with NASM here
-ASOURCES = kernel/start.S \
-	   hal/irqWrapper.S
+ASOURCES =	kernel/start.S \
+			hal/irqWrapper.S
 
 # Addiotional include paths to consider
-INCLUDES = inc
+INCLUDES =	inc
 
 #Programs
 #BOCHS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
