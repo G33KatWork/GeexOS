@@ -57,4 +57,12 @@ SRC                 := $(shell cd $(SRC); pwd)
 # Grab the toolchain information.
 include $(SRC)/build/toolchain.mak
 
+############################
+# Host build configuration #
+############################
+
+HOSTCC      := gcc
+HOSTCXX     := g++
+HOSTCFLAGS  := 
+
 endif

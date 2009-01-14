@@ -13,6 +13,8 @@ SOURCES =  kernel/DebugDisplay.cpp \
        kernel/paging.cpp \
        kernel/sortedArray.cpp \
        kernel/kheap.cpp \
+       kernel/fs.cpp \
+       kernel/initrd.cpp \
        lib/cstd.cpp \
        lib/string.cpp \
 	   lib/stdio.cpp \
@@ -72,15 +74,28 @@ $(CC):
 	$(Q)cd toolchain; make all
 
 # Create bootfloppy
-bootfloppy: all
+bootfloppy: all mkinitrd floppy.img
+
+floppy.img:
 	$(call cmd_msg,MKFLOPPY,floppy.img)
 	$(Q)sudo mkdir tmp
 	$(Q)sudo cp resources/floppy.img .
 	$(Q)sudo mount -o loop floppy.img tmp
 	$(Q)sudo cp kernel.elf tmp/kernel
+	$(Q)sudo cp initrd.img tmp/initrd.img
 	$(Q)sudo umount tmp
 	$(Q)sudo rm -Rf tmp
-	
+
+mkinitrd: utils/geninitramfs initrd.img
+
+initrd.img:
+	$(call cmd_msg,GENINITRD,initrd.img)
+	$(Q)utils/geninitramfs resources/test.txt test.txt resources/test1.txt test1.txt $(QOUTPUT)
+
+utils/geninitramfs:
+	$(call cmd_msg,SUBDIR,utils)
+	$(Q)cd utils; make all
+
 # Start bochs
 bochs: bootfloppy
 	$(call cmd_msg,BOCHS,floppy.img)
@@ -99,9 +114,12 @@ clean:
 	$(Q)rm -f $(foreach ext,elf,$(TARGET).$(ext)) \
 	$(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
 	$(Q)rm -f floppy.img
+	$(Q)rm -f initrd.img
 	$(Q)rm -f bochsout.txt
 	$(Q)rm -f source
 	$(Q)rm -Rf tmp
+	$(Q)cd toolchain; make clean
+	$(Q)cd utils; make clean
 
 distclean: clean
 	$(Q)cd toolchain; make distclean
@@ -109,11 +127,11 @@ distclean: clean
 
 # Compile cpp files
 %.o: %.cpp
-	$(call cmd_msg,CXX,$@)
+	$(call cmd_msg,CXX,$<)
 	$(Q)$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Assembler S files
 %.o: %.S
-	$(call cmd_msg,NASM,$@)
+	$(call cmd_msg,NASM,$<)
 	$(Q)$(NASM) $(ASFLAGS) -o $@ $<
 

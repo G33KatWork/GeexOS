@@ -32,7 +32,6 @@
 //    IMPLEMENTATION REQUIRED EXTERNAL REFERENCES (AVOID)
 //============================================================================
 
-// Defined in kheap.c
 extern unsigned placement_address;
 extern heap_t *kheap;
 

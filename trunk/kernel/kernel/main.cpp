@@ -11,19 +11,23 @@
 #include "DebugDisplay.h"
 #include "exception.h"
 #include "paging.h"#include "kheap.h"
+#include "fs.h"
+#include "initrd.h"
 
 #include "debugIrqHandler.h"
 
-void setupDebugHandler();
+extern unsigned placement_address;
 
-char smaller(void* a, void* b)
-{
-	return (a<b)?1:0;
-}
+void setupDebugHandler();
 
 int kmain (multiboot_info* bootinfo) {
 	hal_initialize ();
-	unsigned a = kmalloc(8);
+
+	unsigned initrd_location = *((unsigned*)bootinfo->m_modsAddr);
+	unsigned initrd_end = *(unsigned*)(bootinfo->m_modsAddr+4);
+	// Don't trample our module with placement accesses, please!
+	placement_address = initrd_end;
+
 	paging_initialize();
 	
 	//! install our exception handlers
@@ -63,32 +67,33 @@ int kmain (multiboot_info* bootinfo) {
 	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->m_cmdLine));
 	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
 
-    
-    unsigned b = kmalloc(8);
-    unsigned c = kmalloc(8);
-    DebugPrintf("a: %x\n", a);
-    DebugPrintf("b: %x\n", b);
-    DebugPrintf("c: %x\n", c);
-    kfree((void*)c);
-    kfree((void*)b);
-    unsigned d = kmalloc(12);
-    DebugPrintf("d: %x\n", d);
+	fs_root = initialise_initrd(initrd_location);
 
-	//unsigned *k = (unsigned*)kmalloc(8);
-	//*k = 10;
+	// list the contents of /
+    unsigned i = 0;
+    struct dirent *node = 0;
+    while ( (node = readdir_fs(fs_root, i)) != 0)
+    {
+        DebugPrintf("Found file %s", node->name);
+        fs_node_t *fsnode = finddir_fs(fs_root, node->name);
 
-	//unsigned a = 1, b= 10, c=5;
-
-	//sorted_array_t arr = create_sorted_array(10, &smaller);
-	/*insert_sorted_array((void*)a, &arr);
-	insert_sorted_array((void*)b, &arr);	
-	insert_sorted_array((void*)c, &arr);
-	DebugPrintf ("%i\n", lookup_sorted_array(5, &arr));
-	remove_sorted_array(5, &arr);	
-	DebugPrintf ("%i\n", lookup_sorted_array(5, &arr));*/
-
-	//unsigned *ptr = (unsigned*)0xA0000000;
-    //unsigned do_page_fault = *ptr;
+        if ((fsnode->flags&0x7) == FS_DIRECTORY)
+        {
+            DebugPrintf("\n\t(directory)\n");
+        }
+        else
+        {
+            DebugPrintf("\n\t contents: \"");
+            char buf[256];
+            unsigned sz = read_fs(fsnode, 0, 256, buf);
+            unsigned j;
+            for (j = 0; j < sz; j++)
+                DebugPutc(buf[j]);
+            
+            DebugPrintf("\"\n");
+        }
+        i++;
+    }
 
 	for(;;) {
 	}
