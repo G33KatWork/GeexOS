@@ -74,8 +74,6 @@
 //    INTERFACE STRUCTURES / UTILITY CLASSES
 //============================================================================
 
-#pragma pack (push, 1)
-
 //! gdt descriptor. A gdt descriptor defines the properties of a specific
 //! memory block and permissions.
 
@@ -95,9 +93,7 @@ struct gdt_descriptor {
 
 	//! bits 24-32 of base address
 	uint8_t			baseHi;
-};
-
-#pragma pack (pop)
+} __attribute__((packed));
 
 //============================================================================
 //    INTERFACE DATA DECLARATIONS

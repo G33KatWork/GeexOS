@@ -28,8 +28,6 @@
 //    IMPLEMENTATION PRIVATE STRUCTURES / UTILITY CLASSES
 //============================================================================
 
-#pragma pack (push, 1)
-
 //! describes the structure for the processors idtr register
 struct idtr {
 
@@ -38,9 +36,7 @@ struct idtr {
 
 	//! base address of idt
 	uint32_t		base;
-};
-
-#pragma pack (pop)
+} __attribute__((packed));
 
 //============================================================================
 //    IMPLEMENTATION REQUIRED EXTERNAL REFERENCES (AVOID)

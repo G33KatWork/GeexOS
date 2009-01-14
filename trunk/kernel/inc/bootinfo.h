@@ -60,8 +60,6 @@
      86      | vbe_interface_len |
              +-------------------+										*/
 
-#pragma pack (push, 1)
-
 //! format of a memory region
 struct memory_region {
 	uint32_t	size;
@@ -70,7 +68,7 @@ struct memory_region {
 	uint32_t	sizeLo;
 	uint32_t	sizeHi;
 	uint32_t	type;
-};
+}  __attribute__((packed));
 
 struct multiboot_info {
 	uint32_t	m_flags;
@@ -96,8 +94,7 @@ struct multiboot_info {
 	uint16_t	m_vbe_mode;
 	uint32_t	m_vbe_interface_addr;
 	uint16_t	m_vbe_interface_len;
-};
-#pragma pack (pop)
+}  __attribute__((packed));
 
 //============================================================================
 //    INTERFACE DATA DECLARATIONS

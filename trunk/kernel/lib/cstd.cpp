@@ -1,3 +1,5 @@
+#include <size_t.h>
+
 typedef unsigned long vintp; //- integer type to store a pointer.
 
 extern vintp start_ctors;
@@ -24,8 +26,8 @@ extern "C" void __cxa_pure_virtual()
 }
 
 //! global new and delete operators
-void* operator new (unsigned int size) throw() { return 0; }
-void* operator new[] (unsigned int size) throw() { return 0; }
+void* operator new (size_t size) throw() { return 0; }
+void* operator new[] (size_t size) throw() { return 0; }
 void operator delete (void * p) throw() {}
 void operator delete[] (void * p) throw() { }
 

@@ -47,8 +47,6 @@ typedef void (*I86_IRQ_HANDLER)(void);
 //    INTERFACE STRUCTURES / UTILITY CLASSES
 //============================================================================
 
-#pragma pack (push, 1)
-
 //! interrupt descriptor
 struct idt_descriptor {
 
@@ -66,9 +64,7 @@ struct idt_descriptor {
 
 	//! bits 16-32 of ir address
 	uint16_t		baseHi;
-};
-
-#pragma pack (pop)
+} __attribute__((packed));
 
 //============================================================================
 //    INTERFACE DATA DECLARATIONS

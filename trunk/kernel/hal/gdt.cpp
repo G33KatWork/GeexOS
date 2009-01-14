@@ -25,9 +25,6 @@
 //    IMPLEMENTATION PRIVATE STRUCTURES / UTILITY CLASSES
 //============================================================================
 
-//push current alignment to internal stack and set struct alignment to 1
-#pragma pack (push, 1)
-
 //! processor gdtr register points to base of gdt. This helps
 //! us set up the pointer
 struct gdtr {
@@ -37,10 +34,7 @@ struct gdtr {
 
 	//! base address of gdt
 	uint32_t		m_base;
-};
-
-//restore old alignment
-#pragma pack (pop)
+} __attribute__((packed));
 
 //============================================================================
 //    IMPLEMENTATION REQUIRED EXTERNAL REFERENCES (AVOID)

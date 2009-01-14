@@ -1,8 +1,11 @@
+SRC := .
+include build/base.mak
+
 # Target file name.
 TARGET = kernel
 
 # List C++ source files here.
-SRC =  kernel/DebugDisplay.cpp \
+SOURCES =  kernel/DebugDisplay.cpp \
        kernel/entry.cpp \
        kernel/main.cpp \
        kernel/exception.cpp \
@@ -22,31 +25,19 @@ SRC =  kernel/DebugDisplay.cpp \
 	   
 
 # List Assembler to be assembled with NASM here
-ASRC = kernel/start.S \
+ASOURCES = kernel/start.S \
 	   hal/irqWrapper.S
 
 # Addiotional include paths to consider
 INCLUDES = inc
 
 #Programs
-CC = gcc
-OBJDUMP = objdump
-NASM = nasm
-MKDIR = mkdir
-RMDIR = rm -rf
-RM = rm -f
-CP = cp
-MOUNT = mount
-UMOUNT = umount
 #BOCHS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
 #BOCHS = /Users/andy/Documents/devstuff/oskrempel/os/kernel/resources/bochs.app/Contents/MacOS/bochs
 BOCHS = /usr/bin/bochs
 
-# Flags for automatic generation for dependencies
-DEPFLAGS = -MD -MP -MF .dep/$(@F).d
-
 # C compiler flags
-CFLAGS += -g -fno-builtin -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs $(DEPFLAGS)
+CFLAGS += -g -fno-builtin -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs
 CFLAGS += -Wall #-Wextra -Werror
 CFLAGS += -DARCH_X86 -D_DEBUG #-fasm-blocks
 CFLAGS += $(addprefix -I,$(INCLUDES))
@@ -61,27 +52,33 @@ ASFLAGS = -f elf
 LDFLAGS = -T linker.ld
 
 # Determinte objects to be created
-OBJECTS += $(ASRC:.S=.o)
-OBJECTS += $(SRC:.cpp=.o)
+OBJECTS += $(ASOURCES:.S=.o)
+OBJECTS += $(SOURCES:.cpp=.o)
 
 # Main targets
-all: $(TARGET).elf
+all: toolchain $(TARGET).elf
 
 $(TARGET).elf: $(OBJECTS)
 	$(CXX) $(LDFLAGS) $(CXXFLAGS) -o $@ $^
 	$(OBJDUMP) --source $(TARGET).elf > source
 
+# Toolchain
+toolchain: $(CC)
+
+$(CC):
+	cd toolchain; make all
+
 # Create bootfloppy
 bootfloppy: all
-	sudo $(MKDIR) tmp
-	sudo $(CP) resources/floppy.img .
-	sudo $(MOUNT) -o loop floppy.img tmp
-	sudo $(CP) kernel.elf tmp/kernel
-	sudo $(UMOUNT) tmp
-	sudo $(RMDIR) tmp
+	sudo mkdir tmp
+	sudo cp resources/floppy.img .
+	sudo mount -o loop floppy.img tmp
+	sudo cp kernel.elf tmp/kernel
+	sudo umount tmp
+	sudo rm -Rf tmp
 	
 # Start bochs
-bochs:
+bochs: bootfloppy
 	$(BOCHS) -f resources/bochsrc.txt -q
 
 # Start bochs with debugging support
@@ -93,15 +90,16 @@ gdb:
 
 # Cleaning
 clean:
-	$(RM) $(foreach ext,elf,$(TARGET).$(ext)) \
+	rm -f $(foreach ext,elf,$(TARGET).$(ext)) \
 	$(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
-	$(RM) floppy.img
-	$(RM) bochsout.txt
-	$(RM) source
-	$(RMDIR) tmp
+	rm -f floppy.img
+	rm -f bochsout.txt
+	rm -f source
+	rm -Rf tmp
 
 distclean: clean
-	$(RMDIR) .dep
+	cd toolchain; make distclean
+	cd toolchain; make toolchain-clean
 
 # Compile cpp files
 %.o: $.cpp
@@ -111,4 +109,3 @@ distclean: clean
 %.o: %.S
 	$(NASM) $(ASFLAGS) -o $@ $<
 
--include $(shell $(MKDIR) .dep 2>/dev/null) $(wildcard .dep/*)

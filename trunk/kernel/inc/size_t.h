@@ -20,7 +20,7 @@ extern "C"
 #endif
 
 /* standard size_t type */
-typedef unsigned size_t;
+typedef long unsigned int size_t;
 
 #ifdef __cplusplus
 }
