@@ -15,7 +15,7 @@
 
 //! this is inside DebugDisplay--need to find out where it is supposed to actually go
 extern void itoa_s(int i,unsigned base,char* buf);
-
+extern void itoa(unsigned i,unsigned base,char* buf);
 
 //! writes formatted string to buffer
 int vsprintf(char *str, const char *format, va_list ap) {
@@ -62,7 +62,7 @@ int vsprintf(char *str, const char *format, va_list ap) {
 					case 'x': {
 						int c = va_arg (ap, int);
 						char s[32]={0};
-						itoa_s (c,16,s);
+						itoa (c,16,s);
 						strcpy (&str[loc], s);
 						i++;		// go to next character
 						loc+=strlen(s) - 2;

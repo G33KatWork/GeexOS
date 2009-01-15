@@ -1,6 +1,8 @@
 SRC := .
 include build/base.mak
 
+STARTTIME := $(shell date +%s)
+
 # Target file name.
 TARGET = kernel
 
@@ -59,6 +61,7 @@ OBJECTS += $(SOURCES:.cpp=.o)
 
 # Main targets
 all: toolchain $(TARGET).elf
+	$(call cmd_msg,NOTICE,Build completed in $$(($$(date +%s)-$(STARTTIME))) seconds)
 
 $(TARGET).elf: $(OBJECTS)
 	$(call cmd_msg,LINK,$(@))
@@ -146,4 +149,6 @@ distclean: clean
 %.o: %.S
 	$(call cmd_msg,NASM,$<)
 	$(Q)$(NASM) $(ASFLAGS) -o $@ $<
+
+.PHONY: clean distclean qemu qemudebug bochs bochsdebug floppy.img initrd.img mkinitrd bootfloppy
 

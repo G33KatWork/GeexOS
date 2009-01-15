@@ -27,7 +27,9 @@ int kmain (multiboot_info* bootinfo) {
 	unsigned initrd_end = *(unsigned*)(bootinfo->m_modsAddr+4);
 	// Don't trample our module with placement accesses, please!
 	placement_address = initrd_end;
-
+	
+	DebugClrScr (0x18);
+	DebugSetColor (0x19);
 	paging_initialize();
 	
 	//! install our exception handlers
@@ -50,13 +52,11 @@ int kmain (multiboot_info* bootinfo) {
 	setvect (18,(void (&)(void))machine_check_abort);
 	setvect (19,(void (&)(void))simd_fpu_fault);
 	setupDebugHandler();
-
-	DebugClrScr (0x18);
 	
 	uint32_t memSize = bootinfo->m_memoryLo + bootinfo->m_memoryHi;
 	uint32_t multibootFlags = bootinfo->m_flags;
 
-	DebugGotoXY (0,0);
+	/*DebugGotoXY (0,0);
 	DebugSetColor (0x70);
 	DebugPrintf (" GeexOs Kernel preparing to load...                                             ");
 	DebugGotoXY (0,1);
@@ -65,12 +65,12 @@ int kmain (multiboot_info* bootinfo) {
 	DebugPrintf (" Installed memory: %iKB\n", memSize);
 	DebugPrintf (" Multiboot flags: %x\n", multibootFlags);
 	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->m_cmdLine));
-	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
+	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());*/
 
 	fs_root = initialise_initrd(initrd_location);
 
 	// list the contents of /
-    unsigned i = 0;
+    /*unsigned i = 0;
     struct dirent *node = 0;
     while ( (node = readdir_fs(fs_root, i)) != 0)
     {
@@ -93,9 +93,12 @@ int kmain (multiboot_info* bootinfo) {
             DebugPrintf("\"\n");
         }
         i++;
-    }
+    }*/
 
 	for(;;) {
+		unsigned bla = kmalloc(1);
+		DebugGotoXY (50,10);
+		DebugPrintf("%x", bla);
 	}
 
 	return 0;

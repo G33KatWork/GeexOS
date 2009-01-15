@@ -13,6 +13,7 @@
 #include "DebugDisplay.h"
 #include "paging.h"
 #include "kheap.h"
+#include "panic.h"
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -122,11 +123,14 @@ void paging_initialize()
     // TODO: add real memory size
     unsigned mem_end_page = 0x1000000;
     
+	// calculate number of frames we need to cover the whole address space (each frame 4kb)
     nframes = mem_end_page / 0x1000;
+
+	// allocate bitfield for all frames
     frames = (unsigned*)kmalloc(INDEX_FROM_BIT(nframes));
     memset(frames, 0, INDEX_FROM_BIT(nframes));
     
-    // Let's make a page directory.
+    // allocate memory for a page directory used by the kernel
     kernel_directory = (page_directory_t*)kmalloc_a(sizeof(page_directory_t));
     current_directory = kernel_directory;
 
@@ -218,6 +222,7 @@ void alloc_frame(page_t *page, int is_kernel, int is_writeable)
         if (idx == (unsigned)-1)
         {
             // PANIC! no free frames!!
+			kernel_panic("No more free frames for allocation left");
         }
         set_frame(idx*0x1000);
         page->present = 1;

@@ -215,12 +215,21 @@ int DebugPrintf (const char* str, ...) {
 						break;
 					}
 
+					case 'u': {
+						int c = va_arg (args, unsigned);
+						char str[32]={0};
+						itoa (c, 10, str);
+						DebugPuts (str);
+						i++;		// go to next character
+						break;
+					}
+
 					/*** display in hex ***/
 					case 'X':
 					case 'x': {
 						int c = va_arg (args, int);
 						char str[32]={0};
-						itoa_s (c,16,str);
+						itoa (c,16,str);
 						DebugPuts (str);
 						i++;		// go to next character
 						break;

@@ -10,6 +10,7 @@
 
 #include "kheap.h"
 #include "paging.h"
+#include "DebugDisplay.h"
 
 //============================================================================
 //    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
@@ -87,6 +88,8 @@ unsigned kmalloc_int(unsigned size, int align, unsigned *phys)
 
 void expand(unsigned new_size, heap_t *heap)
 {
+DebugGotoXY(0,20);
+DebugPrintf("expanding to %x", new_size);
     // Sanity check.
     //ASSERT(new_size > heap->end_address - heap->start_address);
 
@@ -140,14 +143,19 @@ unsigned contract(unsigned new_size, heap_t *heap)
     heap->end_address = heap->start_address + new_size;
     return new_size;
 }
-
+unsigned bla = 0;
 int find_smallest_hole(unsigned size, char page_align, heap_t *heap)
 {
+bla++;
+DebugGotoXY(50, 13);
+DebugPrintf("find hole called: %u\n", bla);
     // Find the smallest hole that will fit.
     unsigned iterator = 0;
     while (iterator < heap->index.size)
     {
         header_t *header = (header_t *)lookup_sorted_array(iterator, &heap->index);
+DebugGotoXY(50, 14);
+DebugPrintf("header: %x\n", header);
         // If the user has requested the memory be page-aligned
         if (page_align > 0)
         {
@@ -165,6 +173,9 @@ int find_smallest_hole(unsigned size, char page_align, heap_t *heap)
             break;
         iterator++;
     }
+DebugGotoXY(50, 12);
+DebugPrintf("%u\n", iterator);
+DebugPrintf("%u\n", heap->index.size);
     // Why did the loop exit?
     if (iterator == heap->index.size)
         return -1; // We got to the end and didn't find anything.
@@ -219,11 +230,14 @@ void *alloc(unsigned size, char page_align, heap_t *heap)
 
     // Make sure we take the size of header/footer into account.
     unsigned new_size = size + sizeof(header_t) + sizeof(footer_t);
+
     // Find the smallest hole that will fit.
     int iterator = find_smallest_hole(new_size, page_align, heap);
 
     if (iterator == -1) // If we didn't find a suitable hole
     {
+DebugGotoXY (50,11);
+DebugPrintf("no hole");
         // Save some previous data.
         unsigned old_length = heap->end_address - heap->start_address;
         unsigned old_end_address = heap->end_address;
@@ -248,7 +262,7 @@ void *alloc(unsigned size, char page_align, heap_t *heap)
         }
 
         // If we didn't find ANY headers, we need to add one.
-        if (idx == (unsigned)-1)
+        if (idx == -1)
         {
             header_t *header = (header_t *)old_end_address;
             header->magic = HEAP_MAGIC;
@@ -276,6 +290,7 @@ void *alloc(unsigned size, char page_align, heap_t *heap)
     header_t *orig_hole_header = (header_t *)lookup_sorted_array(iterator, &heap->index);
     unsigned orig_hole_pos = (unsigned)orig_hole_header;
     unsigned orig_hole_size = orig_hole_header->size;
+
     // Here we work out if we should split the hole we found into two parts.
     // Is the original hole size - requested hole size less than the overhead for adding a new hole?
     if (orig_hole_size-new_size < sizeof(header_t)+sizeof(footer_t))

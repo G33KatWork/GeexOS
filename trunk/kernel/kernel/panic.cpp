@@ -7,6 +7,7 @@
 #include <hal.h>
 #include <stdio.h>
 #include "DebugDisplay.h"
+#include "panic.h"
 
 const char* sickpc = " \
                                _______      \n\
@@ -24,10 +25,10 @@ void kernel_panic (const char* fmt, ...) {
 
 	disable ();
 
-	DebugClrScr (0x13);
+	//DebugClrScr (0x13);
 	DebugGotoXY (0,0);
 	DebugSetColor (0x17);
-	DebugPuts (sickpc);
+	//DebugPuts (sickpc);
 	DebugPuts (panic);
 
 	va_list		args;
