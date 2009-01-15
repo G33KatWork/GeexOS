@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>kernel/kernel/main.cpp</string>
+	<string>loader/stage1/stage1.asm</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -54,60 +54,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>26</integer>
+				<integer>9</integer>
 				<key>line</key>
-				<integer>86</integer>
+				<integer>85</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>66</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>86</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>87</integer>
-			</dict>
-		</dict>
-		<key>kernel/kernel/mmgr_phys.cpp</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>49</integer>
-				<key>line</key>
-				<integer>166</integer>
-			</dict>
-			<key>columnSelection</key>
-			<false/>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>154</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>31</integer>
-				<key>line</key>
-				<integer>166</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>53</integer>
-				<key>line</key>
-				<integer>166</integer>
-			</dict>
+			<integer>73</integer>
 		</dict>
 		<key>loader/make.sh</key>
 		<dict>
@@ -123,6 +77,36 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
+		<key>loader/stage1/stage1.asm</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>27</integer>
+				<key>line</key>
+				<integer>15</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>25</integer>
+				<key>line</key>
+				<integer>15</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>29</integer>
+				<key>line</key>
+				<integer>15</integer>
+			</dict>
+		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
@@ -130,7 +114,7 @@
 		<string>kernel/hal/cpu.cpp</string>
 		<string>loader/make.sh</string>
 		<string>kernel/kernel/main.cpp</string>
-		<string>kernel/kernel/mmgr_phys.cpp</string>
+		<string>loader/stage1/stage1.asm</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<false/>
@@ -149,29 +133,15 @@
 					<key>isExpanded</key>
 					<true/>
 					<key>subItems</key>
+					<dict/>
+				</dict>
+				<key>loader</key>
+				<dict>
+					<key>isExpanded</key>
+					<true/>
+					<key>subItems</key>
 					<dict>
-						<key>hal</key>
-						<dict>
-							<key>isExpanded</key>
-							<true/>
-							<key>subItems</key>
-							<dict/>
-						</dict>
-						<key>inc</key>
-						<dict>
-							<key>isExpanded</key>
-							<true/>
-							<key>subItems</key>
-							<dict/>
-						</dict>
-						<key>kernel</key>
-						<dict>
-							<key>isExpanded</key>
-							<true/>
-							<key>subItems</key>
-							<dict/>
-						</dict>
-						<key>lib</key>
+						<key>stage1</key>
 						<dict>
 							<key>isExpanded</key>
 							<true/>

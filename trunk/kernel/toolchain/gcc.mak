@@ -36,7 +36,8 @@ $(TOOLCHAIN_ROOTDIR)/.gcc-configure: $(TOOLCHAIN_ROOTDIR)/.gcc-extract
 			--target=$(TOOLCHAIN_TARGET) \
 			--without-headers \
 			--enable-languages=c,c++ --disable-nls \
-			$(QOUTPUT)
+			$(QOUTPUT) \
+			$(GCC_CONFOPTS)
 	$(Q)touch  $(@)
 
 
