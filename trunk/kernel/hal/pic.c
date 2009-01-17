@@ -1,7 +1,7 @@
 
 //****************************************************************************
 //**
-//**	pic.cpp
+//**	pic.c
 //**		8259 Programmable Interrupt Controller
 //**
 //****************************************************************************
@@ -10,28 +10,21 @@
 #error "[pic.cpp for i86] requires i86 architecture. Define ARCH_X86"
 #endif
 
-//============================================================================
-//    IMPLEMENTATION HEADERS
-//============================================================================
-
 #include <hal.h>
 #include "pic.h"
 
-//============================================================================
-//    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
-//============================================================================
 
 //-----------------------------------------------
 //	Controller Registers
 //-----------------------------------------------
 
-//! PIC 1 register port addresses
+// PIC 1 register port addresses
 #define I86_PIC1_REG_COMMAND	0x20
 #define I86_PIC1_REG_STATUS		0x20
 #define I86_PIC1_REG_DATA		0x21
 #define I86_PIC1_REG_IMR		0x21
 
-//! PIC 2 register port addresses
+// PIC 2 register port addresses
 #define I86_PIC2_REG_COMMAND	0xA0
 #define I86_PIC2_REG_STATUS		0xA0
 #define I86_PIC2_REG_DATA		0xA1
@@ -41,16 +34,16 @@
 //	Initialization Command Bit Masks
 //-----------------------------------------------
 
-//! Initialization Control Word 1 bit masks
+// Initialization Control Word 1 bit masks
 #define I86_PIC_ICW1_MASK_IC4			0x1			//00000001
 #define I86_PIC_ICW1_MASK_SNGL			0x2			//00000010
 #define I86_PIC_ICW1_MASK_ADI			0x4			//00000100
 #define I86_PIC_ICW1_MASK_LTIM			0x8			//00001000
 #define I86_PIC_ICW1_MASK_INIT			0x10		//00010000
 
-//! Initialization Control Words 2 and 3 do not require bit masks
+// Initialization Control Words 2 and 3 do not require bit masks
 
-//! Initialization Control Word 4 bit masks
+// Initialization Control Word 4 bit masks
 #define I86_PIC_ICW4_MASK_UPM			0x1			//00000001
 #define I86_PIC_ICW4_MASK_AEOI			0x2			//00000010
 #define I86_PIC_ICW4_MASK_MS			0x4			//00000100
@@ -87,32 +80,10 @@
 #define I86_PIC_ICW4_SFNM_NESTEDMODE	0x10		//10000
 #define I86_PIC_ICW4_SFNM_NOTNESTED		0			//a binary 2 (futurama joke hehe ;)
 
-//============================================================================
-//    IMPLEMENTATION PRIVATE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE STRUCTURES / UTILITY CLASSES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION REQUIRED EXTERNAL REFERENCES (AVOID)
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE DATA
-//============================================================================
-//============================================================================
-//    INTERFACE DATA
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTION PROTOTYPES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTIONS
-//============================================================================
-//============================================================================
-//    INTERFACE FUNCTIONS
-//============================================================================
 
-//! send command to PICs
+// ************************************ Public ***********************************
+
+// send command to PICs
 inline void i86_pic_send_command (uint8_t cmd, uint8_t picNum) {
 
 	if (picNum > 1)
@@ -123,7 +94,7 @@ inline void i86_pic_send_command (uint8_t cmd, uint8_t picNum) {
 }
 
 
-//! send data to PICs
+// send data to PICs
 inline void i86_pic_send_data (uint8_t data, uint8_t picNum) {
 
 	if (picNum > 1)
@@ -134,7 +105,7 @@ inline void i86_pic_send_data (uint8_t data, uint8_t picNum) {
 }
 
 
-//! read data from PICs
+// read data from PICs
 inline uint8_t i86_pic_read_data (uint8_t picNum) {
 
 	if (picNum > 1)
@@ -144,7 +115,7 @@ inline uint8_t i86_pic_read_data (uint8_t picNum) {
 	return inportb (reg);
 }
 
-//! Initialize pic
+// Initialize pic
 void i86_pic_initialize (uint8_t base0, uint8_t base1) {
 
 	uint8_t		icw	= 0;
@@ -180,12 +151,8 @@ void i86_pic_initialize (uint8_t base0, uint8_t base1) {
 	i86_pic_send_data (icw, 1);
 } 
 
-
-//============================================================================
-//    INTERFACE CLASS BODIES
-//============================================================================
 //****************************************************************************
 //**
-//**    END[pic.cpp]
+//**    END[pic.c]
 //**
 //****************************************************************************

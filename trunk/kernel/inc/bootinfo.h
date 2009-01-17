@@ -5,23 +5,10 @@
 //**    bootinfo.h
 //**
 //****************************************************************************
-//============================================================================
-//    INTERFACE REQUIRED HEADERS
-//============================================================================
 
 #include <stdint.h>
 
-//============================================================================
-//    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
-//============================================================================
-//============================================================================
-//    INTERFACE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
-//============================================================================
-//============================================================================
-//    INTERFACE STRUCTURES / UTILITY CLASSES
-//============================================================================
-
-//! multiboot info structure passed from boot loader
+// multiboot info structure passed from boot loader
 /*The format of the Multiboot information structure (as defined so far) follows:
 
              +-------------------+
@@ -60,7 +47,7 @@
      86      | vbe_interface_len |
              +-------------------+										*/
 
-//! format of a memory region
+// format of a memory region
 struct memory_region {
 	uint32_t	size;
 	uint32_t	startLo;
@@ -69,6 +56,7 @@ struct memory_region {
 	uint32_t	sizeHi;
 	uint32_t	type;
 }  __attribute__((packed));
+typedef struct memory_region memory_region_t;
 
 struct multiboot_info {
 	uint32_t	m_flags;
@@ -83,7 +71,7 @@ struct multiboot_info {
 	uint32_t	m_syms2;
 	uint32_t	reserved;
 	uint32_t	m_mmap_length;
-	memory_region*	m_mmap_addr;
+	memory_region_t*	m_mmap_addr;
 	uint32_t	m_drives_length;
 	uint32_t	m_drives_addr;
 	uint32_t	m_config_table;
@@ -96,18 +84,7 @@ struct multiboot_info {
 	uint16_t	m_vbe_interface_len;
 }  __attribute__((packed));
 
-//============================================================================
-//    INTERFACE DATA DECLARATIONS
-//============================================================================
-//============================================================================
-//    INTERFACE FUNCTION PROTOTYPES
-//============================================================================
-//============================================================================
-//    INTERFACE OBJECT CLASS DEFINITIONS
-//============================================================================
-//============================================================================
-//    INTERFACE TRAILING HEADERS
-//============================================================================
+
 //****************************************************************************
 //**
 //**    END [bootinfo.h]

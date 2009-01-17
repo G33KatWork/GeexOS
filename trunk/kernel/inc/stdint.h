@@ -59,6 +59,12 @@ typedef unsigned uintptr_t;
 typedef long long  intmax_t;
 typedef unsigned long long   uintmax_t;
 
+#if !defined ( __cplusplus)
+typedef char bool;
+#define true 0
+#define false 1
+#endif
+
 /* 7.18.2  Limits of specified-width integer types */
 #if !defined ( __cplusplus) || defined (__STDC_LIMIT_MACROS)
 

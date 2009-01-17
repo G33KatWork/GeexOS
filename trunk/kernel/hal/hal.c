@@ -1,7 +1,7 @@
 
 //****************************************************************************
 //**
-//**    Hal.cpp
+//**    Hal.c
 //**		Hardware Abstraction Layer for i86 architecture
 //**
 //**	The Hardware Abstraction Layer (HAL) provides an abstract interface
@@ -14,9 +14,6 @@
 #error "[hal.cpp for i86] requires i86 architecture. Define ARCH_X86"
 #endif
 
-//============================================================================
-//    IMPLEMENTATION HEADERS
-//============================================================================
 
 #include <hal.h>
 #include "cpu.h"
@@ -24,35 +21,9 @@
 #include "pic.h"
 #include "pit.h"
 
-//============================================================================
-//    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE STRUCTURES / UTILITY CLASSES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION REQUIRED EXTERNAL REFERENCES (AVOID)
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE DATA
-//============================================================================
-//============================================================================
-//    INTERFACE DATA
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTION PROTOTYPES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTIONS
-//============================================================================
-//============================================================================
-//    INTERFACE FUNCTIONS
-//============================================================================
+// ************************************ Public ***********************************
 
-//! initialize hardware devices
+// initialize hardware devices
 int hal_initialize () {
 
 	//! intialize i86 specific devices
@@ -67,14 +38,14 @@ int hal_initialize () {
 	return 0;
 }
 
-//! shutdown hardware devices
+// shutdown hardware devices
 int hal_shutdown () {
 
 	i86_cpu_shutdown ();
 	return 0;
 }
 
-//! generate interrupt call
+// generate interrupt call
 void geninterrupt (int n) {
 	asm volatile (	"movb %0, %%al;"
 			"movb %%al, (genint+1);"
@@ -85,7 +56,7 @@ void geninterrupt (int n) {
 		);
 }
 
-//! notifies hal interrupt is done
+// notifies hal interrupt is done
 void interruptdone (unsigned int intno) {
 	//! insure its a valid hardware irq
 	if (intno > 16)
@@ -100,7 +71,7 @@ void interruptdone (unsigned int intno) {
 }
 
 
-//! output sound to speaker
+// output sound to speaker
 void sound (unsigned frequency) {
 
 	//! sets frequency for speaker. frequency of 0 disables speaker
@@ -108,7 +79,7 @@ void sound (unsigned frequency) {
 }
 
 
-//! read byte from device using port mapped io
+// read byte from device using port mapped io
 unsigned char inportb (unsigned short portid) {
 	unsigned char ret;
 	  
@@ -118,37 +89,37 @@ unsigned char inportb (unsigned short portid) {
 }
 
 
-//! write byte to device through port mapped io
+// write byte to device through port mapped io
 void outportb (unsigned short portid, unsigned char value) {
     asm volatile ("outb %1, %0" : : "dN" (portid), "a" (value));
 }
 
 
-//! enable all hardware interrupts
+// enable all hardware interrupts
 void enable () {
 	asm("sti");
 }
 
 
-//! disable all hardware interrupts
+// disable all hardware interrupts
 void disable () {
 	asm("cli");
 }
 
 
-//! sets new interrupt vector
-void setvect (int intno, void (far &vect) ( ) ) {
+// sets new interrupt vector
+void setvect (int intno, void (far *vect) ( ) ) {
 
 	//! install interrupt handler! This overwrites prev interrupt descriptor
 	i86_install_ir (intno, I86_IDT_DESC_PRESENT | I86_IDT_DESC_BIT32, 0x8, vect);
 }
 
 
-//! returns current interrupt vector
+// returns current interrupt vector
 void (far * getvect (int intno)) ( ) {
 
 	//! get the descriptor from the idt
-	idt_descriptor* desc = i86_get_ir (intno);
+	idt_descriptor_t* desc = i86_get_ir (intno);
 	if (!desc)
 		return 0;
 
@@ -161,24 +132,22 @@ void (far * getvect (int intno)) ( ) {
 }
 
 
-//! returns cpu vender
+// returns cpu vender
 const char* get_cpu_vendor () {
 
 	return i86_cpu_get_vendor();
 }
 
 
-//! returns current tick count (only for demo)
+// returns current tick count (only for demo)
 int get_tick_count () {
 
 	return i86_pit_get_tick_count();
 }
 
-//============================================================================
-//    INTERFACE CLASS BODIES
-//============================================================================
+
 //****************************************************************************
 //**
-//**    END[Hal.cpp]
+//**    END[hal.c]
 //**
 //****************************************************************************

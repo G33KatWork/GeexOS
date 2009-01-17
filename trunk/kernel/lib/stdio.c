@@ -13,10 +13,6 @@
 #include <string.h>
 #include <stdio.h>
 
-//! this is inside DebugDisplay--need to find out where it is supposed to actually go
-extern void itoa_s(int i,unsigned base,char* buf);
-extern void itoa(unsigned i,unsigned base,char* buf);
-
 //! writes formatted string to buffer
 int vsprintf(char *str, const char *format, va_list ap) {
 
@@ -39,7 +35,7 @@ int vsprintf(char *str, const char *format, va_list ap) {
 
 					/*** characters ***/
 					case 'c': {
-						char c = va_arg (ap, char);
+						char c = (char)va_arg (ap, int);
 						str[loc] = c;
 						i++;
 						break;
@@ -81,7 +77,7 @@ int vsprintf(char *str, const char *format, va_list ap) {
 
 					/*** strings ***/
 					case 's': {
-						int c = (int&) va_arg (ap, char);
+						int* c = (int*) va_arg (ap, int);
 						char s[32]={0};
 						strcpy (s,(const char*)c);						
 						strcpy (&str[loc], s);

@@ -1,6 +1,6 @@
 //****************************************************************************
 //**
-//**    paging.cpp
+//**    paging.c
 //**    - Paging support
 //**
 //****************************************************************************
@@ -15,53 +15,32 @@
 #include "kheap.h"
 #include "panic.h"
 
-//============================================================================
-//    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
-//============================================================================
-
 // Macros used in the bitset algorithms.
 #define INDEX_FROM_BIT(a) (a/(8*4))
 #define OFFSET_FROM_BIT(a) (a%(8*4))
 
-//============================================================================
-//    IMPLEMENTATION PRIVATE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE STRUCTURES / UTILITY CLASSES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION REQUIRED EXTERNAL REFERENCES (AVOID)
-//============================================================================
 
 extern unsigned placement_address;
 extern heap_t *kheap;
 
-//============================================================================
-//    IMPLEMENTATION PRIVATE DATA
-//============================================================================
+
+// *********************************** Private ***********************************
 
 // The kernel's page directory
 page_directory_t *kernel_directory=0;
 
 // The current page directory;
-page_directory_t *current_directory=0;
+static page_directory_t *current_directory=0;
 
 // A bitset of frames - used or free.
-unsigned *frames;
-unsigned nframes;
+static unsigned *frames;
+static unsigned nframes;
 
-//============================================================================
-//    INTERFACE DATA
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTION PROTOTYPES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTIONS
-//============================================================================
+
+// *********************************** Private ***********************************
 
 // Set a bit in the frames bitset
-void set_frame(unsigned frame_addr)
+static void set_frame(unsigned frame_addr)
 {
    unsigned frame = frame_addr/0x1000;
    unsigned idx = INDEX_FROM_BIT(frame);
@@ -70,7 +49,7 @@ void set_frame(unsigned frame_addr)
 }
 
 // Clear a bit in the frames bitset
-void clear_frame(unsigned frame_addr)
+static void clear_frame(unsigned frame_addr)
 {
    unsigned frame = frame_addr/0x1000;
    unsigned idx = INDEX_FROM_BIT(frame);
@@ -79,7 +58,7 @@ void clear_frame(unsigned frame_addr)
 }
 
 // Test if a bit is set.
-unsigned test_frame(unsigned frame_addr)
+static unsigned test_frame(unsigned frame_addr)
 {
    unsigned frame = frame_addr/0x1000;
    unsigned idx = INDEX_FROM_BIT(frame);
@@ -88,7 +67,7 @@ unsigned test_frame(unsigned frame_addr)
 }
 
 // Find the first free frame.
-unsigned first_frame()
+static unsigned first_frame()
 {
    unsigned i, j;
    for (i = 0; i < INDEX_FROM_BIT(nframes); i++)
@@ -111,9 +90,8 @@ unsigned first_frame()
    return 0;
 } 
 
-//============================================================================
-//    INTERFACE FUNCTIONS
-//============================================================================
+
+// ************************************ Public ***********************************
 
 // Setup paging
 void paging_initialize()
@@ -165,7 +143,7 @@ void paging_initialize()
         alloc_frame( get_page(i, 1, kernel_directory), 0, 0);
 
     // Before we enable paging, we must register our page fault handler.
-    setvect (14,(void (&)(void))page_fault);
+    setvect (14,(void (*)(void))page_fault);
 
     // Now, enable paging!
     switch_page_directory(kernel_directory);
@@ -274,12 +252,9 @@ void free_frame(page_t *page)
 	for(;;) ;
     //TODO add real panic support
 }*/
-
-//============================================================================
-//    INTERFACE CLASS BODIES
-//============================================================================
+
 //****************************************************************************
 //**
-//**    END[paging.cpp]
+//**    END[paging.c]
 //**
 //****************************************************************************

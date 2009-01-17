@@ -11,15 +11,8 @@
 #error "[pit.h] platform not implimented. Define ARCH_X86 for HAL"
 #endif
 
-//============================================================================
-//    INTERFACE REQUIRED HEADERS
-//============================================================================
 
 #include <stdint.h>
-
-//============================================================================
-//    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
-//============================================================================
 
 //-----------------------------------------------
 //	Operational Command Bit masks
@@ -57,51 +50,35 @@
 #define		I86_PIT_OCW_COUNTER_1			0x40	//01000000
 #define		I86_PIT_OCW_COUNTER_2			0x80	//10000000
 
-//============================================================================
-//    INTERFACE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
-//============================================================================
-//============================================================================
-//    INTERFACE STRUCTURES / UTILITY CLASSES
-//============================================================================
-//============================================================================
-//    INTERFACE DATA DECLARATIONS
-//============================================================================
-//============================================================================
-//    INTERFACE FUNCTION PROTOTYPES
-//============================================================================
 
-//! send operational command to pit. Set up command by using the operational
-//! command bit masks and setting them with the control bits. Shouldn't need to use
-//! this outside the interface
-extern void i86_pit_send_command (uint8_t cmd);
+// ************************************ Public ***********************************
 
-//! write data byte to a counter
-extern void i86_pit_send_data (uint16_t data, uint8_t counter);
+// send operational command to pit. Set up command by using the operational
+// command bit masks and setting them with the control bits. Shouldn't need to use
+// this outside the interface
+void i86_pit_send_command (uint8_t cmd);
 
-//! reads data from a counter
-extern uint8_t i86_pit_read_data (uint16_t counter);
+// write data byte to a counter
+void i86_pit_send_data (uint16_t data, uint8_t counter);
 
-//! Sets new pit tick count and returns prev. value
-extern uint32_t i86_pit_set_tick_count (uint32_t i);
+// reads data from a counter
+uint8_t i86_pit_read_data (uint16_t counter);
 
-//! returns current tick count
-extern uint32_t i86_pit_get_tick_count ();
+// Sets new pit tick count and returns prev. value
+uint32_t i86_pit_set_tick_count (uint32_t i);
 
-//! starts a counter. Counter continues until another call to this routine
-extern void i86_pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode);
+// returns current tick count
+uint32_t i86_pit_get_tick_count ();
 
-//! Initialize minidriver
-extern void i86_pit_initialize ();
+// starts a counter. Counter continues until another call to this routine
+void i86_pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode);
 
-//! Test if interface is initialized
-extern bool i86_pit_is_initialized ();
+// Initialize minidriver
+void i86_pit_initialize ();
 
-//============================================================================
-//    INTERFACE OBJECT CLASS DEFINITIONS
-//============================================================================
-//============================================================================
-//    INTERFACE TRAILING HEADERS
-//============================================================================
+// Test if interface is initialized
+bool i86_pit_is_initialized ();
+
 //****************************************************************************
 //**
 //**    END [pit.h]

@@ -1,7 +1,7 @@
 //****************************************************************************
 //**
-//**    exception.cpp
-//**		system exception handlers. These are registered during system
+//**    exception.c
+//**	- System exception handlers. These are registered during system
 //**		initialization and called automatically when they are encountered
 //**
 //****************************************************************************
@@ -14,7 +14,7 @@
 	asm("cli");	\
 	asm("sub $4, %ebp");
 		
-//! divide by 0 fault
+// divide by 0 fault
 void  divide_by_zero_fault (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -22,7 +22,7 @@ void  divide_by_zero_fault (unsigned int eip, unsigned int cs, unsigned int flag
 	for (;;);
 }
 
-//! single step
+// single step
 void  single_step_trap (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -30,7 +30,7 @@ void  single_step_trap (unsigned int eip, unsigned int cs, unsigned int flags) {
 	for (;;);
 }
 
-//! non maskable  trap
+// non maskable  trap
 void  nmi_trap (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -38,7 +38,7 @@ void  nmi_trap (unsigned int eip, unsigned int cs, unsigned int flags) {
 	for (;;);
 }
 
-//! breakpoint hit
+// breakpoint hit
 void  breakpoint_trap (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -46,7 +46,7 @@ void  breakpoint_trap (unsigned int eip, unsigned int cs, unsigned int flags) {
 	for (;;);
 }
 
-//! overflow
+// overflow
 void  overflow_trap (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -54,7 +54,7 @@ void  overflow_trap (unsigned int eip, unsigned int cs, unsigned int flags) {
 	for (;;);
 }
 
-//! bounds check
+// bounds check
 void  bounds_check_fault (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -62,7 +62,7 @@ void  bounds_check_fault (unsigned int eip, unsigned int cs, unsigned int flags)
 	for (;;);
 }
 
-//! invalid opcode / instruction
+// invalid opcode / instruction
 void  invalid_opcode_fault (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -70,7 +70,7 @@ void  invalid_opcode_fault (unsigned int eip, unsigned int cs, unsigned int flag
 	for (;;);
 }
 
-//! device not available
+// device not available
 void  no_device_fault (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -78,7 +78,7 @@ void  no_device_fault (unsigned int eip, unsigned int cs, unsigned int flags) {
 	for (;;);
 }
 
-//! double fault
+// double fault
 void  double_fault_abort (unsigned int err, unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -86,7 +86,7 @@ void  double_fault_abort (unsigned int err, unsigned int eip, unsigned int cs, u
 	for (;;);
 }
 
-//! invalid Task State Segment (TSS)
+// invalid Task State Segment (TSS)
 void  invalid_tss_fault (unsigned int err, unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -94,7 +94,7 @@ void  invalid_tss_fault (unsigned int err, unsigned int eip, unsigned int cs, un
 	for (;;);
 }
 
-//! segment not present
+// segment not present
 void  no_segment_fault (unsigned int err, unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -102,7 +102,7 @@ void  no_segment_fault (unsigned int err, unsigned int eip, unsigned int cs, uns
 	for (;;);
 }
 
-//! stack fault
+// stack fault
 void  stack_fault (unsigned int err, unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -110,7 +110,7 @@ void  stack_fault (unsigned int err, unsigned int eip, unsigned int cs, unsigned
 	for (;;);
 }
 
-//! general protection fault
+// general protection fault
 void  general_protection_fault (unsigned int err, unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -118,8 +118,7 @@ void  general_protection_fault (unsigned int err, unsigned int eip, unsigned int
 	for (;;);
 }
 
-//! page fault
-//void  page_fault (unsigned int flags, unsigned int err, unsigned int cs, unsigned int eip) {
+// page fault
 void  page_fault (unsigned int err, unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -139,7 +138,7 @@ void  page_fault (unsigned int err, unsigned int eip, unsigned int cs, unsigned 
 	for (;;);
 }
 
-//! Floating Point Unit (FPU) error
+// Floating Point Unit (FPU) error
 void  fpu_fault (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -147,7 +146,7 @@ void  fpu_fault (unsigned int eip, unsigned int cs, unsigned int flags) {
 	for (;;);
 }
 
-//! alignment check
+// alignment check
 void  alignment_check_fault (unsigned int err, unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -155,7 +154,7 @@ void  alignment_check_fault (unsigned int err, unsigned int eip, unsigned int cs
 	for (;;);
 }
 
-//! machine check
+// machine check
 void  machine_check_abort (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();
@@ -163,7 +162,7 @@ void  machine_check_abort (unsigned int eip, unsigned int cs, unsigned int flags
 	for (;;);
 }
 
-//! Floating Point Unit (FPU) Single Instruction Multiple Data (SIMD) error
+// Floating Point Unit (FPU) Single Instruction Multiple Data (SIMD) error
 void  simd_fpu_fault (unsigned int eip, unsigned int cs, unsigned int flags) {
 
 	intstart ();

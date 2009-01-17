@@ -17,18 +17,11 @@
 #error "[gdt.h] platform not implimented. Define ARCH_X86 for HAL"
 #endif
 
-//============================================================================
-//    INTERFACE REQUIRED HEADERS
-//============================================================================
-
 #include <stdint.h>
 
-//============================================================================
-//    INTERFACE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
-//============================================================================
 
 //! maximum amount of descriptors allowed
-#define MAX_DESCRIPTORS					3
+#define MAX_DESCRIPTORS					5
 
 /***	 gdt descriptor access bit flags.	***/
 
@@ -67,17 +60,12 @@
 //! 4k grandularity. default: none
 #define I86_GDT_GRAND_4K			0x80			//10000000
 
-//============================================================================
-//    INTERFACE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
-//============================================================================
-//============================================================================
-//    INTERFACE STRUCTURES / UTILITY CLASSES
-//============================================================================
 
-//! gdt descriptor. A gdt descriptor defines the properties of a specific
-//! memory block and permissions.
 
-struct gdt_descriptor {
+// gdt descriptor. A gdt descriptor defines the properties of a specific
+// memory block and permissions.
+
+struct gdt_descriptor_struct {
 
 	//! bits 0-15 of segment limit
 	uint16_t		limit;
@@ -94,32 +82,24 @@ struct gdt_descriptor {
 	//! bits 24-32 of base address
 	uint8_t			baseHi;
 } __attribute__((packed));
+typedef struct gdt_descriptor_struct gdt_descriptor_t;
 
-//============================================================================
-//    INTERFACE DATA DECLARATIONS
-//============================================================================
-//============================================================================
-//    INTERFACE FUNCTION PROTOTYPES
-//============================================================================
 
-//! Setup a descriptor in the Global Descriptor Table
-extern void gdt_set_descriptor(uint32_t i, uint64_t base, uint64_t limit, uint8_t access, uint8_t grand);
+// ************************************ Public ***********************************
 
-//! returns descritor
-extern gdt_descriptor* i86_gdt_get_descriptor (int i);
+// Setup a descriptor in the Global Descriptor Table
+void gdt_set_descriptor(uint32_t i, uint64_t base, uint64_t limit, uint8_t access, uint8_t grand);
 
-//! initializes gdt
-extern	int i86_gdt_initialize ();
+// returns descritor
+gdt_descriptor_t* i86_gdt_get_descriptor (int i);
 
-//============================================================================
-//    INTERFACE OBJECT CLASS DEFINITIONS
-//============================================================================
-//============================================================================
-//    INTERFACE TRAILING HEADERS
-//============================================================================
+// initializes gdt
+int i86_gdt_initialize ();
+
+
 //****************************************************************************
 //**
-//**    END [FILE NAME]
+//**    END [gdt.h]
 //**
 //****************************************************************************
 #endif

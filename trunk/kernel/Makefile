@@ -6,27 +6,29 @@ STARTTIME := $(shell date +%s)
 # Target file name.
 TARGET = kernel
 
-# List C++ source files here.
-SOURCES =	kernel/assert.cpp \
-			kernel/DebugDisplay.cpp \
-			kernel/entry.cpp \
-			kernel/main.cpp \
-			kernel/exception.cpp \
-			kernel/panic.cpp \
-			kernel/paging.cpp \
-			kernel/sortedArray.cpp \
-			kernel/kheap.cpp \
-			kernel/fs.cpp \
-			kernel/initrd.cpp \
-			lib/cstd.cpp \
-			lib/string.cpp \
-			lib/stdio.cpp \
-			hal/cpu.cpp \
-			hal/gdt.cpp \
-			hal/hal.cpp \
-			hal/idt.cpp \
-			hal/pic.cpp \
-			hal/pit.cpp
+# List C source files here.
+CCSOURCES =	kernel/assert.c \
+			kernel/DebugDisplay.c \
+			kernel/entry.c \
+			kernel/main.c \
+			kernel/exception.c \
+			kernel/panic.c \
+			kernel/paging.c \
+			kernel/sortedArray.c \
+			kernel/kheap.c \
+			kernel/fs.c \
+			kernel/initrd.c \
+			lib/string.c \
+			lib/stdio.c \
+			hal/cpu.c \
+			hal/gdt.c \
+			hal/hal.c \
+			hal/idt.c \
+			hal/pic.c \
+			hal/pit.c
+
+# List C++ source files here
+CXXSOURCES =
 
 # List Assembler to be assembled with NASM here
 ASOURCES =	kernel/start.S \
@@ -42,13 +44,16 @@ BOCHS = /usr/bin/bochs
 QEMU = qemu
 
 # C compiler flags
-CFLAGS += -g -fno-builtin -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs
+CFLAGS += -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
 CFLAGS += -Wall #-Wextra -Werror
-CFLAGS += -DARCH_X86 -D_DEBUG #-fasm-blocks
+CFLAGS += -DARCH_X86 -D_DEBUG
 CFLAGS += $(addprefix -I,$(INCLUDES))
 
 # C++ compiler flags
-CXXFLAGS = $(CFLAGS)
+CXXFLAGS += -g -fno-builtin -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs
+CXXFLAGS += -Wall #-Wextra -Werror
+CXXFLAGS += -DARCH_X86 -D_DEBUG #-fasm-blocks
+CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
 # NASM flags
 ASFLAGS = -f elf
@@ -58,7 +63,8 @@ LDFLAGS = -T linker.ld
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:.S=.o)
-OBJECTS += $(SOURCES:.cpp=.o)
+OBJECTS += $(CXXSOURCES:.cpp=.o)
+OBJECTS += $(CCSOURCES:.c=.o)
 
 # Main targets
 all: toolchain $(TARGET).elf
@@ -66,7 +72,7 @@ all: toolchain $(TARGET).elf
 
 $(TARGET).elf: $(OBJECTS)
 	$(call cmd_msg,LINK,$(@))
-	$(Q)$(CXX) $(LDFLAGS) $(CXXFLAGS) -o $@ $^
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^
 	$(call cmd_msg,OBJDUMP,$(@) -> source)
 	$(Q)$(OBJDUMP) --source $(TARGET).elf > source
 
@@ -145,6 +151,11 @@ distclean: clean
 %.o: %.cpp
 	$(call cmd_msg,CXX,$<)
 	$(Q)$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Compile c files
+%.o: %.c
+	$(call cmd_msg,CC,$<)
+	$(Q)$(CC) $(CFLAGS) -c $< -o $@
 
 # Assembler S files
 %.o: %.S

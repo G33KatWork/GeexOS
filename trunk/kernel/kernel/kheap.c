@@ -1,59 +1,34 @@
 //****************************************************************************
 //**
-//**    kmalloc.cpp
+//**    kmalloc.c
 //**    - Simple placement memory management for kernel objects.
 //**
 //****************************************************************************
-//============================================================================
-//    IMPLEMENTATION HEADERS
-//============================================================================
 
 #include "kheap.h"
 #include "paging.h"
 #include "assert.h"
 #include "DebugDisplay.h"
 
-//============================================================================
-//    IMPLEMENTATION PRIVATE DEFINITIONS / ENUMERATIONS / SIMPLE TYPEDEFS
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE CLASS PROTOTYPES / EXTERNAL CLASS REFERENCES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE STRUCTURES / UTILITY CLASSES
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION REQUIRED EXTERNAL REFERENCES (AVOID)
-//============================================================================
 
 // end is defined in the linker script.
 extern unsigned end;
-unsigned placement_address = (unsigned)&end;
 
-//============================================================================
-//    IMPLEMENTATION PRIVATE DATA
-//============================================================================
-
+//defined in paging.c
 extern page_directory_t *kernel_directory;
+
+
+unsigned placement_address = (unsigned)&end;
 heap_t *kheap=0;
 
-//============================================================================
-//    INTERFACE DATA
-//============================================================================
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTION PROTOTYPES
-//============================================================================
+// *********************************** Private ***********************************
 
 // Allocates a contiguous region of memory 'size' in size. If page_align==1, it creates that block starting on a page boundary.
-void *alloc(unsigned size, char page_align, heap_t *heap);
-
-//============================================================================
-//    IMPLEMENTATION PRIVATE FUNCTIONS
-//============================================================================
+static void *alloc(unsigned size, char page_align, heap_t *heap);
 
 
 //internal version of kmalloc
-unsigned kmalloc_int(unsigned size, int align, unsigned *phys)
+static unsigned kmalloc_int(unsigned size, int align, unsigned *phys)
 {
     if (kheap != 0)
     {
@@ -85,7 +60,7 @@ unsigned kmalloc_int(unsigned size, int align, unsigned *phys)
 	}
 }
 
-void expand(unsigned new_size, heap_t *heap)
+static void expand(unsigned new_size, heap_t *heap)
 {
 DebugGotoXY(0,20);
 DebugPrintf("expanding to %x", new_size);
@@ -115,7 +90,7 @@ DebugPrintf("expanding to %x", new_size);
     heap->end_address = heap->start_address+new_size;
 }
 
-unsigned contract(unsigned new_size, heap_t *heap)
+static unsigned contract(unsigned new_size, heap_t *heap)
 {
     // Sanity check.
     ASSERT(new_size < heap->end_address-heap->start_address);
@@ -142,8 +117,8 @@ unsigned contract(unsigned new_size, heap_t *heap)
     heap->end_address = heap->start_address + new_size;
     return new_size;
 }
-unsigned bla = 0;
-int find_smallest_hole(unsigned size, char page_align, heap_t *heap)
+static unsigned bla = 0;
+static int find_smallest_hole(unsigned size, char page_align, heap_t *heap)
 {
 bla++;
 DebugGotoXY(50, 13);
@@ -187,44 +162,7 @@ static char header_t_less_than(void*a, void *b)
     return (((header_t*)a)->size < ((header_t*)b)->size)?1:0;
 }
 
-heap_t *create_heap(unsigned start, unsigned end_addr, unsigned max, char supervisor, char readonly)
-{
-    heap_t *heap = (heap_t*)kmalloc(sizeof(heap_t));
-
-    // All our assumptions are made on startAddress and endAddress being page-aligned.
-    ASSERT(start%0x1000 == 0);
-    ASSERT(end_addr%0x1000 == 0);
-    
-    // Initialise the index.
-    heap->index = place_sorted_array( (void*)start, HEAP_INDEX_SIZE, &header_t_less_than);
-    
-    // Shift the start address forward to resemble where we can start putting data.
-    start += sizeof(type_t)*HEAP_INDEX_SIZE;
-
-    // Make sure the start address is page-aligned.
-    if ((start & 0xFFFFF000) != 0)
-    {
-        start &= 0xFFFFF000;
-        start += 0x1000;
-    }
-    // Write the start, end and max addresses into the heap structure.
-    heap->start_address = start;
-    heap->end_address = end_addr;
-    heap->max_address = max;
-    heap->supervisor = supervisor;
-    heap->readonly = readonly;
-
-    // We start off with one large hole in the index.
-    header_t *hole = (header_t *)start;
-    hole->size = end_addr-start;
-    hole->magic = HEAP_MAGIC;
-    hole->is_hole = 1;
-    insert_sorted_array((void*)hole, &heap->index);     
-
-    return heap;
-}
-
-void *alloc(unsigned size, char page_align, heap_t *heap)
+static void *alloc(unsigned size, char page_align, heap_t *heap)
 {
 
     // Make sure we take the size of header/footer into account.
@@ -351,6 +289,45 @@ DebugPrintf("no hole");
     return (void *) ( (unsigned)block_header+sizeof(header_t) );
 }
 
+// ************************************ Public ***********************************
+
+heap_t *create_heap(unsigned start, unsigned end_addr, unsigned max, char supervisor, char readonly)
+{
+    heap_t *heap = (heap_t*)kmalloc(sizeof(heap_t));
+
+    // All our assumptions are made on startAddress and endAddress being page-aligned.
+    ASSERT(start%0x1000 == 0);
+    ASSERT(end_addr%0x1000 == 0);
+    
+    // Initialise the index.
+    heap->index = place_sorted_array( (void*)start, HEAP_INDEX_SIZE, &header_t_less_than);
+    
+    // Shift the start address forward to resemble where we can start putting data.
+    start += sizeof(type_t)*HEAP_INDEX_SIZE;
+
+    // Make sure the start address is page-aligned.
+    if ((start & 0xFFFFF000) != 0)
+    {
+        start &= 0xFFFFF000;
+        start += 0x1000;
+    }
+    // Write the start, end and max addresses into the heap structure.
+    heap->start_address = start;
+    heap->end_address = end_addr;
+    heap->max_address = max;
+    heap->supervisor = supervisor;
+    heap->readonly = readonly;
+
+    // We start off with one large hole in the index.
+    header_t *hole = (header_t *)start;
+    hole->size = end_addr-start;
+    hole->magic = HEAP_MAGIC;
+    hole->is_hole = 1;
+    insert_sorted_array((void*)hole, &heap->index);     
+
+    return heap;
+}
+
 void free(void *p, heap_t *heap)
 {
     // Exit gracefully for null pointers.
@@ -439,10 +416,6 @@ void free(void *p, heap_t *heap)
 
 }
 
-//============================================================================
-//    INTERFACE FUNCTIONS
-//============================================================================
-
 void kfree(void *p)
 {
     free(p, kheap);
@@ -472,11 +445,8 @@ unsigned kmalloc(unsigned size)
 	return kmalloc_int(size, 0, 0);
 }
 
-//============================================================================
-//    INTERFACE CLASS BODIES
-//============================================================================
 //****************************************************************************
 //**
-//**    END[kmalloc.cpp]
+//**    END[kmalloc.c]
 //**
 //****************************************************************************

@@ -9,7 +9,7 @@
 #include "DebugDisplay.h"
 #include "panic.h"
 
-const char* sickpc = " \
+static const char* sickpc = " \
                                _______      \n\
                                |.-----.|    \n\
                                ||x . x||    \n\
@@ -19,7 +19,7 @@ const char* sickpc = " \
                              |:::::::::::|\\ \n\
                              `-=========-`()\n\
                                 G. O. S.\n\n";
-const char* panic="Kernel panic:\n\n";
+static const char* panic="Kernel panic:\n\n";
 
 void kernel_panic (const char* fmt, ...) {
 
