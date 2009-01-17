@@ -94,10 +94,12 @@ int kmain (struct multiboot_info* bootinfo) {
         i++;
     }*/
 
+	unsigned blubb = 0;
 	for(;;) {
-		unsigned bla = kmalloc(1);
+		unsigned bla = kmalloc(4096);
+		blubb++;
 		DebugGotoXY (50,10);
-		DebugPrintf("%x", bla);
+		DebugPrintf("%x - %u", bla, blubb);
 	}
 
 	return 0;

@@ -20,7 +20,7 @@
 #define OFFSET_FROM_BIT(a) (a%(8*4))
 
 
-extern unsigned placement_address;
+extern uint32_t placement_address;
 extern heap_t *kheap;
 
 
@@ -33,43 +33,48 @@ page_directory_t *kernel_directory=0;
 static page_directory_t *current_directory=0;
 
 // A bitset of frames - used or free.
-static unsigned *frames;
-static unsigned nframes;
+static uint32_t *frames;
+static uint32_t nframes;
+
+static void set_frame(uint32_t frame_addr);
+static void clear_frame(uint32_t frame_addr);
+static uint32_t test_frame(uint32_t frame_addr);
+static uint32_t first_frame();
 
 
 // *********************************** Private ***********************************
 
 // Set a bit in the frames bitset
-static void set_frame(unsigned frame_addr)
+static void set_frame(uint32_t frame_addr)
 {
-   unsigned frame = frame_addr/0x1000;
-   unsigned idx = INDEX_FROM_BIT(frame);
-   unsigned off = OFFSET_FROM_BIT(frame);
+   uint32_t frame = frame_addr/0x1000;
+   uint32_t idx = INDEX_FROM_BIT(frame);
+   uint32_t off = OFFSET_FROM_BIT(frame);
    frames[idx] |= (0x1 << off);
 }
 
 // Clear a bit in the frames bitset
-static void clear_frame(unsigned frame_addr)
+static void clear_frame(uint32_t frame_addr)
 {
-   unsigned frame = frame_addr/0x1000;
-   unsigned idx = INDEX_FROM_BIT(frame);
-   unsigned off = OFFSET_FROM_BIT(frame);
+   uint32_t frame = frame_addr/0x1000;
+   uint32_t idx = INDEX_FROM_BIT(frame);
+   uint32_t off = OFFSET_FROM_BIT(frame);
    frames[idx] &= ~(0x1 << off);
 }
 
 // Test if a bit is set.
-static unsigned test_frame(unsigned frame_addr)
+static uint32_t test_frame(uint32_t frame_addr)
 {
-   unsigned frame = frame_addr/0x1000;
-   unsigned idx = INDEX_FROM_BIT(frame);
-   unsigned off = OFFSET_FROM_BIT(frame);
+   uint32_t frame = frame_addr/0x1000;
+   uint32_t idx = INDEX_FROM_BIT(frame);
+   uint32_t off = OFFSET_FROM_BIT(frame);
    return (frames[idx] & (0x1 << off));
 }
 
 // Find the first free frame.
-static unsigned first_frame()
+static uint32_t first_frame()
 {
-   unsigned i, j;
+   uint32_t i, j;
    for (i = 0; i < INDEX_FROM_BIT(nframes); i++)
    {
        if (frames[i] != 0xFFFFFFFF) // nothing free, exit early.
@@ -77,18 +82,59 @@ static unsigned first_frame()
            // at least one bit is free here.
            for (j = 0; j < 32; j++)
            {
-               unsigned toTest = 0x1 << j;
+               uint32_t toTest = 0x1 << j;
                if ( !(frames[i]&toTest) )
                {
+DebugGotoXY(20, 20);
+DebugPrintf("returning: %u", i*4*8+j);
                    return i*4*8+j;
                }
            }
        }
    }
-
+DebugGotoXY(10, 20);
+DebugPrintf("nothing found?");
    //Make the compiler shut up
-   return 0;
-} 
+   //return -1;
+}
+
+// Allocate a frame.
+void alloc_frame(page_t *page, int is_kernel, int is_writeable)
+{
+    if (page->frame != 0)
+    {
+        return;
+    }
+    else
+    {
+        uint32_t idx = first_frame();
+        if (idx == (uint32_t)-1)
+        {
+            // PANIC! no free frames!!
+			kernel_panic("No more free frames for allocation left");
+        }
+        set_frame(idx*0x1000);
+        page->present = 1;
+        page->rw = (is_writeable)?1:0;
+        page->user = (is_kernel)?0:1;
+        page->frame = idx;
+    }
+}
+
+// Function to deallocate a frame.
+void free_frame(page_t *page)
+{
+    uint32_t frame;
+    if (!(frame=page->frame))
+    {
+        return;
+    }
+    else
+    {
+        clear_frame(frame);
+        page->frame = 0x0;
+    }
+}
 
 
 // ************************************ Public ***********************************
@@ -97,19 +143,20 @@ static unsigned first_frame()
 void paging_initialize()
 {
     // The size of physical memory. For the moment we 
-    // assume it is 16MB big.
+    // assume it is 64MB big.
     // TODO: add real memory size
-    unsigned mem_end_page = 0x1000000;
+    uint32_t mem_end_page = 0x4000000;
     
 	// calculate number of frames we need to cover the whole address space (each frame 4kb)
     nframes = mem_end_page / 0x1000;
 
 	// allocate bitfield for all frames
-    frames = (unsigned*)kmalloc(INDEX_FROM_BIT(nframes));
+    frames = (uint32_t*)kmalloc(INDEX_FROM_BIT(nframes));
     memset(frames, 0, INDEX_FROM_BIT(nframes));
     
     // allocate memory for a page directory used by the kernel
     kernel_directory = (page_directory_t*)kmalloc_a(sizeof(page_directory_t));
+	memset(kernel_directory, 0, sizeof(page_directory_t));
     current_directory = kernel_directory;
 
     // Map some pages in the kernel heap area.
@@ -117,7 +164,7 @@ void paging_initialize()
     // to be created where necessary. We can't allocate frames yet because they
     // they need to be identity mapped first below, and yet we can't increase
     // placement_address between identity mapping and enabling the heap!
-    unsigned i = 0;
+    uint32_t i = 0;
     for (i = KHEAP_START; i < KHEAP_START+KHEAP_INITIAL_SIZE; i += 0x1000)
         get_page(i, 1, kernel_directory);
 
@@ -157,27 +204,28 @@ void switch_page_directory(page_directory_t *dir)
 {
     current_directory = dir;
     asm volatile("mov %0, %%cr3":: "r"(&dir->tablesPhysical));
-    unsigned cr0;
+    uint32_t cr0;
     asm volatile("mov %%cr0, %0": "=r"(cr0));
     cr0 |= 0x80000000; // Enable paging!
     asm volatile("mov %0, %%cr0":: "r"(cr0));
 }
 
 // Get a page from a page directory or assign it (make = 1)
-page_t *get_page(unsigned address, int make, page_directory_t *dir)
+page_t *get_page(uint32_t address, int make, page_directory_t *dir)
 {
     // Turn the address into an index.
     address /= 0x1000;
     // Find the page table containing this address.
-    unsigned table_idx = address / 1024;
+    uint32_t table_idx = address / 1024;
     if (dir->tables[table_idx]) // If this table is already assigned
     {
         return &dir->tables[table_idx]->pages[address%1024];
     }
     else if(make)
     {
-        unsigned tmp;
+        uint32_t tmp;
         dir->tables[table_idx] = (page_table_t*)kmalloc_ap(sizeof(page_table_t), &tmp);
+		memset(dir->tables[table_idx], 0, 0x1000);
         dir->tablesPhysical[table_idx] = tmp | 0x7; // PRESENT, RW, US.
         return &dir->tables[table_idx]->pages[address%1024];
     }
@@ -187,49 +235,11 @@ page_t *get_page(unsigned address, int make, page_directory_t *dir)
     }
 }
 
-// Allocate a frame.
-void alloc_frame(page_t *page, int is_kernel, int is_writeable)
-{
-    if (page->frame != 0)
-    {
-        return;
-    }
-    else
-    {
-        unsigned idx = first_frame();
-        if (idx == (unsigned)-1)
-        {
-            // PANIC! no free frames!!
-			kernel_panic("No more free frames for allocation left");
-        }
-        set_frame(idx*0x1000);
-        page->present = 1;
-        page->rw = (is_writeable)?1:0;
-        page->user = (is_kernel)?0:1;
-        page->frame = idx;
-    }
-}
-
-// Function to deallocate a frame.
-void free_frame(page_t *page)
-{
-    unsigned frame;
-    if (!(frame=page->frame))
-    {
-        return;
-    }
-    else
-    {
-        clear_frame(frame);
-        page->frame = 0x0;
-    }
-}
-
 //void page_fault(void)
 //{
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
-    /*unsigned faulting_address;
+    /*uint32_t faulting_address;
     asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
     
     // The error code gives us details of what happened.
