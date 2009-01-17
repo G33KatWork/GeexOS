@@ -7,7 +7,8 @@ STARTTIME := $(shell date +%s)
 TARGET = kernel
 
 # List C++ source files here.
-SOURCES =	kernel/DebugDisplay.cpp \
+SOURCES =	kernel/assert.cpp \
+			kernel/DebugDisplay.cpp \
 			kernel/entry.cpp \
 			kernel/main.cpp \
 			kernel/exception.cpp \

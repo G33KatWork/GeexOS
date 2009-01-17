@@ -13,6 +13,7 @@
 #include "paging.h"#include "kheap.h"
 #include "fs.h"
 #include "initrd.h"
+#include "assert.h"
 
 #include "debugIrqHandler.h"
 
@@ -23,6 +24,7 @@ void setupDebugHandler();
 int kmain (multiboot_info* bootinfo) {
 	hal_initialize ();
 
+	ASSERT(bootinfo->m_modsCount > 0);
 	unsigned initrd_location = *((unsigned*)bootinfo->m_modsAddr);
 	unsigned initrd_end = *(unsigned*)(bootinfo->m_modsAddr+4);
 	// Don't trample our module with placement accesses, please!

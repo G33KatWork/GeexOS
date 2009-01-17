@@ -57,6 +57,16 @@ int vsprintf(char *str, const char *format, va_list ap) {
 						break;
 					}
 
+					case 'u': {
+						int c = va_arg (ap, int);
+						char s[32]={0};
+						itoa (c, 10, s);
+						strcpy (&str[loc], s);
+						loc+= strlen(s) - 2;
+						i++;		// go to next character
+						break;
+					}
+
 					/*** display in hex ***/
 					case 'X':
 					case 'x': {

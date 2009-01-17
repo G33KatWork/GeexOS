@@ -10,6 +10,7 @@
 
 #include "kheap.h"
 #include "paging.h"
+#include "assert.h"
 #include "DebugDisplay.h"
 
 //============================================================================
@@ -66,10 +67,8 @@ unsigned kmalloc_int(unsigned size, int align, unsigned *phys)
     }
     else
     {
-		// This will eventually call malloc() on the kernel heap.
-   	 	// For now, though, we just assign memory at placement_address
-    	// and increment it by sz. Even when we've coded our kernel
-    	// heap, this will be useful for use before the heap is initialised.
+		// Assign memory at placement_address
+		// it by sz if kernel heap is not yet initialised
     	if (align == 1 && (placement_address & 0xFFFFF000) )
     	{
         	// Align the placement address;
@@ -91,7 +90,7 @@ void expand(unsigned new_size, heap_t *heap)
 DebugGotoXY(0,20);
 DebugPrintf("expanding to %x", new_size);
     // Sanity check.
-    //ASSERT(new_size > heap->end_address - heap->start_address);
+    ASSERT(new_size > heap->end_address - heap->start_address);
 
     // Get the nearest following page boundary.
     if ((new_size&0xFFFFF000) != 0)
@@ -101,7 +100,7 @@ DebugPrintf("expanding to %x", new_size);
     }
 
     // Make sure we are not overreaching ourselves.
-    //ASSERT(heap->start_address+new_size <= heap->max_address);
+    ASSERT(heap->start_address+new_size <= heap->max_address);
 
     // This should always be on a page boundary.
     unsigned old_size = heap->end_address-heap->start_address;
@@ -119,7 +118,7 @@ DebugPrintf("expanding to %x", new_size);
 unsigned contract(unsigned new_size, heap_t *heap)
 {
     // Sanity check.
-    //ASSERT(new_size < heap->end_address-heap->start_address);
+    ASSERT(new_size < heap->end_address-heap->start_address);
 
     // Get the nearest following page boundary.
     if (new_size&0x1000)
@@ -193,8 +192,8 @@ heap_t *create_heap(unsigned start, unsigned end_addr, unsigned max, char superv
     heap_t *heap = (heap_t*)kmalloc(sizeof(heap_t));
 
     // All our assumptions are made on startAddress and endAddress being page-aligned.
-    //ASSERT(start%0x1000 == 0);
-    //ASSERT(end_addr%0x1000 == 0);
+    ASSERT(start%0x1000 == 0);
+    ASSERT(end_addr%0x1000 == 0);
     
     // Initialise the index.
     heap->index = place_sorted_array( (void*)start, HEAP_INDEX_SIZE, &header_t_less_than);
@@ -363,8 +362,8 @@ void free(void *p, heap_t *heap)
     footer_t *footer = (footer_t*) ( (unsigned)header + header->size - sizeof(footer_t) );
 
     // Sanity checks.
-    //ASSERT(header->magic == HEAP_MAGIC);
-    //ASSERT(footer->magic == HEAP_MAGIC);
+    ASSERT(header->magic == HEAP_MAGIC);
+    ASSERT(footer->magic == HEAP_MAGIC);
 
     // Make us a hole.
     header->is_hole = 1;
@@ -402,7 +401,7 @@ void free(void *p, heap_t *heap)
             iterator++;
 
         // Make sure we actually found the item.
-        //ASSERT(iterator < heap->index.size);
+        ASSERT(iterator < heap->index.size);
         // Remove it.
         remove_sorted_array(iterator, &heap->index);
     }
