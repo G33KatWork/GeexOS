@@ -127,15 +127,15 @@ void  page_fault (unsigned int err, unsigned int eip, unsigned int cs, unsigned 
 	asm volatile("mov %%cr2, %0" : "=r" (faultAddr));
 
 	// The error code gives us details of what happened.
-    int present   = !(err & 0x1); // Page not present
-    int rw = err & 0x2;           // Write operation?
-    int us = err & 0x4;           // Processor was in user-mode?
-    int reserved = err & 0x8;     // Overwritten CPU-reserved bits of page entry?
-    int id = err & 0x10;          // Caused by an instruction fetch?
+	int present   = !(err & 0x1); // Page not present
+	int rw = err & 0x2;           // Write operation?
+	int us = err & 0x4;           // Processor was in user-mode?
+	int reserved = err & 0x8;     // Overwritten CPU-reserved bits of page entry?
+	int id = err & 0x10;          // Caused by an instruction fetch?
 
 	kernel_panic ("Page Fault at 0x%x:0x%x refrenced memory at 0x%x\npr: %x\nrw: %x\nus: %x\nrs: %x\nid: %x", cs, eip, faultAddr, present, rw, us, reserved, id);
 	
-	for (;;);
+	for (;;) ;
 }
 
 // Floating Point Unit (FPU) error

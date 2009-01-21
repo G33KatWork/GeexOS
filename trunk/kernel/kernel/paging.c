@@ -95,7 +95,7 @@ DebugPrintf("returning: %u", i*4*8+j);
 DebugGotoXY(10, 20);
 DebugPrintf("nothing found?");
    //Make the compiler shut up
-   //return -1;
+   return -1;
 }
 
 // Allocate a frame.

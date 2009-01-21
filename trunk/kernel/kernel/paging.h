@@ -64,7 +64,10 @@ void switch_page_directory(page_directory_t *new_directory);
 page_t *get_page(uint32_t address, int32_t make, page_directory_t *dir);
 
 // Handler for page faults. See exception.h
-extern void page_fault (unsigned int cs, unsigned int err, unsigned int eip, unsigned int eflags);
+extern void page_fault (unsigned int cs, unsigned int err, unsigned int eip, unsigned int eflags);
+void alloc_frame(page_t *page, int is_kernel, int is_writeable);
+void free_frame(page_t *page);
+
 //****************************************************************************
 //**
 //**    END paging.h

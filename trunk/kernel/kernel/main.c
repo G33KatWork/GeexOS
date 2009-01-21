@@ -52,8 +52,8 @@ int kmain (struct multiboot_info* bootinfo) {
 	setvect (19,(void (*)(void))simd_fpu_fault);
 	setupDebugHandler();
 	
-	uint32_t memSize = bootinfo->m_memoryLo + bootinfo->m_memoryHi;
-	uint32_t multibootFlags = bootinfo->m_flags;
+	//uint32_t memSize = bootinfo->m_memoryLo + bootinfo->m_memoryHi;
+	//uint32_t multibootFlags = bootinfo->m_flags;
 
 	/*DebugGotoXY (0,0);
 	DebugSetColor (0x70);

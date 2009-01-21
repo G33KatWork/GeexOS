@@ -44,7 +44,7 @@ BOCHS = /usr/bin/bochs
 QEMU = qemu
 
 # C compiler flags
-CFLAGS += -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
+CFLAGS += -g -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
 CFLAGS += -Wall #-Wextra -Werror
 CFLAGS += -DARCH_X86 -D_DEBUG
 CFLAGS += $(addprefix -I,$(INCLUDES))
@@ -56,7 +56,7 @@ CXXFLAGS += -DARCH_X86 -D_DEBUG #-fasm-blocks
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
 # NASM flags
-ASFLAGS = -f elf
+ASFLAGS = -f elf -g
 
 # Linker flags
 LDFLAGS = -T linker.ld
@@ -81,7 +81,7 @@ toolchain: $(CC)
 
 $(CC):
 	$(call cmd_msg,SUBDIR,toolchain)
-	$(Q)cd toolchain; make all
+	$(call call_submake,toolchain,all)
 
 # Create bootfloppy
 bootfloppy: all mkinitrd floppy.img
@@ -104,7 +104,7 @@ initrd.img:
 
 utils/geninitramfs:
 	$(call cmd_msg,SUBDIR,utils)
-	$(Q)cd utils; make all
+	$(call call_submake,utils,all)
 
 # Start bochs
 bochs: bootfloppy
@@ -117,7 +117,7 @@ bochsdebug: bootfloppy
 	$(Q)$(BOCHS) -f resources/bochsrcgdb.txt -q $(QOUTPUT) &
 	$(Q)sleep 2
 	$(call cmd_msg,GDB,Attaching debugger)
-	$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
+	#$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
 
 # Start qemu
 qemu: bootfloppy
@@ -126,10 +126,9 @@ qemu: bootfloppy
 
 qemudebug: bootfloppy
 	$(call cmd_msg,QEMU,floppy.img)
-	$(Q)$(QEMU) -fda floppy.img -s $(QOUTPUT) &
-	$(Q)sleep 2
-	$(call cmd_msg,GDB,Attaching debugger)
-	$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
+	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
+	$(Q)$(QEMU) -fda floppy.img -s -S $(QOUTPUT)
+	#$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
 
 # Cleaning
 clean:
@@ -140,12 +139,12 @@ clean:
 	$(Q)rm -f bochsout.txt
 	$(Q)rm -f source
 	$(Q)rm -Rf tmp
-	$(Q)cd toolchain; make clean
-	$(Q)cd utils; make clean
+	$(call call_submake,toolchain,clean)
+	$(call call_submake,utils,clean)
 
 distclean: clean
-	$(Q)cd toolchain; make distclean
-	$(Q)cd toolchain; make toolchain-clean
+	$(call call_submake,toolchain,distclean)
+	$(call call_submake,toolchain,toolchain-clean)
 
 # Compile cpp files
 %.o: %.cpp
