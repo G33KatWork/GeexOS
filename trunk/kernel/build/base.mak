@@ -57,6 +57,10 @@ SRC                 := $(shell cd $(SRC); pwd)
 # Grab the toolchain information.
 include $(SRC)/build/toolchain.mak
 
+# FS-Type for floppy image
+FLOPPYTYPE			:= fat
+#FLOPPYTYPE			:= ext2
+
 ############################
 # Host build configuration #
 ############################

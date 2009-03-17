@@ -86,19 +86,31 @@ $(CC):
 # Create bootfloppy
 bootfloppy: all mkinitrd floppy.img
 
-floppy.img:
+floppy.img: $(TARGET).elf initrd.img
 	$(call cmd_msg,MKFLOPPY,floppy.img)
 	$(Q)sudo mkdir tmp
-	$(Q)sudo cp resources/floppy.img .
+	$(Q)sudo cp resources/floppy.$(FLOPPYTYPE).img ./floppy.img
+	
+ifeq ($(shell uname),Darwin)
+	$(Q)sudo hdiutil attach floppy.img -mountpoint tmp -readwrite
+else
 	$(Q)sudo mount -o loop floppy.img tmp
+endif
+	
 	$(Q)sudo cp kernel.elf tmp/kernel
 	$(Q)sudo cp initrd.img tmp/initrd.img
+	
+ifeq ($(shell uname),Darwin)
+	$(Q)sudo hdiutil detach tmp
+else
 	$(Q)sudo umount tmp
+endif
+	
 	$(Q)sudo rm -Rf tmp
 
 mkinitrd: utils/geninitramfs initrd.img
 
-initrd.img:
+initrd.img: utils/geninitramfs
 	$(call cmd_msg,GENINITRD,initrd.img)
 	$(Q)utils/geninitramfs resources/test.txt test.txt resources/test1.txt test1.txt $(QOUTPUT)
 
