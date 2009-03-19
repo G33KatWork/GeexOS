@@ -1,61 +1,22 @@
-/*
-=========================================================================
-	main.cpp
-
-	main kernel program
-=========================================================================
-*/
-
-#include <hal.h>
+#include "arch/x86/gdt.h"
+#include "arch/x86/paging.h"
 #include <bootinfo.h>
 #include "DebugDisplay.h"
-#include "exception.h"
-#include "paging.h"#include "kheap.h"
-#include "fs.h"
-#include "initrd.h"
-#include "assert.h"
 
-#include "debugIrqHandler.h"
 void setupDebugHandler();
 
-int kmain (struct multiboot_info* bootinfo) {
-	hal_initialize ();
-
-	ASSERT(bootinfo->m_modsCount > 0);
-	unsigned initrd_location = *((unsigned*)bootinfo->m_modsAddr);
-	unsigned initrd_end = *(unsigned*)(bootinfo->m_modsAddr+4);
-	// Don't trample our module with placement accesses, please!
-	placement_address = initrd_end;
+int kmain (struct multiboot_info* bootinfo)
+{	
+	init_paging();
+	gdt_install();
 	
 	DebugClrScr (0x18);
 	DebugSetColor (0x19);
-	paging_initialize();
 	
-	//! install our exception handlers
-	setvect (0,(void (*)(void))divide_by_zero_fault);
-	setvect (1,(void (*)(void))single_step_trap);
-	setvect (2,(void (*)(void))nmi_trap);
-	setvect (3,(void (*)(void))breakpoint_trap);
-	setvect (4,(void (*)(void))overflow_trap);
-	setvect (5,(void (*)(void))bounds_check_fault);
-	setvect (6,(void (*)(void))invalid_opcode_fault);
-	setvect (7,(void (*)(void))no_device_fault);
-	setvect (8,(void (*)(void))double_fault_abort);
-	setvect (10,(void (*)(void))invalid_tss_fault);
-	setvect (11,(void (*)(void))no_segment_fault);
-	setvect (12,(void (*)(void))stack_fault);
-	setvect (13,(void (*)(void))general_protection_fault);
-	//setvect (14,(void (*)(void))page_fault);
-	setvect (16,(void (*)(void))fpu_fault);
-	setvect (17,(void (*)(void))alignment_check_fault);
-	setvect (18,(void (*)(void))machine_check_abort);
-	setvect (19,(void (*)(void))simd_fpu_fault);
-	setupDebugHandler();
-	
-	//uint32_t memSize = bootinfo->m_memoryLo + bootinfo->m_memoryHi;
-	//uint32_t multibootFlags = bootinfo->m_flags;
+	uint32_t memSize = bootinfo->m_memoryLo + bootinfo->m_memoryHi;
+	uint32_t multibootFlags = bootinfo->m_flags;
 
-	/*DebugGotoXY (0,0);
+	DebugGotoXY (0,0);
 	DebugSetColor (0x70);
 	DebugPrintf (" GeexOs Kernel preparing to load...                                             ");
 	DebugGotoXY (0,1);
@@ -64,48 +25,15 @@ int kmain (struct multiboot_info* bootinfo) {
 	DebugPrintf (" Installed memory: %iKB\n", memSize);
 	DebugPrintf (" Multiboot flags: %x\n", multibootFlags);
 	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->m_cmdLine));
-	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());*/
+	//DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
 
-	fs_root = initialise_initrd(initrd_location);
-
-	// list the contents of /
-    /*unsigned i = 0;
-    struct dirent *node = 0;
-    while ( (node = readdir_fs(fs_root, i)) != 0)
-    {
-        DebugPrintf("Found file %s", node->name);
-        fs_node_t *fsnode = finddir_fs(fs_root, node->name);
-
-        if ((fsnode->flags&0x7) == FS_DIRECTORY)
-        {
-            DebugPrintf("\n\t(directory)\n");
-        }
-        else
-        {
-            DebugPrintf("\n\t contents: \"");
-            char buf[256];
-            unsigned sz = read_fs(fsnode, 0, 256, buf);
-            unsigned j;
-            for (j = 0; j < sz; j++)
-                DebugPutc(buf[j]);
-            
-            DebugPrintf("\"\n");
-        }
-        i++;
-    }*/
-
-	unsigned blubb = 0;
 	for(;;) {
-		unsigned bla = kmalloc(4096);
-		blubb++;
-		DebugGotoXY (50,10);
-		DebugPrintf("%x - %u", bla, blubb);
 	}
 
 	return 0;
 }
 
-void setupDebugHandler() {
+/*void setupDebugHandler() {
 	setvect (9,(void (*)(void))irq9);
 	setvect (15,(void (*)(void))irq15);
 	setvect (16,(void (*)(void))irq16);
@@ -344,5 +272,5 @@ void setupDebugHandler() {
 	setvect (253,(void (*)(void))irq253);
 	setvect (254,(void (*)(void))irq254);
 	setvect (255,(void (*)(void))irq255);
-}
+}*/
 

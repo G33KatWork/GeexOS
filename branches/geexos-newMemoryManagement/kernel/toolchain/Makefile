@@ -5,6 +5,7 @@ TOOLCHAIN_BUILDDIR  := $(TOOLCHAIN_ROOTDIR)/build-tmp
 
 include $(SRC)/toolchain/binutils.mak
 include $(SRC)/toolchain/gcc.mak
+include $(SRC)/toolchain/gdb.mak
 
 clean:
 	$(Q)if [ -n "$(TOOLCHAIN_BUILDDIR)" -a -d "$(TOOLCHAIN_BUILDDIR)" ]; then \

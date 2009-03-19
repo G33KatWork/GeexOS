@@ -7,39 +7,26 @@ STARTTIME := $(shell date +%s)
 TARGET = kernel
 
 # List C source files here.
-CCSOURCES =	kernel/assert.c \
+CCSOURCES = kernel/arch/x86/gdt.c \
+			kernel/arch/x86/paging.c \
 			kernel/DebugDisplay.c \
 			kernel/entry.c \
 			kernel/main.c \
-			kernel/exception.c \
-			kernel/panic.c \
-			kernel/paging.c \
-			kernel/sortedArray.c \
-			kernel/kheap.c \
-			kernel/fs.c \
-			kernel/initrd.c \
 			lib/string.c \
-			lib/stdio.c \
-			hal/cpu.c \
-			hal/gdt.c \
-			hal/hal.c \
-			hal/idt.c \
-			hal/pic.c \
-			hal/pit.c
+			lib/stdio.c 
 
 # List C++ source files here
 CXXSOURCES =
 
 # List Assembler to be assembled with NASM here
-ASOURCES =	kernel/start.S \
-			hal/irqWrapper.S
+ASOURCES =	kernel/start.S
 
 # Addiotional include paths to consider
 INCLUDES =	inc
 
 #Programs
-#BOCHS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
-#BOCHS = /Users/andy/Documents/devstuff/oskrempel/os/kernel/resources/bochs.app/Contents/MacOS/bochs
+#BOCHSMACOS = resources/bochs.app/Contents/MacOS/bochs
+BOCHSMACOS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
 BOCHS = /usr/bin/bochs
 QEMU = qemu
 
@@ -90,24 +77,25 @@ floppy.img: $(TARGET).elf initrd.img
 	$(call cmd_msg,MKFLOPPY,floppy.img)
 	$(Q)sudo mkdir tmp
 	$(Q)sudo cp resources/floppy.$(FLOPPYTYPE).img ./floppy.img
-	
+
 ifeq ($(shell uname),Darwin)
 	$(Q)sudo hdiutil attach floppy.img -mountpoint tmp -readwrite
 else
 	$(Q)sudo mount -o loop floppy.img tmp
 endif
-	
+
 	$(Q)sudo cp kernel.elf tmp/kernel
 	$(Q)sudo cp initrd.img tmp/initrd.img
-	
+
 ifeq ($(shell uname),Darwin)
 	$(Q)sudo hdiutil detach tmp
 else
 	$(Q)sudo umount tmp
 endif
-	
+
 	$(Q)sudo rm -Rf tmp
 
+#Create initrd
 mkinitrd: utils/geninitramfs initrd.img
 
 initrd.img: utils/geninitramfs
@@ -121,12 +109,20 @@ utils/geninitramfs:
 # Start bochs
 bochs: bootfloppy
 	$(call cmd_msg,BOCHS,floppy.img)
+ifeq ($(shell uname),Darwin)
+	$(Q)$(BOCHSMACOS) -f resources/bochsrc.macos.txt -q $(QOUTPUT)
+else
 	$(Q)$(BOCHS) -f resources/bochsrc.txt -q $(QOUTPUT)
+endif
 
 # Start bochs with debugging support
 bochsdebug: bootfloppy
 	$(call cmd_msg,BOCHSDBG,floppy.img)
-	$(Q)$(BOCHS) -f resources/bochsrcgdb.txt -q $(QOUTPUT) &
+ifeq ($(shell uname),Darwin)
+	$(Q)$(BOCHSMACOS) -f resources/bochsrcgdb.macos.txt -q $(QOUTPUT)
+else
+	$(Q)$(BOCHS) -f resources/bochsrcgdb.txt -q $(QOUTPUT)
+endif
 	$(Q)sleep 2
 	$(call cmd_msg,GDB,Attaching debugger)
 	#$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
