@@ -1,7 +1,17 @@
 #include "gdt.h"
 #include <string.h>
 
-void gdt_set_descriptor(uint32_t i, uint64_t base, uint64_t limit, uint8_t access, uint8_t granularity)
+/**
+ * all the gdt entries itself
+**/
+struct gdt_entry gdt[I86_GDT_ENTRY_COUNT];
+
+/**
+ * the gdt pointer itself (referenced by gdt_flush() in start.S)
+**/
+struct gdt_ptr gp;
+
+void gdt_set_descriptor(uint16_t i, uint64_t base, uint64_t limit, uint8_t access, uint8_t granularity)
 {
 	if (i > I86_GDT_ENTRY_COUNT)
 		return;
@@ -25,7 +35,7 @@ void gdt_install()
 {
 	//FIXME: I86_GDT_ENTRY_COUNT * 2????
 	gp.size = (sizeof(struct gdt_entry) * I86_GDT_ENTRY_COUNT) - 1;
-	gp.offset = (unsigned int)&gdt;
+	gp.offset = (uint32_t)&gdt;
 	
 	gdt_set_descriptor(0, 0, 0, 0, 0);
 	gdt_set_descriptor (1,0,0xffffffff,

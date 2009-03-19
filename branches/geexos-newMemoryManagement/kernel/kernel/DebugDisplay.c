@@ -134,9 +134,9 @@ int DebugPrintf (const char* str, ...) {
 					/*** address of ***/
 					case 's': {
 						int* c = (int*) va_arg (args, int);
-						char str[64];
-						strcpy (str,(const char*)c);
-						DebugPuts (str);
+						char str2[64];
+						strcpy (str2,(const char*)c);
+						DebugPuts (str2);
 						i++;		// go to next character
 						break;
 					}
@@ -145,18 +145,18 @@ int DebugPrintf (const char* str, ...) {
 					case 'd':
 					case 'i': {
 						int c = va_arg (args, int);
-						char str[32]={0};
-						itoa_s (c, 10, str);
-						DebugPuts (str);
+						char str2[32]={0};
+						itoa_s (c, 10, str2);
+						DebugPuts (str2);
 						i++;		// go to next character
 						break;
 					}
 
 					case 'u': {
 						int c = va_arg (args, unsigned);
-						char str[32]={0};
-						itoa (c, 10, str);
-						DebugPuts (str);
+						char str2[32]={0};
+						itoa (c, 10, str2);
+						DebugPuts (str2);
 						i++;		// go to next character
 						break;
 					}
@@ -165,9 +165,9 @@ int DebugPrintf (const char* str, ...) {
 					case 'X':
 					case 'x': {
 						int c = va_arg (args, int);
-						char str[32]={0};
-						itoa (c,16,str);
-						DebugPuts (str);
+						char str2[32]={0};
+						itoa (c,16,str2);
+						DebugPuts (str2);
 						i++;		// go to next character
 						break;
 					}

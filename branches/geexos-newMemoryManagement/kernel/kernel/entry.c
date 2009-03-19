@@ -9,6 +9,7 @@
 #include <bootinfo.h>
 
 extern int kmain (struct multiboot_info* bootinfo);
+int entry (struct multiboot_info* bootinfo);
 
 int entry (struct multiboot_info* bootinfo)
 {

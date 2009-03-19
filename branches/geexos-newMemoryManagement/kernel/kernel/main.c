@@ -3,7 +3,8 @@
 #include <bootinfo.h>
 #include "DebugDisplay.h"
 
-void setupDebugHandler();
+void setupDebugHandler(void);
+int kmain (struct multiboot_info* bootinfo);
 
 int kmain (struct multiboot_info* bootinfo)
 {	

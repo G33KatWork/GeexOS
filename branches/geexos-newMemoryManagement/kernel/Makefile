@@ -32,7 +32,10 @@ QEMU = qemu
 
 # C compiler flags
 CFLAGS += -g -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
-CFLAGS += -Wall #-Wextra -Werror
+CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
+			-Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
+			-Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
+			-Wstrict-prototypes #-Wconversion
 CFLAGS += -DARCH_X86 -D_DEBUG
 CFLAGS += $(addprefix -I,$(INCLUDES))
 

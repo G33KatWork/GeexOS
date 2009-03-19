@@ -54,7 +54,7 @@ int vsprintf(char *str, const char *format, va_list ap) {
 					}
 
 					case 'u': {
-						int c = va_arg (ap, int);
+						unsigned int c = (unsigned int)va_arg (ap, int);
 						char s[32]={0};
 						itoa (c, 10, s);
 						strcpy (&str[loc], s);
@@ -66,7 +66,7 @@ int vsprintf(char *str, const char *format, va_list ap) {
 					/*** display in hex ***/
 					case 'X':
 					case 'x': {
-						int c = va_arg (ap, int);
+						unsigned int c = (unsigned int)va_arg (ap, int);
 						char s[32]={0};
 						itoa (c,16,s);
 						strcpy (&str[loc], s);
@@ -94,6 +94,6 @@ int vsprintf(char *str, const char *format, va_list ap) {
 		}
 	}
 
-	return i;
+	return (int)i;
 }
 

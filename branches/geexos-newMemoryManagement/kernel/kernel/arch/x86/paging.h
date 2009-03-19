@@ -22,6 +22,6 @@ unsigned long lowpagetable[1024] __attribute__ ((aligned (4096)));
  * This function initalises the page directory and the first
  * pagetable for our kernel to map it to 0xC00000000
 **/
-void init_paging();
+void init_paging(void);
 
 #endif

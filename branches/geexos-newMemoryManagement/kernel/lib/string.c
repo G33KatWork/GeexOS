@@ -47,7 +47,7 @@ void *memcpy(void *dest, const void *src, size_t count)
 }
 
 // sets count bytes of dest to val
-void *memset(void *dest, char val, size_t count)
+void *memset(void *dest, int val, size_t count)
 {
     unsigned char *temp = (unsigned char *)dest;
 	for( ; count != 0; count--, temp[count] = val);
