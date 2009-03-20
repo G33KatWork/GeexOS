@@ -2,6 +2,7 @@
 #include "arch/x86/idt.h"
 #include "arch/x86/paging.h"
 #include "arch/x86/utils.h"
+#include "arch/x86/pit.h"
 #include <bootinfo.h>
 #include "DebugDisplay.h"
 
@@ -14,6 +15,7 @@ int kmain (struct multiboot_info* bootinfo)
 	gdt_install();
 	paging_remove_lowest4MB();
 	idt_install();
+	init_pit(50);
 	
 	DebugClrScr (0x18);
 	DebugSetColor (0x19);
@@ -47,7 +49,12 @@ int kmain (struct multiboot_info* bootinfo)
 	asm volatile ("int $0x3");
 	asm volatile ("int $0x4");
 
-	for(;;) {
+	DebugGotoXY (0,20);
+	DebugPrintf(" Ticks: ");
+	for(;;)
+	{
+		DebugGotoXY (8,20);
+		DebugPrintf ("%u", get_ticks());
 	}
 
 	return 0;

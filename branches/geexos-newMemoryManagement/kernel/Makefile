@@ -12,6 +12,8 @@ CCSOURCES = kernel/arch/x86/gdt.c \
 			kernel/arch/x86/paging.c \
 			kernel/arch/x86/utils.c \
 			kernel/arch/x86/isr.c \
+			kernel/arch/x86/pic.c \
+			kernel/arch/x86/pit.c \
 			kernel/DebugDisplay.c \
 			kernel/entry.c \
 			kernel/main.c \

@@ -32,3 +32,15 @@ char* get_cpu_vendor () {
 
 	return vendor;
 }
+
+uint8_t inportb (uint16_t portid)
+{
+	uint8_t ret;
+	asm volatile("inb %1, %0" : "=a" (ret) : "dN" (portid));	
+	return ret;
+}
+
+void outportb (uint16_t portid, uint8_t value)
+{
+	asm volatile ("outb %1, %0" : : "dN" (portid), "a" (value));
+}
