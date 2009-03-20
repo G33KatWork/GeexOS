@@ -14,7 +14,8 @@
 // *********************************** Private ***********************************
 
 // video memory
-static uint16_t *video_memory = (uint16_t *)0xB8000;
+//static uint16_t *video_memory = (uint16_t *)0xB8000;
+static uint16_t *video_memory = (uint16_t *)0xC00B8000;
 
 // current position
 static uint8_t cursor_x = 0;

@@ -59,29 +59,29 @@ struct memory_region {
 typedef struct memory_region memory_region_t;
 
 struct multiboot_info {
-	uint32_t	m_flags;
-	uint32_t	m_memoryLo;
-	uint32_t	m_memoryHi;
-	uint32_t	m_bootDevice;
-	uint32_t	m_cmdLine;
-	uint32_t	m_modsCount;
-	uint32_t	m_modsAddr;
-	uint32_t	m_syms0;
-	uint32_t	m_syms1;
-	uint32_t	m_syms2;
-	uint32_t	reserved;
-	uint32_t	m_mmap_length;
-	memory_region_t*	m_mmap_addr;
-	uint32_t	m_drives_length;
-	uint32_t	m_drives_addr;
-	uint32_t	m_config_table;
-	uint32_t	m_bootloader_name;
-	uint32_t	m_apm_table;
-	uint32_t	m_vbe_control_info;
-	uint32_t	m_vbe_mode_info;
-	uint16_t	m_vbe_mode;
-	uint32_t	m_vbe_interface_addr;
-	uint16_t	m_vbe_interface_len;
+	uint32_t	flags;
+	uint32_t	mem_lower;
+	uint32_t	mem_upper;
+	uint32_t	boot_device;
+	uint32_t	cmdline;
+	uint32_t	mods_count;
+	uint32_t	mods_addr;
+	uint32_t	syms1;		// -|
+	uint32_t	syms2;		//  |--> syms
+	uint32_t	syms3;		//  |
+	uint32_t	syms4;		// -|
+	uint32_t	mmap_length;
+	uint32_t	mmap_addr;
+	uint32_t	drives_length;
+	uint32_t	drives_addr;
+	uint32_t	config_table;
+	uint32_t	boot_loader_name;
+	uint32_t	apm_table;
+	uint32_t	vbe_control_info;
+	uint32_t	vbe_mode_info;
+	uint16_t	vbe_mode;
+	uint32_t	vbe_interface_addr;
+	uint16_t	vbe_interface_len;
 }  __attribute__((packed));
 
 

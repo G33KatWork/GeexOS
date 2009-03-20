@@ -1,6 +1,16 @@
 #include "paging.h"
 
 /**
+ * The page directory for 1024 pagetables
+**/
+unsigned long kernelpagedir[1024] __attribute__ ((aligned (4096)));
+
+/**
+ * The first pagetable which will be used by the kernel
+**/
+unsigned long lowpagetable[1024] __attribute__ ((aligned (4096)));
+
+/**
  * This function fills the page directory and the page table,
  * then enables paging by putting the address of the page directory
  * into the CR3 register and setting the 31st bit into the CR0 one
@@ -36,4 +46,10 @@ void init_paging()
 			"mov %%cr0, %%eax\n"
 			"orl $0x80000000, %%eax\n"
 			"mov %%eax, %%cr0\n" :: "m" (kernelpagedirPtr));
+}
+
+void paging_remove_lowest4MB()
+{
+	//TODO: Check this...
+	kernelpagedir[0] = (unsigned long)0;
 }

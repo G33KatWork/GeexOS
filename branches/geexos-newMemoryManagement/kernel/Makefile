@@ -9,6 +9,7 @@ TARGET = kernel
 # List C source files here.
 CCSOURCES = kernel/arch/x86/gdt.c \
 			kernel/arch/x86/paging.c \
+			kernel/arch/x86/utils.c \
 			kernel/DebugDisplay.c \
 			kernel/entry.c \
 			kernel/main.c \

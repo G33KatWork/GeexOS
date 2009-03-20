@@ -1,5 +1,6 @@
 #include "arch/x86/gdt.h"
 #include "arch/x86/paging.h"
+#include "arch/x86/utils.h"
 #include <bootinfo.h>
 #include "DebugDisplay.h"
 
@@ -10,12 +11,23 @@ int kmain (struct multiboot_info* bootinfo)
 {	
 	init_paging();
 	gdt_install();
+	paging_remove_lowest4MB();
 	
 	DebugClrScr (0x18);
 	DebugSetColor (0x19);
 	
-	uint32_t memSize = bootinfo->m_memoryLo + bootinfo->m_memoryHi;
-	uint32_t multibootFlags = bootinfo->m_flags;
+	//correct pointers after paging works...
+	bootinfo = (struct multiboot_info*)((char *)bootinfo + 0xC0000000);
+	bootinfo->cmdline = bootinfo->cmdline + 0xC0000000;
+	bootinfo->mods_addr = bootinfo->mods_addr + 0xC0000000;
+	bootinfo->syms3 = bootinfo->syms3 + 0xC0000000;
+	bootinfo->mmap_addr = bootinfo->mmap_addr + 0xC0000000;
+	bootinfo->drives_addr = bootinfo->drives_addr + 0xC0000000;
+	bootinfo->apm_table = bootinfo->apm_table + 0xC0000000;
+	bootinfo->boot_loader_name = bootinfo->boot_loader_name + 0xC0000000;
+	
+	uint32_t memSize = bootinfo->mem_lower + bootinfo->mem_upper;
+	uint32_t multibootFlags = bootinfo->flags;
 
 	DebugGotoXY (0,0);
 	DebugSetColor (0x70);
@@ -25,8 +37,8 @@ int kmain (struct multiboot_info* bootinfo)
 	DebugPrintf (" GeexOS Starting Up...\n");
 	DebugPrintf (" Installed memory: %iKB\n", memSize);
 	DebugPrintf (" Multiboot flags: %x\n", multibootFlags);
-	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->m_cmdLine));
-	//DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
+	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->cmdline));
+	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
 
 	for(;;) {
 	}

@@ -39,8 +39,7 @@ through the page directory.
 arch/x86/gdt.c:
 Now that we have our paging up and running, we can use our normal GDT now, which doesn't add
 0x40000000 to all addresses automatically, since we have our MMU which translates our addresses.
-Now, after we are using a normal GDT, we could remove all the pages at 0 to 4MB from the page
-directory, since they are not needed anymore, what I haven't done yet.
+Now, after we are using a normal GDT, we can remove the lowest 4MB of pages.
 
 
 Now we have a kernel running at 0xC0000000.
@@ -49,7 +48,7 @@ Physical memory Layout:                             Virtual memory layout:
 
 |-----------|                                       |-----------| <- 0xFFFFFFFF
 |           |                                       |___________| <- 0xC0400000
-|           |                                       |           | <- again kernel and $foo
+|           |                                       |           | <- kernel and $foo
 |           |                                       |    4MB    |
 |           |                                       |___________| <- 0xC0000000
 |           |                                       |           |
@@ -57,7 +56,7 @@ Physical memory Layout:                             Virtual memory layout:
 |           |                                       |           |
 |           |                                       |           |
 |           |                                       |           |
-|-----------|                                       |-----------| <- 0x400000
-|           | <- lowest 4MB with                    |           | <- kernel and $foo
-|    4MB    |    legacy stuff and Kernel            |    4MB    |
-|___________|                                       |___________| <- 0x0
+|-----------|                                       |           |
+|           | <- lowest 4MB with                    |           |
+|    4MB    |    legacy stuff and Kernel            |           |
+|___________|                                       |___________|
