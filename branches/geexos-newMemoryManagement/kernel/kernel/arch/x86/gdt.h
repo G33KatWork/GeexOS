@@ -54,6 +54,17 @@ struct gdt_ptr
 
 
 /**
+ * all the gdt entries itself
+**/
+struct gdt_entry gdt[I86_GDT_ENTRY_COUNT];
+
+/**
+ * the gdt pointer itself (referenced by gdt_flush() in start.S)
+**/
+struct gdt_ptr gp;
+
+
+/**
  * activates the gdt in *gp, defined in start.S
 **/
 extern void gdt_flush(void);

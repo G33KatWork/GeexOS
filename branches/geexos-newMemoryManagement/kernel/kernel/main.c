@@ -1,4 +1,5 @@
 #include "arch/x86/gdt.h"
+#include "arch/x86/idt.h"
 #include "arch/x86/paging.h"
 #include "arch/x86/utils.h"
 #include <bootinfo.h>
@@ -12,6 +13,7 @@ int kmain (struct multiboot_info* bootinfo)
 	init_paging();
 	gdt_install();
 	paging_remove_lowest4MB();
+	idt_install();
 	
 	DebugClrScr (0x18);
 	DebugSetColor (0x19);
@@ -39,6 +41,11 @@ int kmain (struct multiboot_info* bootinfo)
 	DebugPrintf (" Multiboot flags: %x\n", multibootFlags);
 	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->cmdline));
 	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
+	
+	asm volatile ("sti");
+	
+	asm volatile ("int $0x3");
+	asm volatile ("int $0x4");
 
 	for(;;) {
 	}

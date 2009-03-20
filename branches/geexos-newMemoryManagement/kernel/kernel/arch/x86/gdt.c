@@ -1,16 +1,6 @@
 #include "gdt.h"
 #include <string.h>
 
-/**
- * all the gdt entries itself
-**/
-struct gdt_entry gdt[I86_GDT_ENTRY_COUNT];
-
-/**
- * the gdt pointer itself (referenced by gdt_flush() in start.S)
-**/
-struct gdt_ptr gp;
-
 void gdt_set_descriptor(uint16_t i, uint64_t base, uint64_t limit, uint8_t access, uint8_t granularity)
 {
 	if (i > I86_GDT_ENTRY_COUNT)

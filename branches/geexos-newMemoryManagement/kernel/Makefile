@@ -8,8 +8,10 @@ TARGET = kernel
 
 # List C source files here.
 CCSOURCES = kernel/arch/x86/gdt.c \
+			kernel/arch/x86/idt.c \
 			kernel/arch/x86/paging.c \
 			kernel/arch/x86/utils.c \
+			kernel/arch/x86/isr.c \
 			kernel/DebugDisplay.c \
 			kernel/entry.c \
 			kernel/main.c \
@@ -20,10 +22,11 @@ CCSOURCES = kernel/arch/x86/gdt.c \
 CXXSOURCES =
 
 # List Assembler to be assembled with NASM here
-ASOURCES =	kernel/start.S
+ASOURCES =	kernel/start.S \
+			kernel/arch/x86/interrupt.S
 
 # Addiotional include paths to consider
-INCLUDES =	inc
+INCLUDES =	lib/inc
 
 #Programs
 #BOCHSMACOS = resources/bochs.app/Contents/MacOS/bochs
