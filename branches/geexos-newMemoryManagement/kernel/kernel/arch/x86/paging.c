@@ -35,12 +35,14 @@ void init_paging()
 
 	// Fills the addresses 0...4MB and 3072MB...3076MB of the page directory
 	// with the same page table
-
 	kernelpagedir[0] = (unsigned long)lowpagetablePtr | 0x3;
 	kernelpagedir[768] = (unsigned long)lowpagetablePtr | 0x3;
 
-	// Copies the address of the page directory into the CR3 register and, finally, enables paging!
+	// Let the last entry in the directory point to itself
+	// 0xFFFFF000 to 0xFFFFFFFF refers to all the pages
+	kernelpagedir[1023] = (unsigned long)kernelpagedir | 0x3;
 
+	// Copies the address of the page directory into the CR3 register and, finally, enables paging!
 	asm volatile (	"mov %0, %%eax\n"
 			"mov %%eax, %%cr3\n"
 			"mov %%cr0, %%eax\n"
@@ -50,6 +52,23 @@ void init_paging()
 
 void paging_remove_lowest4MB()
 {
-	//TODO: Check this...
 	kernelpagedir[0] = (unsigned long)0;
+}
+
+uint32_t create_empty_pagetable(void)
+{
+	
+}
+
+void paging_map_address(uint32_t frameNumber, uint32_t pageNumber)
+{
+	uint16_t dirIndex = pageNumber / 1024;
+	uint16_t tableIndex = pageNumber % 1024;
+	
+	uint32_t addr = frameNumber * 4096;
+	
+	if(kernelpagedir[dirIndex] == 0)
+	{
+		unsigned long *newTable = kmalloc(1024);
+	}
 }

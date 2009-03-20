@@ -7,7 +7,7 @@ isr_t interrupt_handlers[I86_IDT_MAX_ENTRY_COUNT];
 
 void isr_handler(registers_t regs)
 {
-	DebugPrintf("Interrupt: %u\n", regs.int_no);
+	DebugPrintf(" Interrupt: %u\n", regs.int_no);
 }
 
 void irq_handler(registers_t regs)

@@ -5,9 +5,13 @@
 #include "arch/x86/pit.h"
 #include <bootinfo.h>
 #include "DebugDisplay.h"
+#include "MemoryManager.h"
+#include "PageAllocator.h"
 
 void setupDebugHandler(void);
 int kmain (struct multiboot_info* bootinfo);
+
+extern uint32_t placement_address;
 
 int kmain (struct multiboot_info* bootinfo)
 {	
@@ -44,8 +48,17 @@ int kmain (struct multiboot_info* bootinfo)
 	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->cmdline));
 	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
 	
-	asm volatile ("sti");
+	init_allocator(memSize);
+	uint32_t a = allocate_page();
+	uint32_t b = allocate_page();
+	DebugPrintf (" Allocated page a: %x\n", a);
+	DebugPrintf (" Allocated page b: %x\n", b);
+	DebugPrintf (" Freeing page b...\n");
+	free_page(b);
+	uint32_t c = allocate_page();
+	DebugPrintf (" Allocated page c: %x\n\n", c);
 	
+	asm volatile ("sti");
 	asm volatile ("int $0x3");
 	asm volatile ("int $0x4");
 
