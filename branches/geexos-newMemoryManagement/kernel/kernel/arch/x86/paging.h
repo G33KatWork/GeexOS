@@ -21,14 +21,8 @@ void init_paging(void);
 void paging_remove_lowest4MB(void);
 
 /**
- * This function creates an empty pagetable and returns 
- * its physical address
-**/
-uint32_t create_empty_pagetable(void);
-
-/**
  * This function maps a page into a frame
 **/
-void paging_map_address(uint32_t frameNumber, uint32_t pageNumber);
+void paging_map_address(uint32_t physAddr, uint32_t virtualAddr, uint16_t flags);
 
 #endif

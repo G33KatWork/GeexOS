@@ -1,4 +1,6 @@
 #include "paging.h"
+#include "../../FrameAllocator.h"
+#include "../../DebugDisplay.h"
 
 /**
  * The page directory for 1024 pagetables
@@ -9,6 +11,7 @@ unsigned long kernelpagedir[1024] __attribute__ ((aligned (4096)));
  * The first pagetable which will be used by the kernel
 **/
 unsigned long lowpagetable[1024] __attribute__ ((aligned (4096)));
+
 
 /**
  * This function fills the page directory and the page table,
@@ -40,7 +43,8 @@ void init_paging()
 
 	// Let the last entry in the directory point to itself
 	// 0xFFFFF000 to 0xFFFFFFFF refers to all the pages
-	kernelpagedir[1023] = (unsigned long)kernelpagedir | 0x3;
+	void *identityPtr = (char *)kernelpagedir - 0xC0000000;
+	kernelpagedir[1023] = (unsigned long)identityPtr | 0x3;
 
 	// Copies the address of the page directory into the CR3 register and, finally, enables paging!
 	asm volatile (	"mov %0, %%eax\n"
@@ -55,20 +59,39 @@ void paging_remove_lowest4MB()
 	kernelpagedir[0] = (unsigned long)0;
 }
 
-uint32_t create_empty_pagetable(void)
+void paging_map_address(uint32_t physAddr, uint32_t virtualAddr, uint16_t flags)
 {
-	
+	// Make sure that both addresses are page-aligned.
+	uint32_t pdindex = virtualAddr >> 22;
+	uint32_t ptindex = virtualAddr >> 12 & 0x03FF;
+
+	uint32_t *pd = (uint32_t *)0xFFFFF000;
+
+	//check if pagetable exists, if not create one
+	if(pd[pdindex] == 0)
+	{
+		//allocate a page for holding the table (1024*4B = 4096B = exactly one frame)
+		uint32_t* physicalPageAddr = allocate_frame();
+		pd[pdindex] = (((uint32_t)physicalPageAddr) | 0x03);
+
+		//Get a pointer for our new PT
+		//see http://wiki.osdev.org/Paging#Manipulation
+		uint32_t *newPT =((uint32_t *)0xFFC00000) + (0x400 * pdindex);
+		for(int i = 0; i < 1024; i++) //initialize all entries in it with 0
+			newPT[i] = 0;
+	}
+
+	//get pointer to pagetable
+	//see http://wiki.osdev.org/Paging#Manipulation
+	uint32_t *pt =((uint32_t *)0xFFC00000) + (0x400 * pdindex);
+
+	//check if table is already added
+	if(pt[ptindex] != 0)
+		return;		//TODO: Add proper error handling
+
+	pt[ptindex] = physAddr | (flags & 0xFFF) | 0x03; //Present
+
+	//TODO: Invalidate page in TLB
 }
 
-void paging_map_address(uint32_t frameNumber, uint32_t pageNumber)
-{
-	uint16_t dirIndex = pageNumber / 1024;
-	uint16_t tableIndex = pageNumber % 1024;
-	
-	uint32_t addr = frameNumber * 4096;
-	
-	if(kernelpagedir[dirIndex] == 0)
-	{
-		unsigned long *newTable = kmalloc(1024);
-	}
-}
+//TODO: Add function for unmapping addresses

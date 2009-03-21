@@ -1,4 +1,4 @@
-#include "PageAllocator.h"
+#include "FrameAllocator.h"
 #include "MemoryManager.h"
 #include "arch/x86/paging.h"
 #include <string.h>
@@ -20,7 +20,7 @@ static uint32_t bitmap_get_first_free(void)
 			{
 				uint32_t toTest = 0x1 << j;
 				if( !(frames[i]&toTest) )
-					return (i*4*8+j) * 0x1000;	//32 bit (4*8) per entry; *0x1000 for physical address
+					return (i*4*8+j);	//32 bit (4*8) per entry;
 			}
 		}
 	}
@@ -29,17 +29,17 @@ static uint32_t bitmap_get_first_free(void)
 	return -1;
 }
 
-static void bitmap_set_frame(uint32_t physAddr)
+static void bitmap_set_frame(uint32_t* physAddr)
 {
-	uint32_t frame = physAddr / 0x1000;
+	uint32_t frame = (uint32_t)physAddr / 0x1000;
 	uint32_t idx = INDEX_FROM_BIT(frame);
 	uint32_t off = OFFSET_FROM_BIT(frame);
 	frames[idx] |= (0x1 << off);
 }
 
-static void bitmap_clear_frame(uint32_t physAddr)
+static void bitmap_clear_frame(uint32_t* physAddr)
 {
-	uint32_t frame = physAddr / 0x1000;
+	uint32_t frame = (uint32_t)physAddr / 0x1000;
 	uint32_t idx = INDEX_FROM_BIT(frame);
 	uint32_t off = OFFSET_FROM_BIT(frame);
 	frames[idx] &= ~(0x1 << off);
@@ -55,17 +55,17 @@ void init_allocator(uint32_t memorySize)
 	
 	//mark 0 to 4MB for kernel as used
 	for(int i = 0; i < 1024; i++)
-		bitmap_set_frame(i*0x1000);
+		bitmap_set_frame((uint32_t *)(i*0x1000));
 }
 
-uint32_t allocate_page()
+uint32_t* allocate_frame()
 {
-	uint32_t page = bitmap_get_first_free();
+	uint32_t* page = (uint32_t *)(bitmap_get_first_free() * 0x1000);
 	bitmap_set_frame(page);
 	return page;
 }
 
-void free_page(uint32_t physAddr)
+void free_frame(uint32_t* physAddr)
 {
 	bitmap_clear_frame(physAddr);
 }
