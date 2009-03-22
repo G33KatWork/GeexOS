@@ -20,6 +20,7 @@ CCSOURCES = kernel/arch/x86/gdt.c \
 			kernel/entry.c \
 			kernel/main.c \
 			kernel/panic.c \
+			kernel/drivers/serial.c \
 			lib/string.c \
 			lib/stdio.c 
 

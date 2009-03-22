@@ -1,6 +1,7 @@
 #include "FrameAllocator.h"
 #include "MemoryManager.h"
 #include "arch/x86/paging.h"
+#include "panic.h"
 #include <string.h>
 
 uint32_t *frames;
@@ -25,7 +26,9 @@ static uint32_t bitmap_get_first_free(void)
 		}
 	}
 	
-	//TODO: Add proper error handling
+	kernel_panic("Desperately out of memory: No more frames left to allocate", 0);
+	
+	//make compiler shut up... we will never get here in case of error
 	return -1;
 }
 

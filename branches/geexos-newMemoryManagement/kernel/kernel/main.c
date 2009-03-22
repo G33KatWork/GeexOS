@@ -9,12 +9,15 @@
 #include "MemoryManager.h"
 #include "FrameAllocator.h"
 #include "panic.h"
+#include "drivers/serial.h"
 
 int kmain (struct multiboot_info* bootinfo);
 void page_fault(registers_t regs);
 
 int kmain (struct multiboot_info* bootinfo)
 {	
+	init_serial(COM1, 9600);
+	
 	init_paging();
 	register_interrupt_handler(14, &page_fault);
 	gdt_install();
@@ -95,12 +98,13 @@ void page_fault(registers_t regs)
     int reserved = regs.err_code & 0x8;     // Overwritten CPU-reserved bits of page entry?
     int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
 
-    kernel_panic("Page fault! ( %s%s%s%s%s) at 0x%x",
+    kernel_panic("Page fault! ( %s%s%s%s%s) at 0x%x EIP: 0x%x",
 		(present ? "present " : ""),
 		(rw ? "read-only " : ""),
 		(us ? "user-mode " : ""),
 		(reserved ? "reserved " : ""),
 		(id ? "instruction-fetch " : ""),
-		faulting_address
+		faulting_address,
+		regs.eip
 	);
 }
