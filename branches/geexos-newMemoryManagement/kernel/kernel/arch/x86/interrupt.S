@@ -104,7 +104,7 @@ isr_common_stub:
 	sti
 	iret
 
-;Our C-Handler for ISRs (see isr.c)
+;Our C-Handler for IRQs (see isr.c)
 [EXTERN irq_handler]
 irq_common_stub:
 	pusha

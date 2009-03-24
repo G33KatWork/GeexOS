@@ -3,7 +3,7 @@
 #include "../../DebugDisplay.h"
 #include "idt.h"
 
-isr_t interrupt_handlers[I86_IDT_MAX_ENTRY_COUNT];
+isr_t interrupt_handlers[I86_IDT_MAX_ENTRY_COUNT] = {0};
 
 void isr_handler(registers_t regs)
 {

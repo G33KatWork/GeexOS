@@ -72,7 +72,7 @@ void idt_set_gate(uint8_t i, uint32_t base, uint16_t sel, uint8_t flags);
 void idt_install(void);
 
 /**
- * ISRs for IRQs 0 to 31 (see interrupt.S)
+ * ISRs for Exceptions (IRQs 0 to 31) (see interrupt.S)
 **/
 extern void isr0(void);
 extern void isr1(void);
@@ -106,6 +106,10 @@ extern void isr28(void);
 extern void isr29(void);
 extern void isr30(void);
 extern void isr31(void);
+
+/**
+ * ISRs for Hardware-IRQs (IRQs 32 to 47) (see interrupt.S)
+**/
 extern void irq0(void);
 extern void irq1(void);
 extern void irq2(void);

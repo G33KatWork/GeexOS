@@ -13,16 +13,16 @@
 
 int kmain (struct multiboot_info* bootinfo);
 void page_fault(registers_t regs);
-
+extern isr_t interrupt_handlers[256];
 int kmain (struct multiboot_info* bootinfo)
 {	
 	init_serial(COM1, 9600);
 	
 	init_paging();
-	register_interrupt_handler(14, &page_fault);
 	gdt_install();
 	paging_remove_lowest4MB();
 	idt_install();
+	register_interrupt_handler(14, &page_fault);
 	init_pit(50);
 	
 	DebugClrScr (0x18);
@@ -66,9 +66,9 @@ int kmain (struct multiboot_info* bootinfo)
 	//Test frame mapping
 	paging_map_address(0x100000, 0x1000000, 0x3);
 	uint8_t* x = (uint8_t*)0x1000000;
-	*(x+0xFFF) = 0x10;
-	DebugPrintf (" virtual: 0x1001000 physical: 0x101000: %x\n\n", *(x+0xFFF));
-	
+	//*(x+0x1000) = 0x10; //-> BÄM! Pagefault!
+	DebugPrintf (" virtual: 0x1000FFF physical: 0x100FFF: %x\n\n", *(x+0xFFF));
+	DebugPrintf("%x %u", &interrupt_handlers, sizeof(isr_t));
 	asm volatile ("sti");
 	asm volatile ("int $0x3");
 	asm volatile ("int $0x4");
