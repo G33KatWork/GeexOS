@@ -34,7 +34,7 @@ static uint32_t bitmap_get_first_free(void)
 
 static void bitmap_set_frame(uint32_t* physAddr)
 {
-	uint32_t frame = (uint32_t)physAddr / 0x1000;
+	uint32_t frame = (uint32_t)physAddr / 0x1000; //FIXME: Make this platform independent
 	uint32_t idx = INDEX_FROM_BIT(frame);
 	uint32_t off = OFFSET_FROM_BIT(frame);
 	frames[idx] |= (0x1 << off);
@@ -42,7 +42,7 @@ static void bitmap_set_frame(uint32_t* physAddr)
 
 static void bitmap_clear_frame(uint32_t* physAddr)
 {
-	uint32_t frame = (uint32_t)physAddr / 0x1000;
+	uint32_t frame = (uint32_t)physAddr / PAGE_SIZE;
 	uint32_t idx = INDEX_FROM_BIT(frame);
 	uint32_t off = OFFSET_FROM_BIT(frame);
 	frames[idx] &= ~(0x1 << off);
@@ -58,12 +58,12 @@ void init_allocator(uint32_t memorySize)
 	
 	//mark 0 to 4MB for kernel as used
 	for(int i = 0; i < 1024; i++)
-		bitmap_set_frame((uint32_t *)(i*0x1000));
+		bitmap_set_frame((uint32_t *)(i*PAGE_SIZE));
 }
 
 uint32_t* allocate_frame()
 {
-	uint32_t* page = (uint32_t *)(bitmap_get_first_free() * 0x1000);
+	uint32_t* page = (uint32_t *)(bitmap_get_first_free() * PAGE_SIZE);
 	bitmap_set_frame(page);
 	return page;
 }

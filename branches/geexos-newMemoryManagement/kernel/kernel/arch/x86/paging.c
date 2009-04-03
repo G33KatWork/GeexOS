@@ -68,13 +68,13 @@ void paging_remove_lowest4MB()
 	kernel_directory->pagetables[0] = (unsigned long)0;
 }
 
-void paging_map_address(uint32_t physAddr, uint32_t virtualAddr, uint16_t flags)
+void paging_map_address(uint32_t* physAddr, uint32_t* virtualAddr, uint16_t flags)
 {
 	// Make sure that both addresses are page-aligned.
-	uint32_t pdindex = virtualAddr >> 22;
-	uint32_t ptindex = virtualAddr >> 12 & 0x03FF;
+	uint32_t pdindex = (uint32_t)(virtualAddr) >> 22;
+	uint32_t ptindex = (uint32_t)(virtualAddr) >> 12 & 0x03FF;
 
-	page_directory_t *pd = (page_directory_t *)0xFFFFF000;
+	page_directory_t *pd = (page_directory_t *)IDENTITY_POSITION;
 
 	//check if pagetable exists, if not create one
 	if(pd->pagetables[pdindex] == 0)
@@ -103,7 +103,7 @@ void paging_map_address(uint32_t physAddr, uint32_t virtualAddr, uint16_t flags)
 	if(pt->pages[ptindex].frame != 0)
 		return;		//TODO: Add proper error handling
 
-	pt->pages[ptindex].frame = physAddr >> 12;
+	pt->pages[ptindex].frame = (uint32_t)(physAddr) >> 12;
 	pt->pages[ptindex].present = flags & 0x1;
 	pt->pages[ptindex].rw = (flags & 0x2) >> 1;
 	pt->pages[ptindex].user = (flags & 0x4) >> 2;
@@ -112,6 +112,23 @@ void paging_map_address(uint32_t physAddr, uint32_t virtualAddr, uint16_t flags)
 	pt->pages[ptindex].unused = (flags & 0x20) >> 5;
 
 	//TODO: Invalidate page in TLB
+}
+
+bool paging_page_has_frame(uint32_t* virtualAddr)
+{
+    uint32_t pdindex = (uint32_t)(virtualAddr) >> 22;
+	uint32_t ptindex = (uint32_t)(virtualAddr) >> 12 & 0x03FF;
+
+    page_directory_t* pd = (page_directory_t*) IDENTITY_POSITION;
+    uint8_t presentBit = (uint8_t) (pd->pagetables[pdindex] & 0x1);
+    if(presentBit == 0)
+        return false;
+
+    page_table_t* pt = (page_table_t*)(((unsigned long *)0xFFC00000) + (0x400 * pdindex));
+    if(pt->pages[ptindex].present == 0)
+        return false;
+
+    return true;
 }
 
 //TODO: Add function for unmapping addresses

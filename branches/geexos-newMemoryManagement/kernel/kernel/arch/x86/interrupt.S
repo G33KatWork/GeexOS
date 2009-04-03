@@ -80,7 +80,7 @@ IRQ 15, 47
 ;Our C-Handler for ISRs (see isr.c)
 [EXTERN isr_handler]
 isr_common_stub:
-	pusha
+	pusha					; push all registers (see regs.h for corresponding struct)
 
 	mov ax, ds		; save old data segment decriptor
 	push eax
@@ -107,7 +107,7 @@ isr_common_stub:
 ;Our C-Handler for IRQs (see isr.c)
 [EXTERN irq_handler]
 irq_common_stub:
-	pusha
+	pusha					; push all registers (see regs.h for corresponding struct)
 
 	mov ax, ds		; save old data segment decriptor
 	push eax

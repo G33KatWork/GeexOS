@@ -2,6 +2,8 @@
 #ifndef _STDINT_H
 #define _STDINT_H
 
+#include <_null.h>
+
 #define __need_wint_t
 #define __need_wchar_t
 
@@ -61,8 +63,8 @@ typedef unsigned long long   uintmax_t;
 
 #if !defined ( __cplusplus)
 typedef char bool;
-#define true 0
-#define false 1
+#define true 1
+#define false 0
 #endif
 
 /* 7.18.2  Limits of specified-width integer types */

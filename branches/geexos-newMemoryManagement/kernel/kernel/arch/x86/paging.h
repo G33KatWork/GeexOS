@@ -9,6 +9,16 @@
 #include <stdint.h>
 
 /**
+ * Position in virtual memory where we store the identity paging
+**/
+#define IDENTITY_POSITION   0xFFFFF000
+
+/**
+ * Size of one page
+**/
+#define PAGE_SIZE           0x1000
+
+/**
  * Definition of a page entry in a page table
 **/
 typedef struct page
@@ -62,6 +72,12 @@ void paging_remove_lowest4MB(void);
  * The function does allocate a frame, if a new pagetable has to be created
  * for the given virtual address and registers it in the page directory
 **/
-void paging_map_address(uint32_t physAddr, uint32_t virtualAddr, uint16_t flags);
+void paging_map_address(uint32_t* physAddr, uint32_t* virtualAddr, uint16_t flags);
+
+/**
+ * This function checks wether a virtual address in the current page directory
+ * has a frame mapped to it
+**/
+bool paging_page_has_frame(uint32_t* virtualAddr);
 
 #endif
