@@ -42,7 +42,7 @@ int kmain (struct multiboot_info* bootinfo)
 	register_interrupt_handler(14, &page_fault);
 	init_pit(100);
 	
-	//DebugClrScr (0x18);
+	DebugClrScr (0x18);
 	DebugSetColor (0x19);
 
 	DebugGotoXY (0,0);
@@ -56,19 +56,17 @@ int kmain (struct multiboot_info* bootinfo)
 	DebugPrintf (" Kernel commandline: %s\n", (const char*)(bootinfo->cmdline));
 	DebugPrintf (" Processor vendor: %s\n\n", get_cpu_vendor());
     
+    uint8_t* a = kmalloc(sizeof(uint8_t));
+    uint8_t* b = kmalloc(sizeof(uint8_t));
+    DebugPrintf("a: %x\n", a);
+    DebugPrintf("b: %x\n", b);
+    free(b);
+    uint8_t* c = kmalloc(sizeof(uint8_t));
+    DebugPrintf("c: %x\n", c);
     
-    while(1)
-    {
-        uint32_t* a = kmalloc(sizeof(uint8_t));
-        DebugGotoXY (0,20);
-        DebugPrintf("%x", a);
-        
-        for(int i = 0; i < 999999; i++);
-    }
     
 	//Test frame allocator
-	/*
-	uint32_t* a = allocate_frame();
+	/*uint32_t* a = allocate_frame();
 	uint32_t* b = allocate_frame();
 	DebugPrintf (" Allocated frame a: %x\n", a);
 	DebugPrintf (" Allocated frame b: %x\n", b);

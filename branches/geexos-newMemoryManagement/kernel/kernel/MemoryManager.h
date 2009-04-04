@@ -14,7 +14,7 @@
  * Define the end of the kernel heap here
 **/
 #define KHEAP_END       0xFFBFFFFF
-//#define KHEAP_END       0xC0401000
+//#define KHEAP_END       0xC1000000
 
 #define KHEAP_SIZE      KHEAP_END - KHEAP_START + 1
 
@@ -37,6 +37,12 @@ void init_kheap(void);
  * documentation about the memory layout.
 **/
 void* kmalloc(size_t size);
+
+/**
+ * Frees allocated memory
+ * Must not be used with placement allocated memory!
+**/
+void free(void *ap);
 
 /**
  * Allocates a bunch of bytes with length of size,

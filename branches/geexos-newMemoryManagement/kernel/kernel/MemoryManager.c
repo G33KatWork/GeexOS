@@ -8,26 +8,26 @@
 extern uint32_t end;
 uint32_t placement_address = (uint32_t)&end;
 
-static bool kheap_initialized = false;
-
 /**
- * Start of our kernel heap
- * This is also the start of our linked list for the blocks
+ * The current end of the heap
 **/
-static void* kheap_start = (void*)KHEAP_START;
-
-/**
- * Before we initialize the kernel's heap our current end doesn't
- * yet exist
-**/
-static void* kheap_current_end = (void*)KHEAP_START;
+static uint32_t kheap_current_end = KHEAP_START;
 
 
-struct mem_info {
-    bool free;
-    uint32_t size;
-    struct mem_info *next_block;
-} __attribute__((packed));
+
+typedef long Align;    /* for alignment to long boundary */ 
+union header {         /* block header */ 
+    struct { 
+        union header *ptr; /* next block if on free list */ 
+        unsigned size;     /* size of this block */ 
+    } s; 
+    Align x;           /* force alignment of blocks */ 
+};
+typedef union header Header;
+
+
+static Header base;       /* empty list to get started */
+static Header *freep = NULL;     /* start of free list */ 
 
 
 /**
@@ -37,45 +37,33 @@ struct mem_info {
 static void* kmalloc_int(size_t size, bool page_aligned);
 
 /**
- * Static method for expanding the heap by one page
+ * Internal malloc with a more sophisticated algorithm used
 **/
-static void expandKheap(void);
+static void* kmalloc_list(size_t size);
+
+/**
+ * Adds some more bytes to te heap pool
+**/
+static Header *morecore(unsigned nu);
+
+/**
+ * Adds some more space to the kernel heap
+**/
+static void* sbrk(size_t d);
 
 
 void init_kheap(void)
 {
-    //get a first frame and map it into the address space
-    uint32_t* allocated_frame = allocate_frame();
-    paging_map_address(allocated_frame, kheap_current_end, 0x3); //Present and Read/Write
-    
-    //write a first metadata information
-    struct mem_info *metadata = (struct mem_info *)kheap_current_end;
-    metadata->free = true;
-    metadata->size = KHEAP_SIZE - sizeof(struct mem_info);
-    metadata->next_block = NULL;
-    
-    //Add one page to the pointer
-    kheap_current_end += PAGE_SIZE;
-    
-    kheap_initialized = true;
-}
-
-static void expandKheap(void)
-{
-    printf_serial(COM1, "expanding heap...\n");
-    
-    uint32_t* allocated_frame = allocate_frame();
-    paging_map_address(allocated_frame, kheap_current_end, 0x3); //Present and Read/Write
-    kheap_current_end += PAGE_SIZE;
-    
-    printf_serial(COM1, "allocated frame: %x - new heap end: %x\n", allocated_frame, kheap_current_end);
+    //Initialize our list    
+    base.s.ptr = freep = &base;
+    base.s.size = 0;
 }
 
 static void* kmalloc_int(size_t size, bool page_aligned)
 {
     uint32_t tmp;
     
-    if(!kheap_initialized)
+    if(freep == NULL)
 	{
 	    if(page_aligned && (placement_address & 0xFFFFF000))
 	    {
@@ -88,74 +76,103 @@ static void* kmalloc_int(size_t size, bool page_aligned)
     	placement_address += size;
 	}
 	else
-    {   //here we initialized our kernel heap
-        //we will use a first fit algorithm to grab memory
-        printf_serial(COM1, "asked for %u bytes\n", size);
-        
-        struct mem_info* nextBlock = (struct mem_info *)kheap_start;
-        while(nextBlock != NULL)
-        {
-            //printf_serial(COM1, "looking for block. current block at %x\n", nextBlock);
-            if(nextBlock->free && nextBlock->size >= size) //found something!
-            {
-                
-                    printf_serial(COM1, "found empty block with suitables size at %x\n", nextBlock);
-                    
-                uint32_t dataAddress = ((uint32_t)nextBlock) + sizeof(struct mem_info);
-                printf_serial(COM1, "address for saveable data is at %x\n", dataAddress);
-                
-                //check if we are in our heap bounds
-                if(dataAddress + size > KHEAP_END)
-                {
-                    nextBlock = NULL;
-                    continue;
-                }
-                
-                while(dataAddress + size > (uint32_t)kheap_current_end)      //does the requested memory exceed the current size of the heap?
-                    expandKheap();                                              //let it grow...
-                
-                //save old parameters    
-                uint32_t oldSize = nextBlock->size;
-                struct mem_info* followingBlock = nextBlock->next_block;
-                
-                //write new parameters
-                nextBlock->size = size;
-                nextBlock->free = false;
-                
-                //check if we have memory left
-                if(oldSize > size)
-                {
-                    printf_serial(COM1, "we have much memory left, old size: %x\n", oldSize);
-                    struct mem_info *newBlock = (struct mem_info *)(dataAddress + size);
-                    
-                    //do we need to expand the heap for writing the new "empty-block"?
-                    printf_serial(COM1, "new block will be saved at: %x\n", newBlock);
-                    printf_serial(COM1, "end of new block at: %x - current heap end at: %x\n", (uint32_t)newBlock + sizeof(struct mem_info), kheap_current_end);
-                    
-                    if((uint32_t)newBlock + sizeof(struct mem_info) > (uint32_t)kheap_current_end)
-                        expandKheap();
-                    
-                    newBlock->free = true;
-                    newBlock->size = oldSize - sizeof(struct mem_info) - size;      //old size - actual new header caused by split up - size of requested data
-                    newBlock->next_block = followingBlock;
-                    
-                    //set new following block
-                    nextBlock->next_block = newBlock;
-                }
-                
-                printf_serial(COM1, "returning address: %x\n", dataAddress);
-                return (void*)dataAddress;
-            }
-            else
-                nextBlock = nextBlock->next_block;  //just go to the next block
-        }
-        
-        // we didn't find anything suitable for our needs... BAD!
-        printf_serial(COM1, "returning NULL\n");
-        return NULL;
+    {   
+        return kmalloc_list(size);
     }
     
 	return (void*)tmp;
+}
+
+
+static void* kmalloc_list(size_t size)
+{
+    Header *p, *prevp; 
+    unsigned nunits;
+    
+    prevp = freep;
+    
+    nunits = (size+sizeof(Header)-1)/sizeof(Header) + 1;
+           
+    for (p = prevp->s.ptr; ; prevp = p, p = p->s.ptr) { 
+        if (p->s.size >= nunits) {  /* big enough */ 
+            if (p->s.size == nunits)  /* exactly */ 
+                prevp->s.ptr = p->s.ptr; 
+            else {              /* allocate tail end */ 
+                p->s.size -= nunits; 
+                p += p->s.size; 
+                p->s.size = nunits; 
+            } 
+                freep = prevp; 
+                return (void *)(p+1); 
+        }
+         
+        if (p == freep)  /* wrapped around free list */ 
+            if ((p = morecore(nunits)) == NULL) 
+                return NULL;    /* none left */ 
+    } 
+}
+
+#define NALLOC  1024   /* minimum #units to request */ 
+static Header *morecore(unsigned nu) 
+{ 
+    void *cp; 
+    Header *up; 
+ 
+    if (nu < NALLOC) 
+        nu = NALLOC; 
+        
+    cp = sbrk(nu * sizeof(Header)); 
+    if (cp == (void *) -1)   /* no space at all */ 
+        return NULL; 
+    
+    up = (Header *) cp; 
+    up->s.size = nu; 
+    free((void *)(up+1)); 
+    return freep; 
+}
+
+static void* sbrk(size_t d)
+{
+    //Check bounds
+    if(kheap_current_end + d > KHEAP_END)
+        return (void*)-1;
+    
+    uint32_t times = d / PAGE_SIZE;
+    void* retAddr = (void*)kheap_current_end;
+    
+    for(uint32_t i = 0; i < times; i++)
+    {
+        uint32_t* frame = allocate_frame();
+        paging_map_address(frame, (uint32_t*)kheap_current_end, 0x3); //Present, Read/Write
+        kheap_current_end += PAGE_SIZE;
+    }
+    
+    return (void*)retAddr;
+}
+
+
+void free(void *ap) 
+{ 
+    Header *bp, *p; 
+ 
+    bp = (Header *)ap - 1;    /* point to  block header */ 
+    for (p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr) 
+        if (p >= p->s.ptr && (bp > p || bp < p->s.ptr)) 
+            break;  /* freed block at start or end of arena */ 
+ 
+    if (bp + bp->s.size == p->s.ptr) {    /* join to upper nbr */ 
+        bp->s.size += p->s.ptr->s.size; 
+        bp->s.ptr = p->s.ptr->s.ptr; 
+    } else 
+        bp->s.ptr = p->s.ptr; 
+    
+    if (p + p->s.size == bp) {            /* join to lower nbr */ 
+        p->s.size += bp->s.size; 
+        p->s.ptr = bp->s.ptr; 
+    } else 
+        p->s.ptr = bp; 
+    
+    freep = p; 
 }
 
 
@@ -169,5 +186,3 @@ void* kmalloc_a(size_t size)
 {
     return kmalloc_int(size, true);
 }
-
-//TODO: Add free()

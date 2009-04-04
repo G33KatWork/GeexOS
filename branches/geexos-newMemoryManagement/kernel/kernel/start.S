@@ -77,5 +77,5 @@ gdt_end:
 ;---------------------------------------------------------------------------------------------
 
 [section .bss]
-resb 0x1000			;reserve 0x1000 Bytes for stack
+resb 0x10000			;reserve 0x10000 Bytes for stack
 sys_stack:
