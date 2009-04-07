@@ -1,5 +1,5 @@
-SRC := .
-include build/base.mak
+SRC                 := ..
+include $(SRC)/build/base.mak
 
 STARTTIME := $(shell date +%s)
 
@@ -7,32 +7,19 @@ STARTTIME := $(shell date +%s)
 TARGET = kernel
 
 # List C source files here.
-CCSOURCES = kernel/arch/x86/gdt.c \
-			kernel/arch/x86/idt.c \
-			kernel/arch/x86/paging.c \
-			kernel/arch/x86/utils.c \
-			kernel/arch/x86/isr.c \
-			kernel/arch/x86/pic.c \
-			kernel/arch/x86/pit.c \
-			kernel/FrameAllocator.c \
-			kernel/MemoryManager.c \
-			kernel/DebugDisplay.c \
-			kernel/entry.c \
-			kernel/main.c \
-			kernel/panic.c \
-			kernel/drivers/serial.c \
-			lib/string.c \
-			lib/stdio.c 
+CCSOURCES = 
 
 # List C++ source files here
 CXXSOURCES =
 
+# List D source files here
+DSOURCES = 
+
 # List Assembler to be assembled with NASM here
-ASOURCES =	kernel/start.S \
-			kernel/arch/x86/interrupt.S
+ASOURCES =	
 
 # Addiotional include paths to consider
-INCLUDES =	lib/inc
+INCLUDES =	../include
 
 #Programs
 #BOCHSMACOS = resources/bochs.app/Contents/MacOS/bochs
@@ -55,6 +42,9 @@ CXXFLAGS += -Wall #-Wextra -Werror
 CXXFLAGS += -DARCH_X86 -D_DEBUG #-fasm-blocks
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
+# D compiler flags
+DFLAGS += 
+
 # NASM flags
 ASFLAGS = -f elf -g
 
@@ -65,6 +55,7 @@ LDFLAGS = -T linker.ld
 OBJECTS += $(ASOURCES:.S=.o)
 OBJECTS += $(CXXSOURCES:.cpp=.o)
 OBJECTS += $(CCSOURCES:.c=.o)
+OBJECTS += $(DSOURCES:.d=.o)
 
 # Main targets
 all: toolchain $(TARGET).elf
@@ -176,6 +167,11 @@ distclean: clean
 %.o: %.c
 	$(call cmd_msg,CC,$<)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+	
+# Compile c files
+%.o: %.d
+	$(call cmd_msg,DC,$<)
+	$(Q)$(DC) $(CFLAGS) -c $< -o $@
 
 # Assembler S files
 %.o: %.S
