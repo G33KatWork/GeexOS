@@ -45,18 +45,18 @@ floppy.img: kernel initrd.img
 	$(Q)sudo cp resources/floppy.$(FLOPPYTYPE).img ./floppy.img
 
 ifeq ($(shell uname),Darwin)
-	$(Q)sudo hdiutil attach floppy.img -mountpoint tmp -readwrite
+	$(Q)sudo hdiutil attach floppy.img -mountpoint tmp -readwrite $(QOUTPUT)
 else
-	$(Q)sudo mount -o loop floppy.img tmp
+	$(Q)sudo mount -o loop floppy.img tmp $(QOUTPUT)
 endif
 
 	$(Q)sudo cp kernel/kernel.elf tmp/kernel
 	$(Q)sudo cp initrd.img tmp/initrd.img
 
 ifeq ($(shell uname),Darwin)
-	$(Q)sudo hdiutil detach tmp
+	$(Q)sudo hdiutil detach tmp $(QOUTPUT)
 else
-	$(Q)sudo umount tmp
+	$(Q)sudo umount tmp $(QOUTPUT)
 endif
 
 	$(Q)sudo rm -Rf tmp
