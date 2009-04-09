@@ -5,25 +5,27 @@ include $(SRC)/build/base.mak
 TARGET = kernel
 
 # List C source files here.
+#CCSOURCES = runtime/objc_class.c \
+#			runtime/objc_object.c \
+#			runtime/tags.c \
+#			runtime/sarray.c \
+#			runtime/selector.c
 CCSOURCES = 
 
 # List C++ source files here
 CXXSOURCES =
 
 # List D source files here
-DSOURCES = main.d
+DSOURCES = 
+
+# List Objective-C source files here
+OBJCSOURCES = src/main.m
 
 # List Assembler to be assembled with NASM here
 ASOURCES =	arch/x86/start.S
 
 # Addiotional include paths to consider
-INCLUDES =	../include
-
-#Programs
-#BOCHSMACOS = resources/bochs.app/Contents/MacOS/bochs
-BOCHSMACOS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
-BOCHS = /usr/bin/bochs
-QEMU = qemu
+INCLUDES =	include include/lib include/runtime
 
 # C compiler flags
 CFLAGS += -g -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
@@ -44,6 +46,9 @@ CXXFLAGS += $(addprefix -I,$(INCLUDES))
 DFLAGS += -nostdlib -nodefaultlibs -g #-mcmodel=kernel
 DFLAGS += $(addprefix -I,$(INCLUDES))
 
+# Objective-C compiler flags
+OBJCFLAGS := $(CFLAGS)
+
 # NASM flags
 ASFLAGS = -f elf -g
 
@@ -55,6 +60,7 @@ OBJECTS += $(ASOURCES:.S=.o)
 OBJECTS += $(CXXSOURCES:.cpp=.o)
 OBJECTS += $(CCSOURCES:.c=.o)
 OBJECTS += $(DSOURCES:.d=.o)
+OBJECTS += $(OBJCSOURCES:.m=.o)
 
 # Main targets
 all: $(TARGET).elf
@@ -88,6 +94,11 @@ distclean: clean
 %.o: %.d
 	$(call cmd_msg,DC,$<)
 	$(Q)$(DC) $(DFLAGS) -c $< -o $@
+	
+# Compile Objective-C files
+%.o: %.m
+	$(call cmd_msg,OBJCC,$<)
+	$(Q)$(CC) $(OBJCFLAGS) -c $< -o $@
 
 # Assembler S files
 %.o: %.S

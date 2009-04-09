@@ -58,7 +58,7 @@ $(TOOLCHAIN_ROOTDIR)/.gcc-configure: $(TOOLCHAIN_ROOTDIR)/.gcc-extract $(TOOLCHA
 			--prefix=$(TOOLCHAIN_ROOTDIR) \
 			--target=$(TOOLCHAIN_TARGET) \
 			--without-headers \
-			--enable-languages=c,d,c++ --disable-nls \
+			--enable-languages=c,d,c++,objc,obj-c++ --disable-nls \
 			$(QOUTPUT) \
 			$(GCC_CONFOPTS)
 	$(Q)touch  $(@)
