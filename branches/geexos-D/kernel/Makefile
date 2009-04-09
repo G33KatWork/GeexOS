@@ -5,12 +5,7 @@ include $(SRC)/build/base.mak
 TARGET = kernel
 
 # List C source files here.
-#CCSOURCES = runtime/objc_class.c \
-#			runtime/objc_object.c \
-#			runtime/tags.c \
-#			runtime/sarray.c \
-#			runtime/selector.c
-CCSOURCES = 
+CCSOURCES = src/lib/string.c
 
 # List C++ source files here
 CXXSOURCES =
@@ -22,7 +17,7 @@ DSOURCES =
 OBJCSOURCES = src/main.m
 
 # List Assembler to be assembled with NASM here
-ASOURCES =	arch/x86/start.S
+ASOURCES =	arch/current/src/start.S
 
 # Addiotional include paths to consider
 INCLUDES =	include include/lib include/runtime
@@ -64,7 +59,7 @@ OBJECTS += $(OBJCSOURCES:.m=.o)
 
 # Main targets
 all: $(TARGET).elf
-	@:
+	@:	#Shut up!
 
 $(TARGET).elf: $(OBJECTS)
 	$(call cmd_msg,LINK,$(@))
