@@ -2,10 +2,11 @@ SRC                 := ..
 include $(SRC)/build/base.mak
 
 # Target file name.
-TARGET = kernel
+TARGET = kernel.elf
 
 # List C source files here.
-CCSOURCES = src/lib/string.c
+CCSOURCES = src/lib/string.c \
+			src/kernel/kmalloc.c
 
 # List C++ source files here
 CXXSOURCES =
@@ -14,13 +15,13 @@ CXXSOURCES =
 DSOURCES = 
 
 # List Objective-C source files here
-OBJCSOURCES = src/main.m
+OBJCSOURCES = src/kernel/main.m
 
 # List Assembler to be assembled with NASM here
-ASOURCES =	arch/current/src/start.S
+ASOURCES = src/arch/start.S
 
 # Addiotional include paths to consider
-INCLUDES =	include include/lib include/runtime
+INCLUDES =	include
 
 # C compiler flags
 CFLAGS += -g -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
@@ -58,18 +59,18 @@ OBJECTS += $(DSOURCES:.d=.o)
 OBJECTS += $(OBJCSOURCES:.m=.o)
 
 # Main targets
-all: $(TARGET).elf
+all: $(TARGET)
 	@:	#Shut up!
 
-$(TARGET).elf: $(OBJECTS)
+$(TARGET): $(OBJECTS)
 	$(call cmd_msg,LINK,$(@))
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^
 	$(call cmd_msg,OBJDUMP,$(@) -> source)
-	$(Q)$(OBJDUMP) --source $(TARGET).elf > source
+	$(Q)$(OBJDUMP) --source $(TARGET) > source
 
 # Cleaning
 clean:
-	$(Q)rm -f $(foreach ext,elf,$(TARGET).$(ext)) \
+	$(Q)rm -f $(TARGET) \
 	$(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
 	$(Q)rm -f source
 
@@ -84,12 +85,12 @@ distclean: clean
 %.o: %.c
 	$(call cmd_msg,CC,$<)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
-	
+
 # Compile d files
 %.o: %.d
 	$(call cmd_msg,DC,$<)
 	$(Q)$(DC) $(DFLAGS) -c $< -o $@
-	
+
 # Compile Objective-C files
 %.o: %.m
 	$(call cmd_msg,OBJCC,$<)
@@ -101,4 +102,3 @@ distclean: clean
 	$(Q)$(NASM) $(ASFLAGS) -o $@ $<
 
 .PHONY: clean distclean
-
