@@ -5,8 +5,21 @@ include $(SRC)/build/base.mak
 TARGET = kernel.elf
 
 # List C source files here.
+#CCSOURCES = src/lib/string.c \
+#			src/kernel/kmalloc.c \
+#			src/runtime/objc_class.c \
+#			src/runtime/objc_object.c \
+#			src/runtime/object_tags.c \
+#			src/runtime/sarray.c \
+#			src/runtime/selector.c
+
 CCSOURCES = src/lib/string.c \
-			src/kernel/kmalloc.c
+			src/kernel/kmalloc.c \
+			src/runtime/objc_class.c \
+			src/runtime/object_tags.c \
+			src/runtime/objc_object.c \
+			src/runtime/sarray.c \
+			src/runtime/selector.c
 
 # List C++ source files here
 CXXSOURCES =
@@ -15,7 +28,7 @@ CXXSOURCES =
 DSOURCES = 
 
 # List Objective-C source files here
-OBJCSOURCES = src/kernel/main.m
+OBJCSOURCES = src/kernel/main.m src/kernel/TestClass.m
 
 # List Assembler to be assembled with NASM here
 ASOURCES = src/arch/start.S
@@ -43,7 +56,7 @@ DFLAGS += -nostdlib -nodefaultlibs -g #-mcmodel=kernel
 DFLAGS += $(addprefix -I,$(INCLUDES))
 
 # Objective-C compiler flags
-OBJCFLAGS := $(CFLAGS)
+OBJCFLAGS := $(CFLAGS) -fnext-runtime
 
 # NASM flags
 ASFLAGS = -f elf -g

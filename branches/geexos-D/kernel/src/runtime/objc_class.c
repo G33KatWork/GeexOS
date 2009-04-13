@@ -1,10 +1,12 @@
-#include <string.h>
-#include <stdio.h>
-#include "objc_class.h"
-#include "lock.h"
+#include <lib/string.h>
+#include <kernel/kmalloc.h>
+
+#include <runtime/objc_class.h>
 
 static SparseArray * classes;
-DECLARE_LOCK(classes);
+
+struct objc_slot * lookup_class_method(id *object, id obj, SEL sel, id sender);
+struct objc_slot * lookup_instance_method(id *object, id obj, SEL sel, id sender);
 
 /**
  * This method is returned when the target is nil.
@@ -13,6 +15,7 @@ id dummy_method(id self, SEL cmd)
 {
 	return nil;
 }
+
 /**
  * Custom lookup function used by classes.  Allows separate class and instance
  * methods.
@@ -50,6 +53,7 @@ struct objc_slot * lookup_class_method(id *object, id obj, SEL sel, id sender)
 	}
 	return ret;
 }
+
 struct objc_slot * lookup_instance_method(id *object, id obj, SEL sel, id sender)
 {
 	struct objc_slot * ret = NULL;
@@ -88,16 +92,13 @@ static inline uint32_t hash_class(char * name)
 
 static Class protocol_class;
 
-void sarray_init(void);
-
 __attribute__((constructor))
 void objc_class_init()
 {
 	sarray_init();
 	objc_object_init();
-	INIT_LOCK(classes);
 	classes = SparseArrayNew();
-	protocol_class = objc_new_subclass("*Protocol", NULL, 0);
+	protocol_class = objc_new_subclass((char *)"*Protocol", NULL, 0); //FIXME: Cast neccessary?
 }
 
 #define HASH_LOOKUP(result, table)\
@@ -105,7 +106,6 @@ void objc_class_init()
 	{\
 		if(result == Nil)\
 		{\
-			UNLOCK(table);\
 			return Nil;\
 		}\
 		if(strcmp(result->name, name) == 0)\
@@ -146,6 +146,7 @@ Class objc_protocol_for_name(char * name)
 	MANGLE_PROTOCOL_NAME();
 	return objc_class_for_name(protocol_name);
 }
+
 void objc_class_adopt_protocol(Class class, Class protocol)
 {
 	struct protocol_list * list = calloc(1, sizeof(struct protocol_list));
@@ -200,7 +201,6 @@ Class objc_new_subclass(char * name, Class super_class, int ivar_space)
 {
 	uint32_t hash = hash_class(name);
 	Class oldClass;
-	LOCK(classes);
 	HASH_LOOKUP(oldClass, classes);
 	Class class = (Class)alloc_object(NULL, sizeof(struct objc_class));
 	class->super_class = super_class;
@@ -213,7 +213,6 @@ Class objc_new_subclass(char * name, Class super_class, int ivar_space)
 	install_custom_lookup((id)class, lookup_class_method);
 	Class temp = NULL;
 	HASH_INSERT(class, temp, classes);
-	UNLOCK(classes);
 	return class;
 }
 
@@ -223,7 +222,7 @@ void objc_register_ivar(Class class, char * name, char * type, int offset)
 	{
 		return;
 	}
-	struct ivar_list * ivar = malloc(sizeof(struct ivar_list));
+	struct ivar_list * ivar = kmalloc(sizeof(struct ivar_list));
 	ivar->name = strdup(name);
 	ivar->type = strdup(type);
 	ivar->offset = offset;
@@ -240,17 +239,15 @@ void objc_class_pose_as(Class class, char * name)
 	{
 		if(strcmp(oldclass->name, name) == 0)
 		{
-			LOCK(classes);
 			SparseArrayInsert(classes, hash, class);
-			UNLOCK(classes);
 			return;
 		}
 		hash++;
 	}
-	LOCK(classes);
+	
 	SparseArrayInsert(classes, hash, class);
-	UNLOCK(classes);
 }
+
 Class objc_class_for_name(char * name)
 {
 	uint32_t hash = hash_class(name);
@@ -265,6 +262,7 @@ id objc_instantiate_class(Class class)
 	install_custom_lookup(object, lookup_instance_method);
 	return object;
 }
+
 void objc_install_instance_method(Class class, SEL sel, IMP method)
 {
 	char * types = types_for_selector(sel);
@@ -277,6 +275,7 @@ void objc_install_instance_method(Class class, SEL sel, IMP method)
 		install_method_slot((id)class, method, NULL, untyped);
 	}
 }
+
 //TODO: This is copy-and-pasted from objc_object.c.  Factor it out.
 void objc_install_class_method(Class class, SEL sel, IMP method)
 {

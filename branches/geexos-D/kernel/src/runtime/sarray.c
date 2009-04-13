@@ -1,12 +1,7 @@
-#include <stdlib.h>
-#ifdef BUILD_TESTS
-#include <stdio.h>
-#endif
+#include <runtime/sarray.h>
 
-#include "sarray.h"
-#include "lock.h"
+#include <kernel/kmalloc.h>
 
-DECLARE_STATIC_LOCK(sarray);
 static SparseArray * EmptyArray = NULL;
 
 static void init_pointers(SparseArray * sarray)
@@ -23,7 +18,6 @@ static void init_pointers(SparseArray * sarray)
 
 void __attribute__((constructor)) sarray_init(void)
 {
-	LOCK(sarray)
 	if(EmptyArray == NULL)
 	{
 		EmptyArray = calloc(1, sizeof(SparseArray));
@@ -31,7 +25,6 @@ void __attribute__((constructor)) sarray_init(void)
 		EmptyArray->mask = 0xff;
 		EmptyArray->data = calloc(256, sizeof(void*));
 	}
-	UNLOCK(sarray);
 }
 
 SparseArray * SparseArrayNew()

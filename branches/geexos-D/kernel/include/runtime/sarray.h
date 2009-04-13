@@ -1,14 +1,7 @@
-/**
- * Sparse Array
- *
- * Author: David Chisnall
- *
- */
-
 #ifndef _SARRAY_H_INCLUDED_
 #define _SARRAY_H_INCLUDED_
-#include <stdint.h>
-#include <stdlib.h>
+
+#include <lib/types.h>
 
 /**
  * Sparse arrays, used to implement dispatch tables.  Current implementation is
@@ -34,6 +27,7 @@ typedef struct
 	((index & sarray->mask) >> sarray->shift)
 
 #define SARRAY_EMPTY ((void*)0)
+
 /**
  * Look up the specified value in the sparse array.  This is used in message
  * dispatch and so has been put in the header to allow compilers to inline it,
@@ -49,19 +43,23 @@ static inline void* SparseArrayLookup(SparseArray * sarray, uint32_t index)
 	uint32_t i = index & sarray->mask;
 	return sarray->data[i];
 }
+
 /**
  * Create a new sparse array.
  */
-SparseArray * SparseArrayNew();
+SparseArray * SparseArrayNew(void);
+
 /**
  * Insert a value at the specified index.
  */
 void SparseArrayInsert(SparseArray * sarray, uint32_t index, void * value);
+
 /**
  * Destroy the sparse array.  Note that calling this while other threads are
  * performing lookups is guaranteed to break.
  */
 void SparseArrayDestroy(SparseArray * sarray);
+
 /**
  * Iterate through the array.  Returns the next non-NULL value after index and
  * sets index to the following value.  For example, an array containing values
@@ -70,5 +68,10 @@ void SparseArrayDestroy(SparseArray * sarray);
  * value at 10 and set index to 11.
  */
 void * SparseArrayNext(SparseArray * sarray, uint32_t * index);
+
+/**
+ * Initialize a sparse array
+**/
+void __attribute__((constructor)) sarray_init(void);
 
 #endif //_SARRAY_H_INCLUDED_

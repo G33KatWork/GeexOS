@@ -10,3 +10,17 @@ void *kmalloc(size_t s)
     placement_address += s;
     return (void*)tmp;
 }
+
+void *calloc(unsigned int n, size_t s)
+{
+    void* first = kmalloc(s);
+    for(unsigned int i = 1; i < n; i++)
+        kmalloc(s);
+    
+    return first;
+}
+
+void free(void* b)
+{
+    
+}

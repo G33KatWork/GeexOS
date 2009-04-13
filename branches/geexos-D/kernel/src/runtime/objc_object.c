@@ -1,23 +1,12 @@
-#include <stdbool.h>
-#include <string.h>
-#include <pthread.h>
-#include <stdio.h>
-#include "objc_object.h"
-#include "selector.h"
-#include "object_tags.h"
-#include "atomic.h"
+#include <lib/string.h>
+#include <kernel/kmalloc.h>
 
-//This is a Linuxism, but quite a nice one.  It allows a recursive mutex to
-//be lazy-initialised.  On other platforms we have to do this the expensive
-//way.
-#ifdef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
-#	define RECURSIVE_INIT(x) x = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
-#elif defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER)
-#	define RECURSIVE_INIT(x) x = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
-#else
-#	define RECURSIVE_INIT(x) pthread_mutex_init(&(x), &recursiveAttributes)
-#endif
-static pthread_mutexattr_t recursiveAttributes;
+#include <runtime/objc_object.h>
+#include <runtime/selector.h>
+#include <runtime/object_tags.h>
+#include <runtime/atomic.h>
+
+bool install_slot(struct objc_object *obj, int offset, IMP method, char * types, uint32_t sel);
 
 //Size of tags associated with an object
 SEL forwardSelector = 0;
@@ -38,28 +27,34 @@ static inline int safestrcmp(const char * a, const char * b)
 }
 
 //Tag offsets:
-static int mutex_offset;
-#define MUTEX(obj) TAG(obj, mutex_offset, pthread_mutex_t)
+//static int mutex_offset;
+//#define MUTEX(obj) TAG(obj, mutex_offset, pthread_mutex_t)
+
 static int refcount_offset;
 #define REFCOUNT(obj) TAG(obj, refcount_offset, uint32_t)
+
 static int size_offset;
 #define SIZE(obj) TAG(obj, size_offset, size_t)
+
+
 //These two are extenally-visible
 int slots_offset;
 #define SLOTS(obj) TAG(obj, slots_offset, SparseArray*)
+
 int lookup_offset;
 #define LOOKUP(obj) TAG(obj, lookup_offset, lookup_function)
+
 
 void objc_object_init(void)
 {
 	lookup_offset = OBJ_TAG(lookup_function);
 	slots_offset = OBJ_TAG(SparseArray*);
-	mutex_offset = OBJ_TAG(pthread_mutex_t);
+	//mutex_offset = OBJ_TAG(pthread_mutex_t);
 	refcount_offset = OBJ_TAG(uint32_t);
 	size_offset = OBJ_TAG(size_t);
 	objc_selector_init();
-	pthread_mutexattr_init(&recursiveAttributes);
-	pthread_mutexattr_settype(&recursiveAttributes, PTHREAD_MUTEX_RECURSIVE);
+	//pthread_mutexattr_init(&recursiveAttributes);
+	//pthread_mutexattr_settype(&recursiveAttributes, PTHREAD_MUTEX_RECURSIVE);
 }
 
 int retain_object(struct objc_object ** obj)
@@ -74,12 +69,12 @@ int release_object(struct objc_object ** obj)
 
 void objc_lock_object(struct objc_object * obj)
 {
-	pthread_mutex_lock(&MUTEX(obj));
+	//pthread_mutex_lock(&MUTEX(obj));
 }
 
 void objc_unlock_object(struct objc_object * obj)
 {
-	pthread_mutex_unlock(&MUTEX(obj));
+	//pthread_mutex_unlock(&MUTEX(obj));
 }
 
 struct objc_slot * objc_object_next_slot(id obj, SEL * selector)
@@ -100,7 +95,7 @@ struct objc_object * alloc_object(struct objc_object * prototype, size_t extra)
 		size += object_tags_size;
 	}
 	struct objc_object * obj = (void*)((char*)calloc(1, size) + object_tags_size);
-	RECURSIVE_INIT(MUTEX(obj));
+
 	SIZE(obj) = size;
 	obj->isa = prototype;
 	if(prototype != NULL)
@@ -113,7 +108,7 @@ struct objc_object * alloc_object(struct objc_object * prototype, size_t extra)
 void destroy_object(struct objc_object * obj)
 {
 	release_object(&obj->isa);
-	pthread_mutex_destroy(&MUTEX(obj));
+	//pthread_mutex_destroy(&MUTEX(obj));
 	free(((char*)obj - object_tags_size));
 }
 

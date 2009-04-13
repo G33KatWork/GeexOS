@@ -1,7 +1,12 @@
-#include <string.h>
-#include <stdio.h>
-#include "selector.h"
-#include "lock.h"
+#include <lib/string.h>
+#include <kernel/kmalloc.h>
+
+#include <runtime/selector.h>
+
+uint32_t hash_selector(char * name, char * types);
+uint32_t default_lookup_typed_selector(char * name, char * types);
+uint32_t default_register_typed_selector(char * name, char * types);
+int register_selector(char * name);
 
 /**
  * Structure used to store selectors in the list.
@@ -16,12 +21,12 @@ struct objc_selector
  * Mapping from selector hashes to selector numbers.
  */
 static SparseArray * selector_table = NULL;
-DECLARE_LOCK(selector_table);
+
 /**
  * Mapping from selector numbers to objc_selectors.
  */
 static SparseArray * selector_list = NULL;
-DECLARE_LOCK(selector_list);
+
 /**
  * Location to insert next selector in the list.
  */
@@ -33,9 +38,7 @@ static uint32_t selector_next = 1;
 void objc_selector_init()
 {
 	selector_table = SparseArrayNew();
-	INIT_LOCK(selector_table);
 	selector_list = SparseArrayNew();
-	INIT_LOCK(selector_list);
 }
 
 /**
@@ -92,11 +95,10 @@ static uint32_t unsafe_lookup_typed_selector(char * name, char * types)
 	}
 	return 0;
 }
+
 uint32_t default_lookup_typed_selector(char * name, char * types)
 {
-	LOCK(selector_table);
 	uint32_t sel = unsafe_lookup_typed_selector(name, types);
-	UNLOCK(selector_table);
 	return sel;
 }
 lookup_typed_selector_t lookup_typed_selector = default_lookup_typed_selector;
@@ -104,24 +106,21 @@ lookup_typed_selector_t lookup_typed_selector = default_lookup_typed_selector;
 uint32_t default_register_typed_selector(char * name, char * types)
 {
 	uint32_t hash = hash_selector(name, types);
-	LOCK(selector_table);
 	uint32_t uid = unsafe_lookup_typed_selector(name, types);
 	if(!uid)
 	{
 		struct objc_selector * sel = calloc(1, sizeof(struct objc_selector));
 		sel->name = strdup(name);
 		sel->types = strdup(types);
-		LOCK(selector_list);
 		uid = selector_next;
 		SparseArrayInsert(selector_list,
 				selector_next++,
 				sel);
-		UNLOCK(selector_list);
 		SparseArrayInsert(selector_table, hash, ((void*) (unsigned long)uid));
 	}
-	UNLOCK(selector_table);
 	return uid;
 }
+
 register_typed_selector_t register_typed_selector = default_register_typed_selector;
 int register_selector(char * name)
 {

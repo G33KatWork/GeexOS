@@ -1,4 +1,4 @@
-//#import "TestClass.h"
+#import "TestClass.h"
 #include <lib/string.h>
 
 int gp;
@@ -8,7 +8,7 @@ int main(void)
     char* video = (char*)0xC00B8000;
     memset(video, 0, 24*80*2);
  
-    //TestClass* c = [TestClass init];
+    TestClass* c = [TestClass init];
     
     const char src[] = "Hallo";
     char dst[6];

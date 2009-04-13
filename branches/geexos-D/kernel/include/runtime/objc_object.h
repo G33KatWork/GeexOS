@@ -1,11 +1,11 @@
 #ifndef __OBJC_OBJECT_H_INCLUDED__
 #define __OBJC_OBJECT_H_INCLUDED__
 
-#include <pthread.h>
-#include <stdbool.h>
-#include "sarray.h"
-#include "selector.h"
-#include "object_tags.h"
+#include <lib/types.h>
+
+#include <runtime/sarray.h>
+#include <runtime/selector.h>
+#include <runtime/object_tags.h>
 
 struct objc_object
 {
