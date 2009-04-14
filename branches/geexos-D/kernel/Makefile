@@ -14,12 +14,7 @@ TARGET = kernel.elf
 #			src/runtime/selector.c
 
 CCSOURCES = src/lib/string.c \
-			src/kernel/kmalloc.c \
-			src/runtime/objc_class.c \
-			src/runtime/object_tags.c \
-			src/runtime/objc_object.c \
-			src/runtime/sarray.c \
-			src/runtime/selector.c
+			src/kernel/kmalloc.c
 
 # List C++ source files here
 CXXSOURCES =
@@ -28,7 +23,9 @@ CXXSOURCES =
 DSOURCES = 
 
 # List Objective-C source files here
-OBJCSOURCES = src/kernel/main.m src/kernel/TestClass.m
+OBJCSOURCES = src/kernel/main.m \
+			  src/kernel/TestClass.m \
+			  src/objc/Object.m
 
 # List Assembler to be assembled with NASM here
 ASOURCES = src/arch/start.S
@@ -56,7 +53,7 @@ DFLAGS += -nostdlib -nodefaultlibs -g #-mcmodel=kernel
 DFLAGS += $(addprefix -I,$(INCLUDES))
 
 # Objective-C compiler flags
-OBJCFLAGS := $(CFLAGS) -fnext-runtime
+OBJCFLAGS := $(CFLAGS) -fnext-runtime -Wno-import
 
 # NASM flags
 ASFLAGS = -f elf -g
