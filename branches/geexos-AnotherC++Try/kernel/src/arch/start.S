@@ -43,28 +43,28 @@ higherhalf:						; Here the CPU adds 0x40000000 to all addresses due to the trck
 	push ebx					; Push pointer to GRUB multiboot-information
 
 	
-;static_ctors_loop:				; Call constructors
-;	mov ebx, start_ctors
-;    jmp .test
-;.body:
-;    call [ebx]
-;    add ebx,4
-;.test:
-;    cmp ebx, end_ctors
-;    jb .body
+static_ctors_loop:				; Call constructors
+	mov ebx, start_ctors
+    jmp .test
+.body:
+    call [ebx]
+    add ebx,4
+.test:
+    cmp ebx, end_ctors
+    jb .body
 
 	
 	call main					; Jump to D-Code
 	jmp $
 
 
-;static_dtors_loop:				; Call destructors
-;    mov ebx, start_dtors
-;    jmp .test
-;.body:
-;    call [ebx]
-;    add ebx,4
-;.test:
+static_dtors_loop:				; Call destructors
+    mov ebx, start_dtors
+    jmp .test
+.body:
+    call [ebx]
+    add ebx,4
+.test:
 ;    cmp ebx, end_dtors
 ;    jb .body
 

@@ -5,27 +5,21 @@ include $(SRC)/build/base.mak
 TARGET = kernel.elf
 
 # List C source files here.
-#CCSOURCES = src/lib/string.c \
-#			src/kernel/kmalloc.c \
-#			src/runtime/objc_class.c \
-#			src/runtime/objc_object.c \
-#			src/runtime/object_tags.c \
-#			src/runtime/sarray.c \
-#			src/runtime/selector.c
-
-CCSOURCES = src/lib/string.c \
-			src/kernel/kmalloc.c
+CCSOURCES = 
 
 # List C++ source files here
-CXXSOURCES =
+CXXSOURCES = src/lib/string.cpp \
+             src/kernel/kmalloc.cpp \
+             src/kernel/main.cpp \
+			 src/kernel/IO/Monitor.cpp \
+			 src/kernel/global.cpp \
+			 src/lib/cppruntime.cpp
 
 # List D source files here
 DSOURCES = 
 
 # List Objective-C source files here
-OBJCSOURCES = src/kernel/main.m \
-			  src/kernel/TestClass.m \
-			  src/objc/Object.m
+OBJCSOURCES = 
 
 # List Assembler to be assembled with NASM here
 ASOURCES = src/arch/start.S
@@ -39,13 +33,15 @@ CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 			-Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
 			-Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
 			-Wstrict-prototypes #-Wconversion
-CFLAGS += -DARCH_X86 -D_DEBUG
+CFLAGS += -DARCH_X86 -DDEBUG
 CFLAGS += $(addprefix -I,$(INCLUDES))
 
 # C++ compiler flags
 CXXFLAGS += -g -fno-builtin -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs
-CXXFLAGS += -Wall #-Wextra -Werror
-CXXFLAGS += -DARCH_X86 -D_DEBUG #-fasm-blocks
+CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
+			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long \
+			-Wconversion #-Werror
+CXXFLAGS += -DARCH_X86 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
 # D compiler flags

@@ -13,12 +13,12 @@ typedef int64_t clock_t;		/**< Clock. */
 typedef uint64_t useconds_t;		/**< Microseconds. */
 typedef int64_t suseconds_t;		/**< Signed microseconds. */
 
-typedef _Bool bool;			/**< Boolean type. */
+//typedef _Bool bool;			/**< Boolean type. */
 
-#define false		0		/**< False boolean value. */
-#define true		1		/**< True boolean value. */
+//#define false		0		/**< False boolean value. */
+//#define true		1		/**< True boolean value. */
 
-#define NULL		((void *)0)	/**< NULL value for a pointer. */
+#define NULL		0       	/**< NULL value for a pointer. */
 
 /** Gets the offset of a member in a type. */
 #define offsetof(type, member)	__builtin_offsetof(type, member)

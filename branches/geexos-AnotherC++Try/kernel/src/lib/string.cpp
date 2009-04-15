@@ -2,7 +2,8 @@
 #include <lib/ctype.h>
 #include <kernel/kmalloc.h>
 
-void *memcpy(void *dest, const void* src, size_t count)
+
+void *Lib::memcpy(void *dest, const void* src, size_t count)
 {
     char *d = (char *)dest;
 	const char *s = (const char *)src;
@@ -15,17 +16,17 @@ void *memcpy(void *dest, const void* src, size_t count)
 	return dest;
 }
 
-void *memset(void *dest, int val, size_t count)
+void *Lib::memset(void *dest, int val, size_t count)
 {
 	char *temp = (char *)dest;
 	for(; count != 0; count--) *temp++ = val;
 	return dest;
 }
 
-void *memmove(void *dest, const void *src, size_t count)
+void *Lib::memmove(void *dest, const void *src, size_t count)
 {
-	char *a = dest;
-	const char *b = src;
+	char *a = (char *)dest;
+	const char *b = (const char *)src;
 
 	if(src != dest)
 	{
@@ -46,14 +47,14 @@ void *memmove(void *dest, const void *src, size_t count)
 	return dest;
 }
 
-void *memdup(const void *src, size_t count)
+void *Lib::memdup(const void *src, size_t count)
 {
 	char *dest;
 
 	if(count == 0)
 		return NULL;
 
-	dest = kmalloc(count);
+	dest = (char *)kmalloc(count);
 	if(dest == NULL)
 		return NULL;
 
@@ -61,21 +62,21 @@ void *memdup(const void *src, size_t count)
 	return dest;
 }
 
-size_t strlen(const char *str)
+size_t Lib::strlen(const char *str)
 {
 	size_t retval;
 	for(retval = 0; *str != '\0'; str++) retval++;
 	return retval;
 }
 
-size_t strnlen(const char *str, size_t count)
+size_t Lib::strnlen(const char *str, size_t count)
 {
 	size_t retval;
 	for(retval = 0; *str != '\0' && retval < count; str++) retval++;
 	return retval;
 }
 
-int strcmp(const char *s1, const char *s2)
+int Lib::strcmp(const char *s1, const char *s2)
 {
 	char x;
 
@@ -92,7 +93,7 @@ int strcmp(const char *s1, const char *s2)
 	return x - *s2;
 }
 
-int strncmp(const char *s1, const char *s2, size_t count)
+int Lib::strncmp(const char *s1, const char *s2, size_t count)
 {
 	const char *a = s1;
 	const char *b = s2;
@@ -110,7 +111,7 @@ int strncmp(const char *s1, const char *s2, size_t count)
 	return 0;
 }
 
-int strcasecmp(const char *s1, const char *s2)
+int Lib::strcasecmp(const char *s1, const char *s2)
 {
 	for(;;)
 	{
@@ -122,7 +123,7 @@ int strcasecmp(const char *s1, const char *s2)
 	return tolower(*s1) - tolower(*s2);
 }
 
-int strncasecmp(const char *s1, const char *s2, size_t count)
+int Lib::strncasecmp(const char *s1, const char *s2, size_t count)
 {
 	const char *a = s1;
 	const char *b = s2;
@@ -140,7 +141,7 @@ int strncasecmp(const char *s1, const char *s2, size_t count)
 	return 0;
 }
 
-char *strsep(char **stringp, const char *delim)
+char *Lib::strsep(char **stringp, const char *delim)
 {
 	char *s;
 	const char *spanp;
@@ -148,7 +149,7 @@ char *strsep(char **stringp, const char *delim)
 	char *tok;
 
 	if((s = *stringp) == NULL)
-		return (NULL);
+		return NULL;
 
 	for(tok = s;;)
 	{
@@ -170,7 +171,7 @@ char *strsep(char **stringp, const char *delim)
 	}
 }
 
-char *strchr(const char *s, int c)
+char *Lib::strchr(const char *s, int c)
 {
 	char ch = c;
 
@@ -187,7 +188,7 @@ char *strchr(const char *s, int c)
 	return (char *)s;
 }
 
-char *strrchr(const char *s, int c)
+char *Lib::strrchr(const char *s, int c)
 {
 	const char *l = NULL;
 
@@ -203,7 +204,7 @@ char *strrchr(const char *s, int c)
 	return (char *)l;
 }
 
-char *strcpy(char *dest, const char *src)
+char *Lib::strcpy(char *dest, const char *src)
 {
 	char *d = dest;
 
@@ -211,7 +212,7 @@ char *strcpy(char *dest, const char *src)
 	return dest;
 }
 
-char *strncpy(char *dest, const char *src, size_t count)
+char *Lib::strncpy(char *dest, const char *src, size_t count)
 {
 	size_t i;
 	
@@ -224,12 +225,12 @@ char *strncpy(char *dest, const char *src, size_t count)
 	return dest;
 }
 
-char *strdup(const char *s)
+char *Lib::strdup(const char *s)
 {
 	char *dup;
 	size_t len = strlen(s) + 1;
 
-	dup = kmalloc(len);
+	dup = (char *)kmalloc(len);
 	if(dup == NULL)
 		return NULL;
 
@@ -237,7 +238,7 @@ char *strdup(const char *s)
 	return dup;
 }
 
-char *strndup(const char *s, size_t n)
+char *Lib::strndup(const char *s, size_t n)
 {
 	size_t len;
 	char *dup;
@@ -246,38 +247,13 @@ char *strndup(const char *s, size_t n)
 	if(n < len)
         len = n;
 
-	dup = kmalloc(len + 1);
+	dup = (char *)kmalloc(len + 1);
 	if(dup == NULL)
 		return NULL;
 
 	memcpy(dup, s, len);
 	dup[len] = '\0';
 	return dup;
-}
-
-int atoi(const char *s)
-{
-	int v = 0;
-	int sign = 1;
-
-	while(*s == ' ' || (unsigned int)(*s - 9) < 5u)
-		s++;
-
-	switch(*s)
-	{
-		case '-':
-			sign=-1;
-		case '+':
-			s++;
-	}
-
-	while((unsigned int) (*s - '0') < 10u)
-	{
-		v = v * 10 + *s - '0';
-		s++;
-	}
-	
-	return (sign == -1)? -v:v;
 }
 
 
