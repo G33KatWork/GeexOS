@@ -5,7 +5,8 @@
 
 namespace Arch
 {
-
+    void InitializeInterrupts();
+    
     inline void EnableInterrupts()
     {
         asm volatile ("sti");
@@ -14,11 +15,6 @@ namespace Arch
     inline void DisableInterrupts()
     {
         asm volatile ("cli");
-    }
-    
-    inline void HaltMachine()
-    {
-        asm volatile ("hlt");
     }
 }
 

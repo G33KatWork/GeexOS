@@ -80,7 +80,6 @@ namespace IO
         Monitor &operator<<(int i);
         Monitor &operator<<(Special s);
         
-        void Test(void);
     private:
         int foregroundColor;
         int backgroundColor;

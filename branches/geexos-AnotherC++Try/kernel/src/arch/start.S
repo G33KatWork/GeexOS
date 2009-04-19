@@ -54,9 +54,9 @@ static_ctors_loop:				; Call constructors
     jb .body
 
 	
-	call main					; Jump to D-Code
-	jmp $
-
+	call main					; Jump to C++-Code
+	cli
+	
 
 static_dtors_loop:				; Call destructors
     mov ebx, start_dtors

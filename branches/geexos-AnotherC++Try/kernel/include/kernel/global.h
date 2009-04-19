@@ -11,19 +11,28 @@ extern class IO::Monitor kout;
 
 #ifdef DEBUG
 #define DEBUG_MSG(msg) \
+    { \
     Color foreground = kout.GetForeground(); \
     Color background = kout.GetBackground(); \
     kout.SetBackground(Black); \
     kout.SetForeground(LightBlue); \
-    kout.PrintString("[DEBUG\t] "); \
+    kout.PrintString("[DEBUG] "); \
     kout << msg << endl; \
     kout.SetBackground(background); \
-    kout.SetForeground(foreground);
+    kout.SetForeground(foreground); \
+    }
 #else
 #define DEBUG_MSG(msg)
 #endif
 
 extern void panic(const char *message);
 extern void panic_assert(const char *file, unsigned int line, const char *desc);
+
+void *operator new(size_t size);
+void *operator new(size_t size, bool pageAlign, Address *physAddr=NULL);
+void *operator new[](size_t size);
+void *operator new[](size_t size, bool pageAlign, Address *physAddr=NULL);
+void  operator delete(void *p);
+void  operator delete[](void *p);
 
 #endif

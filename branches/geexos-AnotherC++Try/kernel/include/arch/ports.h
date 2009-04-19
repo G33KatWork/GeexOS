@@ -5,7 +5,6 @@
 
 namespace Arch
 {
-
     inline void outb(unsigned short port, unsigned char value)
     {
         asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
@@ -24,7 +23,6 @@ namespace Arch
         asm volatile ("inw %1, %0" : "=a" (ret) : "dN" (port));
         return ret;
     }
-
 }
 
 #endif

@@ -1,7 +1,7 @@
 #include <lib/string.h>
 #include <lib/ctype.h>
-#include <kernel/kmalloc.h>
 
+#include <kernel/global.h>
 
 void *Lib::memcpy(void *dest, const void* src, size_t count)
 {
@@ -18,7 +18,7 @@ void *Lib::memcpy(void *dest, const void* src, size_t count)
 
 void *Lib::memset(void *dest, int val, size_t count)
 {
-	char *temp = (char *)dest;
+    char *temp = (char *)dest;
 	for(; count != 0; count--) *temp++ = val;
 	return dest;
 }
@@ -44,21 +44,6 @@ void *Lib::memmove(void *dest, const void *src, size_t count)
 		}
 	}
 
-	return dest;
-}
-
-void *Lib::memdup(const void *src, size_t count)
-{
-	char *dest;
-
-	if(count == 0)
-		return NULL;
-
-	dest = (char *)kmalloc(count);
-	if(dest == NULL)
-		return NULL;
-
-	memcpy(dest, src, count);
 	return dest;
 }
 
@@ -224,36 +209,3 @@ char *Lib::strncpy(char *dest, const char *src, size_t count)
 	}
 	return dest;
 }
-
-char *Lib::strdup(const char *s)
-{
-	char *dup;
-	size_t len = strlen(s) + 1;
-
-	dup = (char *)kmalloc(len);
-	if(dup == NULL)
-		return NULL;
-
-	memcpy(dup, s, len);
-	return dup;
-}
-
-char *Lib::strndup(const char *s, size_t n)
-{
-	size_t len;
-	char *dup;
-
-	len = strlen(s);
-	if(n < len)
-        len = n;
-
-	dup = (char *)kmalloc(len + 1);
-	if(dup == NULL)
-		return NULL;
-
-	memcpy(dup, s, len);
-	dup[len] = '\0';
-	return dup;
-}
-
-

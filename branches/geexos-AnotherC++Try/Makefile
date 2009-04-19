@@ -4,8 +4,8 @@ include $(SRC)/build/base.mak
 STARTTIME := $(shell date +%s)
 
 #Programs
-#BOCHSMACOS = resources/bochs.app/Contents/MacOS/bochs
-BOCHSMACOS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
+BOCHSMACOS = resources/bochs.app/Contents/MacOS/bochs
+#BOCHSMACOS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
 BOCHS = /usr/bin/bochs
 QEMU = qemu
 

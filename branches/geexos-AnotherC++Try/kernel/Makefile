@@ -9,11 +9,16 @@ CCSOURCES =
 
 # List C++ source files here
 CXXSOURCES = src/lib/string.cpp \
-             src/kernel/kmalloc.cpp \
+             src/kernel/Memory/MemoryManager.cpp \
              src/kernel/main.cpp \
 			 src/kernel/IO/Monitor.cpp \
 			 src/kernel/global.cpp \
-			 src/lib/cppruntime.cpp
+			 src/lib/cppruntime.cpp \
+			 src/kernel/debug.cpp \
+			 src/kernel/multiboot.cpp \
+			 src/kernel/Memory/Paging.cpp \
+			 src/arch/gdt.cpp \
+			 src/arch/hal.cpp
 
 # List D source files here
 DSOURCES = 
@@ -55,7 +60,7 @@ OBJCFLAGS := $(CFLAGS) -fnext-runtime -Wno-import
 ASFLAGS = -f elf -g
 
 # Linker flags
-LDFLAGS = -T linker.ld
+LDFLAGS = -T linker.ld -Map kernel.map
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:.S=.o)
@@ -79,6 +84,7 @@ clean:
 	$(Q)rm -f $(TARGET) \
 	$(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
 	$(Q)rm -f source
+	$(Q)rm -f kernel.map
 
 distclean: clean
 

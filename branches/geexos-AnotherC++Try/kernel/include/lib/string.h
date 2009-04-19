@@ -9,7 +9,6 @@ namespace Lib
     void *memcpy(void *dest, const void* src, size_t count);
     void *memset(void *dest, int val, size_t count);
     void *memmove(void *dest, const void *src, size_t count);
-    void *memdup(const void *src, size_t count);
 
     size_t strlen(const char *str);
     size_t strnlen(const char *str, size_t count);
@@ -23,8 +22,6 @@ namespace Lib
     char *strrchr(const char *s, int c);
     char *strcpy(char *dest, const char *src);
     char *strncpy(char *dest, const char *src, size_t count);
-    char *strdup(const char *s);
-    char *strndup(const char *s, size_t n);
 }
 
 #endif

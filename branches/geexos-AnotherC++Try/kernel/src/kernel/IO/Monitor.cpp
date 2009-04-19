@@ -33,7 +33,7 @@ void Monitor::PrintChar(char c)
         cursorX--;
         
     //Tab
-    else if(c == 0x08)
+    else if(c == 0x09)
         cursorX = (cursorX+8) & ~(8-1);
     
     //Carriage Return
@@ -83,13 +83,17 @@ void Monitor::PrintHex(unsigned int n)
     char num[20];
     memset(num, 0, 20);
     
-    for(int i = 0; n != 0; i++)
+    int i = 0;
+    do
     {
         num[i] = hexChars[n % 16];
         n /= 16;
-    }
+        
+        i++;
+    } while(n != 0);
     
     reverseArray(num);
+    PrintString("0x");
     PrintString(num);
 }
 
@@ -98,14 +102,16 @@ void Monitor::PrintDec(unsigned int n)
     char num[20];
     memset(num, 0, 20);
     
-    for(int i = 0; n != 0; i++)
+    int i = 0;
+    do
     {
         num[i] = (n % 10) + '0';
         n /= 10;
-    }
+        
+        i++;
+    } while(n != 0);
     
     reverseArray(num);
-    PrintString("0x");
     PrintString(num);
 }
 
@@ -118,11 +124,13 @@ void Monitor::PrintDec(int n)
     if((sign = n) < 0) n = -n;
     
     int i = 0;
-    for(;n != 0; i++)
+    do
     {
         num[i] = (n % 10) + '0';
         n /= 10;
-    }
+        
+        i++;
+    } while(n != 0);
     
     if(sign < 0)
         num[i] = '-';
@@ -140,9 +148,7 @@ void Monitor::Clear()
     unsigned short blank = 0x20 /* space */ | (attributeByte << 8);
     
     for(int i = 0; i < 25*80; i++)
-    {
         vidmem[i] = blank;
-    }
     
     moveCursor();
 }
@@ -160,8 +166,11 @@ void Monitor::scroll()
     
     if(cursorY >= 25)
     {
+        for(int i = 0; i < 24*80; i++)
+            vidmem[i] = vidmem[i+80];
+        
         //move all lines one line up and discard upper line
-        memmove(vidmem, vidmem + 80, 24*80);
+        //memmove(vidmem, vidmem + 80, 24*80);
         
         //clear lowest line
         for (int i = 24*80; i < 25*80; i++)
@@ -195,7 +204,7 @@ Monitor &Monitor::operator<<(const char *c)
 Monitor &Monitor::operator<<(unsigned int i)
 {
     if (printMode == dec)
-        PrintDec(i); //FIXME: signed/unsigned?
+        PrintDec(i);
     else
         PrintHex(i);
     
@@ -239,10 +248,4 @@ void Monitor::reverseArray(char* arr)
         arr[i] = arr[j];
         arr[j] = c;
     }
-}
-
-void Monitor::Test()
-{
-    PrintChar('t');
-    PrintHex(*(vidmem - 80));
 }
