@@ -239,6 +239,18 @@ Monitor &Monitor::operator<<(Special s)
       return *this;
 }
 
+
+Monitor &Monitor::operator<<(Position p)
+{
+    cursorX = p.x;
+    cursorY = p.y;
+    
+    scroll();
+    moveCursor();
+      
+    return *this;
+}
+
 void Monitor::reverseArray(char* arr)
 {
     int i, j;

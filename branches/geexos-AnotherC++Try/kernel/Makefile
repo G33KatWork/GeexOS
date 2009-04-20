@@ -18,7 +18,12 @@ CXXSOURCES = src/lib/string.cpp \
 			 src/kernel/multiboot.cpp \
 			 src/kernel/Memory/Paging.cpp \
 			 src/arch/gdt.cpp \
-			 src/arch/hal.cpp
+			 src/arch/idt.cpp \
+			 src/arch/pic.cpp  \
+			 src/arch/pit.cpp  \
+			 src/arch/hal.cpp  \
+			 src/arch/interrupts.cpp \
+			 src/kernel/Memory/PageFaultHandler.cpp
 
 # List D source files here
 DSOURCES = 
@@ -27,7 +32,8 @@ DSOURCES =
 OBJCSOURCES = 
 
 # List Assembler to be assembled with NASM here
-ASOURCES = src/arch/start.S
+ASOURCES = src/arch/start.S \
+		   src/arch/interrupts_stubs.S
 
 # Addiotional include paths to consider
 INCLUDES =	include
@@ -42,7 +48,7 @@ CFLAGS += -DARCH_X86 -DDEBUG
 CFLAGS += $(addprefix -I,$(INCLUDES))
 
 # C++ compiler flags
-CXXFLAGS += -g -fno-builtin -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs
+CXXFLAGS += -g -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long \
 			-Wconversion #-Werror

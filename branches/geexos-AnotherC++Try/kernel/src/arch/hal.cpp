@@ -1,5 +1,6 @@
 #include <arch/hal.h>
 #include <arch/gdt.h>
+#include <arch/idt.h>
 
 using namespace Arch;
 
@@ -14,4 +15,6 @@ void Arch::InitializeCPU()
 		I86_GDT_GRAND_4K | I86_GDT_GRAND_32BIT | I86_GDT_GRAND_LIMITHI_MASK);
 	
     gdt_install();
+    
+    idt_install();
 }

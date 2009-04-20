@@ -32,6 +32,12 @@ namespace IO
         hex,
         dec
     };
+    
+    typedef struct Position
+    {
+        int x;
+        int y;
+    } Position;
 
     class Monitor
     {
@@ -79,6 +85,16 @@ namespace IO
         Monitor &operator<<(unsigned int i);
         Monitor &operator<<(int i);
         Monitor &operator<<(Special s);
+        Monitor &operator<<(Position p);
+        
+        static Position SetPosition(int x, int y)
+        {
+            Position p;
+            p.x = x;
+            p.y = y;
+
+            return p;
+        }
         
     private:
         int foregroundColor;
