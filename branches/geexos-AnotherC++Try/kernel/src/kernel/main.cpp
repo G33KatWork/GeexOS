@@ -56,12 +56,23 @@ int main(MultibootHeader* multibootInfo)
     Debug::stringTable = m.StrtabStart();
     Debug::symbolTable = m.SymtabStart();
     
+    //Give our memory manager some information about the installed RAM
+    //TODO: use memory map
+    memoryManager.InitializeFrameAllocator(m.GetLowerMemory() + m.GetUpperMemory());
+    
     //Configure interrupt dispatcher
     InterruptDispatcher* irqD = InterruptDispatcher::GetInstance();
     irqD->RegisterHandler(14, new PageFaultHandler());
     
+    //Init timer
     InitializeTimer(100);
     Arch::EnableInterrupts();
+    
+    //Allocate some frames
+    Address f1 = memoryManager.AllocateFrame();
+    Address f2 = memoryManager.AllocateFrame();
+    DEBUG_MSG("f1: " << hex << f1);
+    DEBUG_MSG("f2: " << f2);
     
     //Print some debugging stuff
     DEBUG_MSG("Kernel entrypoint reached. Commandline: " << m.GetKernelCommandline());

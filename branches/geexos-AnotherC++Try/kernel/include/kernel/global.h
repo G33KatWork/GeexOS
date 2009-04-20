@@ -3,8 +3,10 @@
 
 #include <lib/types.h>
 #include <kernel/IO/Monitor.h>
+#include <kernel/Memory/MemoryManager.h>
 
 extern class IO::Monitor kout;
+extern class Memory::MemoryManager memoryManager;
 
 #define ASSERT(b)    ((b) ? (void)0 : panic_assert(__FILE__, __LINE__, #b))
 #define PANIC(msg)   panic(msg)
