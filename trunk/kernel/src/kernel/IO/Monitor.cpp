@@ -144,7 +144,7 @@ void Monitor::Clear()
     cursorX = 0;
     cursorY = 0;
     
-    unsigned char attributeByte = (backgroundColor << 4) | (White & 0x0F);
+    unsigned char attributeByte = (backgroundColor << 4) | (foregroundColor & 0x0F);
     unsigned short blank = 0x20 /* space */ | (attributeByte << 8);
     
     for(int i = 0; i < 25*80; i++)
@@ -161,7 +161,7 @@ void Monitor::Clear(Color c)
 
 void Monitor::scroll()
 {
-    unsigned char attributeByte = (backgroundColor << 4) | (White & 0x0F);
+    unsigned char attributeByte = (backgroundColor << 4) | (foregroundColor & 0x0F);
     unsigned short blank = 0x20 /* space */ | (attributeByte << 8);
     
     if(cursorY >= 25)

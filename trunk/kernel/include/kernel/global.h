@@ -15,12 +15,9 @@ extern class Memory::MemoryManager memoryManager;
 #define DEBUG_MSG(msg) \
     { \
     Color foreground = kout.GetForeground(); \
-    Color background = kout.GetBackground(); \
-    kout.SetBackground(Black); \
     kout.SetForeground(LightBlue); \
     kout.PrintString("[DEBUG] "); \
     kout << msg << endl; \
-    kout.SetBackground(background); \
     kout.SetForeground(foreground); \
     }
 #else
