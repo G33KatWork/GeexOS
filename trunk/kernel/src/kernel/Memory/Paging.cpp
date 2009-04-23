@@ -38,3 +38,40 @@ void Paging::Init()
 	
     SwitchPageDirectory(kernelpagedirPtr);
 }
+
+Address Paging::GetPhysicalAddress(Address virtualaddr)
+{
+    unsigned int pdindex = virtualaddr >> 22;
+    unsigned int ptindex = (virtualaddr >> 12) & 0x03FF;
+
+    unsigned int *pd = (unsigned int*)0xFFFFF000;
+    ASSERT(*pd & 0x01, "Page for identity paging is not present");
+
+    unsigned int * pt = ((unsigned int *)0xFFC00000) + (0x400 * pdindex);
+    ASSERT(*pt & 0x01, "Pagetable for identity paging is not present");
+
+    return ((pt[ptindex] & ~0xFFF) + ((unsigned int)virtualaddr & 0xFFF));
+}
+
+void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermode)
+{
+    unsigned int pdindex = virt >> 22;
+    unsigned int ptindex = (phys >> 12) & 0x03FF;
+    	
+    PageTable *t = kernel_directory->GetTable(pdindex);
+    if(t == NULL) //there is no PageTable for this address
+    {
+        t = new (true /*page align*/) PageTable();
+        Address physicalPageTableAddress = GetPhysicalAddress((Address) t);
+        kernel_directory->SetTable(pdindex, (PageTable*)(physicalPageTableAddress | 0x3));
+    }
+    
+    Page *p = t->GetPage(ptindex);
+    if(!p->Present()) //mapped? TODO: really mapped?
+    {
+        p->Frame(phys);
+        p->Present(true);
+        p->RW(readwrite);
+        p->User(usermode);
+    }
+}

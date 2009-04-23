@@ -68,6 +68,11 @@ int main(MultibootHeader* multibootInfo)
     InitializeTimer(100);
     Arch::EnableInterrupts();
     
+    //Test some frame mapping
+    p->MapAddress(0x30000000, 0x0, true, false);
+    int* bla = (int*)0x30000000;
+    DEBUG_MSG("Value at 0x30000000: " << hex << *bla);
+    
     //Allocate some frames
     Address f1 = memoryManager.AllocateFrame();
     Address f2 = memoryManager.AllocateFrame();
@@ -79,8 +84,8 @@ int main(MultibootHeader* multibootInfo)
     DEBUG_MSG("I'm a DEBUG message!");
     
     //BÄM!
-    int* bla = (int*)0xA0000000;
-    *bla = 1;
+    int* bla2 = (int*)0xA0000000;
+    *bla2 = 1;
     
     /*for(;;)
     {

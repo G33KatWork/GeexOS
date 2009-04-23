@@ -13,6 +13,8 @@ namespace Memory
     public:
         Paging(){};
         void Init(void);
+        Address GetPhysicalAddress(Address virtualaddr);
+        void MapAddress(Address virt, Address phys, bool readwrite, bool usermode);
         
     private:
         PageDirectory *kernel_directory;

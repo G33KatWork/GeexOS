@@ -24,12 +24,12 @@ void panic(const char *message)
     HaltMachine();
 }
 
-void panic_assert(const char *file, unsigned int line, const char *desc)
+void panic_assert(const char *file, unsigned int line, const char *condition, const char *desc)
 {
     DisableInterrupts();
     
     kout.SetForeground(Red);
-    kout << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << desc << ")" << endl;
+    kout << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
     
     PrintStacktrace();
     

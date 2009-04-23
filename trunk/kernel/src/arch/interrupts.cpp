@@ -37,13 +37,13 @@ InterruptDispatcher::InterruptDispatcher()
 
 void InterruptDispatcher::RegisterHandler(int i, IInterruptServiceRoutine* isr)
 {
-    ASSERT(i >= 0 && i <= I86_IDT_MAX_ENTRY_COUNT);
+    ASSERT(i >= 0 && i <= I86_IDT_MAX_ENTRY_COUNT, "Interrupt number out of valid range");
     isrs[i] = isr;
 }
 
 void InterruptDispatcher::UnregisterHandler(int i)
 {
-    ASSERT(i >= 0 && i <= I86_IDT_MAX_ENTRY_COUNT);
+    ASSERT(i >= 0 && i <= I86_IDT_MAX_ENTRY_COUNT, "Interrupt number out of valid range");
     isrs[i] = NULL;
 }
 

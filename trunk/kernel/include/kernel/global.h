@@ -8,7 +8,7 @@
 extern class IO::Monitor kout;
 extern class Memory::MemoryManager memoryManager;
 
-#define ASSERT(b)    ((b) ? (void)0 : panic_assert(__FILE__, __LINE__, #b))
+#define ASSERT(b, msg)    ((b) ? (void)0 : panic_assert(__FILE__, __LINE__, #b, #msg))
 #define PANIC(msg)   panic(msg)
 
 #ifdef DEBUG
@@ -25,7 +25,7 @@ extern class Memory::MemoryManager memoryManager;
 #endif
 
 extern void panic(const char *message);
-extern void panic_assert(const char *file, unsigned int line, const char *desc);
+void panic_assert(const char *file, unsigned int line, const char *condition, const char *desc);
 
 void *operator new(size_t size);
 void *operator new(size_t size, bool pageAlign, Address *physAddr=NULL);

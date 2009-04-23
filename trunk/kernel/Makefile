@@ -23,6 +23,7 @@ CXXSOURCES = src/lib/string.cpp \
 			 src/arch/pit.cpp  \
 			 src/arch/hal.cpp  \
 			 src/arch/interrupts.cpp \
+			 src/kernel/Memory/Heap.cpp \
 			 src/kernel/Memory/PageFaultHandler.cpp
 
 # List D source files here
