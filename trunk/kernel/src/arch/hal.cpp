@@ -1,6 +1,7 @@
 #include <arch/hal.h>
 #include <arch/gdt.h>
 #include <arch/idt.h>
+#include <arch/pit.h>
 
 using namespace Arch;
 
@@ -18,3 +19,12 @@ void Arch::InitializeCPU()
     
     idt_install();
 }
+
+ClockSource_t Arch::ClockSource  = {
+    "PIT",
+    1000000000 / 1000,
+    PERIODIC,
+    NULL,
+    PIT::Enable,
+    PIT::Disable
+};

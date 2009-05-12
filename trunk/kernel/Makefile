@@ -24,7 +24,13 @@ CXXSOURCES = src/lib/string.cpp \
 			 src/arch/hal.cpp  \
 			 src/arch/interrupts.cpp \
 			 src/kernel/Memory/Heap.cpp \
-			 src/kernel/Memory/PageFaultHandler.cpp
+			 src/kernel/Processes/Scheduler.cpp \
+			 src/kernel/Processes/Process.cpp \
+			 src/kernel/DataStructures/OrderedArray.cpp \
+			 src/kernel/Memory/PageFaultHandler.cpp \
+			 src/kernel/DataStructures/List.cpp\
+			 src/kernel/Time/Timer.cpp\
+			 src/kernel/Time/TimerManager.cpp
 
 # List D source files here
 DSOURCES = 
@@ -34,7 +40,8 @@ OBJCSOURCES =
 
 # List Assembler to be assembled with NASM here
 ASOURCES = src/arch/start.S \
-		   src/arch/interrupts_stubs.S
+		   src/arch/interrupts_stubs.S \
+		   src/arch/scheduling.S
 
 # Addiotional include paths to consider
 INCLUDES =	include

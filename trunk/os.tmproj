@@ -37,26 +37,26 @@
 					<true/>
 					<key>subItems</key>
 					<dict>
-						<key>doc</key>
+						<key>include</key>
 						<dict>
 							<key>isExpanded</key>
 							<true/>
 							<key>subItems</key>
 							<dict/>
 						</dict>
-						<key>kernel</key>
+						<key>src</key>
 						<dict>
 							<key>isExpanded</key>
 							<true/>
 							<key>subItems</key>
 							<dict>
-								<key>arch</key>
+								<key>kernel</key>
 								<dict>
 									<key>isExpanded</key>
 									<true/>
 									<key>subItems</key>
 									<dict>
-										<key>x86</key>
+										<key>Processes</key>
 										<dict>
 											<key>isExpanded</key>
 											<true/>
@@ -64,28 +64,6 @@
 											<dict/>
 										</dict>
 									</dict>
-								</dict>
-								<key>drivers</key>
-								<dict>
-									<key>isExpanded</key>
-									<true/>
-									<key>subItems</key>
-									<dict/>
-								</dict>
-							</dict>
-						</dict>
-						<key>lib</key>
-						<dict>
-							<key>isExpanded</key>
-							<true/>
-							<key>subItems</key>
-							<dict>
-								<key>inc</key>
-								<dict>
-									<key>isExpanded</key>
-									<true/>
-									<key>subItems</key>
-									<dict/>
 								</dict>
 							</dict>
 						</dict>

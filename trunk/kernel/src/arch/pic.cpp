@@ -71,6 +71,10 @@ using namespace Arch;
 #define I86_PIC_ICW4_SFNM_NESTEDMODE	0x10		//10000
 #define I86_PIC_ICW4_SFNM_NOTNESTED		0			//a binary 2 (futurama joke hehe ;)
 
+
+static unsigned char master_mask = 0xFF;
+static unsigned char slave_mask = 0xFF;
+
 void Arch::InitializePIC()
 {
     DisableInterrupts();
@@ -99,6 +103,11 @@ void Arch::InitializePIC()
 	icw = (icw & ~I86_PIC_ICW4_MASK_UPM) | I86_PIC_ICW4_UPM_86MODE;
 	outb (I86_PIC1_REG_DATA, icw);
 	outb (I86_PIC2_REG_DATA, icw);
+	
+	master_mask = 0xFF & ~(1<<2);
+	slave_mask = 0xFF;
+    outb(I86_PIC1_REG_IMR, master_mask);
+    outb(I86_PIC2_REG_IMR, slave_mask);
 }
 
 void Arch::NotifyPIC(int intNo)
@@ -110,4 +119,42 @@ void Arch::NotifyPIC(int intNo)
 		outb(I86_PIC2_REG_COMMAND, I86_PIC_OCW2_MASK_EOI);
 
 	outb(I86_PIC1_REG_COMMAND, I86_PIC_OCW2_MASK_EOI);
+}
+
+void Arch::UnmaskIRQ(int intNo)
+{
+    if (intNo > 48 || intNo < 32)
+		return;
+	
+    intNo -= 32;
+	
+	if(intNo >= 40)     //Slave
+	{    
+	    slave_mask &= ~(1 << (intNo - 8));
+        outb(I86_PIC2_REG_IMR, slave_mask);
+	}
+	else                //Master
+	{
+	    master_mask &= ~(1 << intNo);
+        outb(I86_PIC1_REG_IMR, master_mask);
+	}
+}
+
+void Arch::MaskIRQ(int intNo)
+{
+    if (intNo > 48 || intNo < 32)
+		return;
+		
+	intNo -= 32;
+	
+	if(intNo >= 40)     //Slave
+	{    
+	    slave_mask |= 1 << (intNo - 8);
+        outb(I86_PIC2_REG_IMR, slave_mask);
+	}
+	else                //Master
+	{
+	    master_mask |= 1 << intNo;
+        outb(I86_PIC1_REG_IMR, master_mask);
+	}
 }

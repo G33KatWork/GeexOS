@@ -3,25 +3,27 @@
 
 #include <lib/types.h>
 #include <kernel/IInterruptServiceRoutine.h>
+#include <arch/clock_source.h>
+#include <arch/interrupts.h>
 
 using namespace Kernel;
 
 namespace Arch
 {
-    class PIT : public IInterruptServiceRoutine
+    class PIT
     {
     private:
         static PIT* instance;
-        long ticks;
         
         PIT();
         
     public:
+        static void Disable() { MaskIRQ(IRQ_TIMER); }
+        static void Enable() { UnmaskIRQ(IRQ_TIMER); }
+        
         static PIT* GetInstance();
         
         void Initialize(uint32_t frequency);
-        long GetTickCount();
-        void Execute(registers_t regs);
     };
 }
 

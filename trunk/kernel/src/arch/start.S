@@ -56,7 +56,6 @@ static_ctors_loop:				; Call constructors
 	
 	call main					; Jump to C++-Code
 	cli
-	hlt							; In case we get out og our C++-Code
 	
 
 static_dtors_loop:				; Call destructors
@@ -70,8 +69,8 @@ static_dtors_loop:				; Call destructors
 ;    jb .body
 
 cpuhalt:
-       hlt
-       jmp cpuhalt
+    hlt
+    jmp cpuhalt
 
 ;---------------------------------------------------------------------------------------------
 

@@ -27,6 +27,8 @@ namespace Arch
 {
     void InitializePIC(void);
     void NotifyPIC(int intNo);
+    void UnmaskIRQ(int intNo);
+    void MaskIRQ(int intNo);
 }
 
 #endif

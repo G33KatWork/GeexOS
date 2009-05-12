@@ -3,6 +3,7 @@
 
 #include <lib/types.h>
 #include <arch/pit.h>
+#include <arch/clock_source.h>
 
 namespace Arch
 {
@@ -13,15 +14,12 @@ namespace Arch
         asm volatile ("hlt");
     }
     
-    inline long GetTickCount()
+    inline void InitializeTimer()
     {
-        return PIT::GetInstance()->GetTickCount();
+        PIT::GetInstance()->Initialize(1000); //1000Hz
     }
     
-    inline void InitializeTimer(int frequency)
-    {
-        PIT::GetInstance()->Initialize(frequency);
-    }
+    extern ClockSource_t ClockSource;
 }
 
 #endif

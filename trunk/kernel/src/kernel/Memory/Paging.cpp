@@ -5,7 +5,17 @@
 using namespace Memory;
 using namespace Arch;
 
-using namespace IO;
+//using namespace IO;
+
+Paging* Paging::instance = NULL;
+
+Paging* Paging::GetInstance()
+{
+    if(instance == NULL)
+        instance = new Paging();
+
+    return instance;
+}
 
 void Paging::Init()
 {
@@ -16,14 +26,12 @@ void Paging::Init()
     kernel_directory = new (true) PageDirectory();
     lowpagetable = new (true) PageTable();
     
-    //kout << hex << (unsigned)kernel_directory << endl;
-    
     kernelpagedirPtr = (Address)kernel_directory + 0x40000000;
     lowpagetablePtr = (Address)lowpagetable + 0x40000000;
     
     for (k = 0; k < 1024; k++)
 	{
-        lowpagetable->GetPage(k)->Frame(k * 4096);
+        lowpagetable->GetPage(k)->Frame(k * PAGE_SIZE);
         lowpagetable->GetPage(k)->Present(true);
         lowpagetable->GetPage(k)->RW(true);
 	}
@@ -35,6 +43,8 @@ void Paging::Init()
     
     kernel_directory->SetTable(0, (PageTable *)(lowpagetablePtr | 0x3));
 	kernel_directory->SetTable(768, (PageTable *)(lowpagetablePtr | 0x3));
+	
+    current_directory = kernel_directory;
 	
     SwitchPageDirectory(kernelpagedirPtr);
 }
@@ -74,4 +84,10 @@ void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermod
         p->RW(readwrite);
         p->User(usermode);
     }
+}
+
+void Paging::SwitchCurrentPageDirectory(PageDirectory* dir)
+{
+    current_directory = dir;
+    SwitchPageDirectory(GetPhysicalAddress((Address)current_directory));
 }

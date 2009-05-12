@@ -2,6 +2,7 @@
 #include <lib/types.h>
 #include <arch/interrupts.h>
 #include <arch/ports.h>
+#include <kernel/Processes/Scheduler.h>
 
 //-----------------------------------------------
 //	Operational Command Bit masks
@@ -49,6 +50,7 @@
 #define		I86_PIT_REG_COMMAND			0x43
 
 using namespace Arch;
+using namespace Processes;
 
 PIT* PIT::instance = NULL;
 
@@ -62,13 +64,11 @@ PIT* PIT::GetInstance()
 
 PIT::PIT()
 {
-    ticks = 0;
 }
 
 void PIT::Initialize(uint32_t frequency)
 {
-    InterruptDispatcher::GetInstance()->RegisterHandler(IRQ_TIMER, this);
-	uint32_t divider = 1193180 / frequency;
+    uint32_t divider = 1193180 / frequency;
 	
 	//Operational Command Word
 	uint8_t ocw=0;
@@ -80,14 +80,4 @@ void PIT::Initialize(uint32_t frequency)
 	//Set frequency
 	outb (I86_PIT_REG_COUNTER0, divider & 0xff);
 	outb (I86_PIT_REG_COUNTER0, (divider >> 8) & 0xff);
-}
-
-long PIT::GetTickCount()
-{
-    return ticks;
-}
-
-void PIT::Execute(registers_t regs)
-{
-    ticks++;
 }
