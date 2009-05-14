@@ -19,6 +19,8 @@ using namespace Memory;
 using namespace Processes;
 using namespace Time;
 
+extern Address bootStack;
+
 class InvalidOpcodeHandler : public IInterruptServiceRoutine
 {
 public:
@@ -62,6 +64,7 @@ int main(MultibootHeader* multibootInfo)
     //Prepare monitor output
     kout.Clear();
     kout << "GeexOS loading..." << endl;
+    kout << "Boot stack at: " << hex << (unsigned)&bootStack << endl;
     
     //Initialize paging
     Paging::GetInstance()->Init();

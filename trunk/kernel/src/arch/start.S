@@ -37,7 +37,7 @@ start:
 	jmp 0x08:higherhalf			; Far jump to higher half kernel
 	
 higherhalf:						; Here the CPU adds 0x40000000 to all addresses due to the trck gdt
-	mov esp, stack				; Setup stack
+	mov esp, bootStack			; Setup stack
 	mov ebp, esp
 	push ebp
 	push ebx					; Push pointer to GRUB multiboot-information
@@ -110,5 +110,6 @@ gdt_end:
 section .bss
 align 32
 
-stack:
+global bootStack
+bootStack:
 	resb      STACKSIZE
