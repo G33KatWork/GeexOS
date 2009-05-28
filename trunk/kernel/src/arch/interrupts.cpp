@@ -9,12 +9,12 @@ using namespace IO;
 
 void fault_handler(registers_t regs)
 {
-    InterruptDispatcher::GetInstance()->Execute(regs);
+    InterruptDispatcher::GetInstance()->Execute(&regs);
 }
 
 void interrupt_handler(registers_t regs)
 {
-    InterruptDispatcher::GetInstance()->Execute(regs);
+    InterruptDispatcher::GetInstance()->Execute(&regs);
 }
 
 InterruptDispatcher* InterruptDispatcher::instance = NULL;
@@ -47,24 +47,24 @@ void InterruptDispatcher::UnregisterHandler(int i)
     isrs[i] = NULL;
 }
 
-void InterruptDispatcher::Execute(registers_t regs)
+void InterruptDispatcher::Execute(registers_t *regs)
 {
-    NotifyPIC(regs.int_no);
+    NotifyPIC(regs->int_no);
     
-    if(isrs[regs.int_no] != NULL)
+    if(isrs[regs->int_no] != NULL)
     {
-        IInterruptServiceRoutine* isr = isrs[regs.int_no];
+        IInterruptServiceRoutine* isr = isrs[regs->int_no];
         isr->Execute(regs);
     }
     else
     {
-        if(regs.int_no < 32)
+        if(regs->int_no < 32)
         {
-            DEBUG_MSG("Unhandled fault: " << dec << regs.int_no);
+            DEBUG_MSG("Unhandled fault: " << dec << regs->int_no);
         }
         else
         {
-            DEBUG_MSG("Unhandled interrupt: " << dec << regs.int_no);
+            DEBUG_MSG("Unhandled interrupt: " << dec << regs->int_no);
         }
     }
 }

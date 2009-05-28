@@ -3,7 +3,7 @@
 
 #include <lib/types.h>
 #include <arch/clock_source.h>
-#include <kernel/Processes/Process.h>
+#include <kernel/Processes/Thread.h>
 
 using namespace Arch;
 using namespace Processes;
@@ -23,18 +23,18 @@ namespace Time
         unsigned long length;
         TimerAction action;
         TimerFunction function;
-        Process *process;
+        Thread *thread;
         
     public:
-        Timer(TimerAction act, TimerFunction func, Process *proc)
+        Timer(TimerAction act, TimerFunction func, Thread *t)
         {
             this->length = 0;
             this->function = func;
-            this->process = proc;
+            this->thread = t;
             this->action = act;
         }
         
-        void timerExpired();
+        bool timerExpired();
         
         void SetLength(unsigned long len) { length = len; }
         unsigned long GetLength() { return length; }

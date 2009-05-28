@@ -65,3 +65,13 @@ void  operator delete[](void *p)
 {
     memoryManager.free(p);
 }
+
+void* kmalloc(size_t size)
+{
+    return memoryManager.kmalloc(size, false);
+}
+
+void kfree(void* p)
+{
+    memoryManager.free(p);
+}

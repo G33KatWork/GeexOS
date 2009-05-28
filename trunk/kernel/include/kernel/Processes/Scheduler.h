@@ -2,10 +2,14 @@
 #define PROCESSES_SCHEDULER_H_
 
 #include <lib/types.h>
-#include <kernel/Processes/Process.h>
+#include <kernel/Processes/Thread.h>
+#include <arch/CPUContext.h>
 #include <kernel/DataStructures/OrderedArray.h>
+#include <kernel/Time/Timer.h>
+#include <kernel/Time/TimerManager.h>
 
 using namespace DataStructures;
+using namespace Time;
 
 namespace Processes
 {
@@ -15,17 +19,24 @@ namespace Processes
         static Scheduler* GetInstance();
         
         void Schedule();
-        void AddProcess(Process* p);
+        void AddThread(Thread* t);
+        
+        void SetTimerManager(TimerManager* t) { tm = t; }
+        
+        Thread* GetCurrentThread() { return currentThread; }
         
     private:
         static Scheduler* instance;
         
         //FIXME: Use dynamic array
-        OrderedArray<Process*, 128> *processQueue;
-        Process* currentProcess;
+        OrderedArray<Thread*, 128> *threadQueue;
+        Thread* currentThread;
+        Thread* kernelThread;
+        
+        Timer* schedulingTimer;
+        TimerManager* tm;
         
         Scheduler();
-        void switchToProcess(Process* p);
     };
 }
 #endif

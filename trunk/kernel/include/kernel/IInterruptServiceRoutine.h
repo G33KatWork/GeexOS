@@ -12,7 +12,7 @@ namespace Kernel
         virtual ~IInterruptServiceRoutine() {};
 
     public:    
-        virtual void Execute(registers_t regs) = 0;
+        virtual void Execute(registers_t *regs) = 0;
     };
 }
 

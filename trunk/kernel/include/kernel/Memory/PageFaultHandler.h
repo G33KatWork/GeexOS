@@ -11,7 +11,7 @@ namespace Memory
     class PageFaultHandler : public IInterruptServiceRoutine
     {
     public:
-        void Execute(registers_t regs);
+        void Execute(registers_t *regs);
     };
 }
 

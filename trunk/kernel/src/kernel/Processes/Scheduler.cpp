@@ -1,26 +1,14 @@
 #include <kernel/Processes/Scheduler.h>
-#include <kernel/DataStructures/OrderedArray.h>
-#include <arch/scheduling.h>
-#include <arch/interrupts.h>
-
+#include <kernel/Time/TimerManager.h>
 
 using namespace Processes;
 using namespace Arch;
+using namespace Time;
 
-void idleTask() {
-    for(;;)
-    {
-        asm volatile("int $3");
-        kout << "a";
-    }
-}
-
-void proc2() {
-    for(;;)
-    {
-        asm volatile("int $4");
-        kout << "b";
-    }
+static bool scheduleTimerHandler(void)
+{
+    Scheduler::GetInstance()->GetCurrentThread()->SetTimeslice(0);
+    return true; //force scheduling
 }
 
 Scheduler* Scheduler::instance = NULL;
@@ -33,67 +21,69 @@ Scheduler* Scheduler::GetInstance()
     return instance;
 }
 
-static bool processLessThan(Process *p1, Process *p2)
+static bool threadLessThan(Thread *t1, Thread *t2)
 {
-    return p1->GetLastRun() < p2->GetLastRun();
+    //just return true to get the old thread positioned
+    //at the end of the queue for now
+    return true;
 }
 
 Scheduler::Scheduler()
 {
-    processQueue = new OrderedArray<Process*, 128>();
-    processQueue->SetPredicate(processLessThan);
+    threadQueue = new OrderedArray<Thread*, 128>();
+    threadQueue->SetPredicate(threadLessThan);
     
-    currentProcess = new Process(1, 0x400000, Paging::GetInstance()->GetKernelDirectory());
-    currentProcess->SetInstructionPointer((Address)idleTask);
+    //TODO: Last argument is pagedirectory!!!
+    kernelThread = new Thread(NULL, (void *)NULL, 1, NULL);
+    currentThread = kernelThread;
     
-    Process* proc2 = new Process(2, 0x350000, Paging::GetInstance()->GetKernelDirectory());
-    proc2->SetInstructionPointer((Address)proc2);
-    processQueue->Insert(proc2);
+    schedulingTimer = new Timer(FUNCTION, scheduleTimerHandler, NULL);
+    
+    tm = NULL;
     
     DEBUG_MSG("Scheduler initialized");
 }
 
 void Scheduler::Schedule()
-{
-    if (processQueue->GetSize())
+{   
+    DisableInterrupts();
+    
+    //check if we have a timer manager
+    ASSERT(tm != NULL, "TimerManager is NULL");
+    
+    if (threadQueue->GetSize())
     {
-        Process *next = processQueue->ItemAt(0);
-        processQueue->RemoveAt(0);
+        //TODO: use several queues for priorities
+        Thread *next = threadQueue->ItemAt(0);
+        Thread *old = currentThread;
+        threadQueue->RemoveAt(0);
         
         //TODO: Check status if zombie, blocked etc. and schedule only runnable tasks
-        processQueue->Insert(currentProcess);
+        threadQueue->Insert(currentThread);
         
-        next->UpdateLastRun();
+        //Switch
+        currentThread = next;
+        //kout << "Switching to task: " << dec << next->GetId();
         
-        switchToProcess(next);
+        //Calculate new timeslice (in nanoseconds)
+        //TODO: use real algorithm...
+        currentThread->SetTimeslice(10000000);
+        tm->StartTimer(schedulingTimer, 10000000);
+        
+        if(old != currentThread)
+        {
+            currentThread->GetContext()->SwitchTo(old->GetContext());
+        }
     }
+    
+    //Add your code that should be executed after a wakeup here
+    //kout << "post";
+    
+    EnableInterrupts();
 }
 
-void Scheduler::switchToProcess(Process* p)
+void Scheduler::AddThread(Thread* t)
 {
-    kout << "Switching to process " << dec << p->GetPid() << endl;
-    
-    /*DisableInterrupts();
-    
-    currentProcess->SetStackPointer(readStackPointer());
-    currentProcess->SetBasePointer(readBasePointer());
-    //save old instruction pointer
-    currentProcess->SetInstructionPointer(interruptRegs->eip);
-    
-    
-    //******* SWITCH TO NEW PROC ********
-    currentProcess = p;
-    
-    interruptRegs->esp = currentProcess->GetStackPointer();
-    interruptRegs->ebp = currentProcess->GetBasePointer();    
-    Paging::GetInstance()->SwitchCurrentPageDirectory(p->GetPageDirectory());
-    interruptRegs->eip = currentProcess->GetInstructionPointer();*/ //set new eip in struct so the iret of the interrupt handler jumps to other process
-
-    //TODO: TSS?
-}
-
-void Scheduler::AddProcess(Process* p)
-{
-    processQueue->Insert(p);
+    threadQueue->Insert(t);
 }
 

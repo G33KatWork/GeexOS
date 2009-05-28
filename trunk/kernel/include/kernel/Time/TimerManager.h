@@ -29,7 +29,7 @@ namespace Time
         
         void SetClockSource(ClockSource_t *newSource);
         
-        void HandleTick(ClockSource_t *source);
+        bool HandleTick(ClockSource_t *source);
         void StartTimer(Timer* t, unsigned long length);
         void StopTimer(Timer* t);
     };

@@ -44,7 +44,7 @@ namespace Arch
 
         void RegisterHandler(int i, IInterruptServiceRoutine* isr);
         void UnregisterHandler(int i);
-        void Execute(registers_t regs);
+        void Execute(registers_t *regs);
     };
     
     

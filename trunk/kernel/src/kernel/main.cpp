@@ -7,7 +7,7 @@
 #include <kernel/Memory/PageFaultHandler.h>
 #include <arch/interrupts.h>
 #include <kernel/Processes/Scheduler.h>
-#include <kernel/Processes/Process.h>
+#include <kernel/Processes/Thread.h>
 #include <kernel/IInterruptServiceRoutine.h>
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Time/Timer.h>
@@ -24,9 +24,9 @@ extern Address bootStack;
 class InvalidOpcodeHandler : public IInterruptServiceRoutine
 {
 public:
-    void Execute(registers_t regs)
+    void Execute(registers_t *regs)
     {
-        DEBUG_MSG("Invalid Opcode: EIP: " << hex << (unsigned) regs.eip);
+        DEBUG_MSG("Invalid Opcode: EIP: " << hex << (unsigned) regs->eip);
         PANIC("Invalid opcode!");
         for(;;);
     }
@@ -43,20 +43,26 @@ public:
         tm = timerManager;
     }
     
-    void Execute(registers_t regs)
+    void Execute(registers_t *regs)
     {
-        this->tm->HandleTick(&Arch::ClockSource);
+        if(this->tm->HandleTick(&Arch::ClockSource))
+            Scheduler::GetInstance()->Schedule();
+            
+        kout << Monitor::SetPosition(0, 15);
+        kout << "EIP: " << hex << regs->eip << endl;
+        kout << "CS: " << regs->cs << endl;
+        kout << "EFLAGS: " << regs->eflags << endl;
+        kout << "USERSP: " << regs->useresp << endl;
+        kout << "SS: " << regs->ss << endl;
     }
 };
 
-bool timerFunc(void) {
-    kout << "a";
-    return true;
-}
-
-bool timerFunc2(void) {
-    kout << "b";
-    return true;
+void thread(void* arg)
+{
+    for(;;)
+    {
+        //kout << "b";
+    }
 }
 
 int main(MultibootHeader* multibootInfo)
@@ -100,20 +106,18 @@ int main(MultibootHeader* multibootInfo)
     irqD->RegisterHandler(32, new TimerHandler(tm));
     kout << "Timer initialized..." << endl;
     
+    Scheduler* scheduler = Scheduler::GetInstance();
+    scheduler->SetTimerManager(tm);
+    kout << "Scheduler initialized" << endl;
+    
+    Thread *t = new Thread(thread, NULL, 10, NULL);
+    scheduler->AddThread(t);
+    
     Arch::EnableInterrupts();
     kout << "Interrupts enabled..." << endl;
     
-    Timer *t = new Timer(FUNCTION, timerFunc, NULL);
-    tm->StartTimer(t, 2000000000);
-    
-    Timer *t2 = new Timer(FUNCTION, timerFunc2, NULL);
-    tm->StartTimer(t2, 500000000);
-    
-    //Scheduler* scheduler = Scheduler::GetInstance();
-    //kout << "Scheduler initialized" << endl;
-    
     for(;;) {
-        //scheduler->Schedule();
+        scheduler->Schedule();
         asm volatile("hlt"); //halt cpu until next irq (timer etc.) to switch to next time slice
     }
     

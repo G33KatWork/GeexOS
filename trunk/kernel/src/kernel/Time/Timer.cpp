@@ -3,8 +3,10 @@
 
 using namespace Time;
 
-void Timer::timerExpired()
+bool Timer::timerExpired()
 {
+    bool ret = false;
+    
     switch(action)
     {
         case PREEMPT:
@@ -15,7 +17,9 @@ void Timer::timerExpired()
         
         case FUNCTION:
             if(function != NULL)
-                function();
+                ret = function();
             break;
     }
+    
+    return ret;
 }

@@ -21,6 +21,10 @@
 #define I86_GDT_GRAND_32BIT			0x40			//01000000
 #define I86_GDT_GRAND_4K			0x80			//10000000
 
+//gdt descriptor offsets
+#define GDT_KERNEL_CODE             0x08
+#define GDT_KERNEL_DATA             0x10
+
 namespace Arch
 {
     struct gdt_entry

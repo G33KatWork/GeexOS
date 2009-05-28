@@ -34,4 +34,7 @@ void *operator new[](size_t size, bool pageAlign, Address *physAddr=NULL);
 void  operator delete(void *p);
 void  operator delete[](void *p);
 
+void* kmalloc(size_t size);
+void kfree(void* p);
+
 #endif
