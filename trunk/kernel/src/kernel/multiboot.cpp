@@ -4,7 +4,6 @@
 #include <kernel/elf32.h>
 
 using namespace Kernel;
-using namespace Lib;
 
 Multiboot::Multiboot(MultibootHeader *h)
 {

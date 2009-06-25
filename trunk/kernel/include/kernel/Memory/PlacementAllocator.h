@@ -1,21 +1,21 @@
-#ifndef HEAP_H_
-#define HEAP_H_
+#ifndef PLACEMENT_ALLOCATOR_H_
+#define PLACEMENT_ALLOCATOR_H_
 
 #include <lib/types.h>
 #include <kernel/Memory/IMemoryAllocator.h>
 
 namespace Memory
 {
-    class Heap : public IMemoryAllocator
+    class PlacementAllocator : public IMemoryAllocator
     {
-	public:
-        Heap(Address location, unsigned int size, unsigned int initialSize);
+    public:
+        PlacementAllocator();
         
         void* Allocate(size_t len, bool pageAlign);
         void Deallocate(void* p);
-        
+
     private:
-		
+        unsigned int placement_address;
     };
 }
 #endif

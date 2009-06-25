@@ -55,6 +55,11 @@ namespace Arch
     public:
         PageTable()
         {
+            Init();
+        }
+        
+        void Init()
+        {
             for(int i = 0; i < 1024; i++)
                 pages[i] = Page();
         }
@@ -80,6 +85,11 @@ namespace Arch
     {
     public:
         PageDirectory()
+        {
+            Init();
+        }
+        
+        void Init()
         {
             for (int i = 0; i < 1023; i++)
                 tables[i] = NULL;

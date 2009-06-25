@@ -4,7 +4,6 @@
 #include <arch/ports.h>
 
 using namespace IO;
-using namespace Lib;
 using namespace Arch;
 
 Monitor::Monitor()

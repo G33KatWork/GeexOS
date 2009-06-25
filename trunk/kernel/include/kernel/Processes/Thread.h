@@ -4,7 +4,6 @@
 #include <lib/types.h>
 #include <kernel/Memory/Paging.h>
 #include <arch/hal.h>
-#include <arch/CPUContext.h>
 
 using namespace Memory;
 using namespace Arch;
@@ -17,38 +16,34 @@ namespace Processes
     class Thread
     {
     public:
-        Thread(void (*func)(void*), void *arg, unsigned int id, PageDirectory* pd)
-        {
-            tid = id;
-            page_directory = pd;
-            context = new CPUContext(func, arg);
-            priority = 1;
-        }
-        
-        ~Thread()
-        {
-            delete context;
-        }
+		Thread(unsigned int id, PageDirectory* pd);
         
         int GetId() { return tid; }
         PageDirectory* GetPageDirectory() { return page_directory; }
         void SetPageDirectory(PageDirectory* p) { page_directory = p; }
-        CPUContext* GetContext(){ return context; }
         int GetPriority() { return priority; }
         void SetPriority(unsigned char p) { priority = p; }
         unsigned long GetTimeslice() { return timeslice; }
         void SetTimeslice(unsigned long t) { timeslice = t; }
+        Address GetStackPointer() { return stackPointer; }
+        void SetStackPointer(Address s) { stackPointer = s; }
+         Address GetBasePointer() { return basePointer; }
+        void SetBasePointer(Address b) { basePointer = b; }
+        Address GetInstructionPointer() { return instructionPointer; }
+        void SetInstructionPointer(Address i) { instructionPointer = i; }
         
         void Sleep();
         void Wakeup();
-        
+		void SwitchTo();
         
     private:
         int tid;
         unsigned char priority;
         unsigned long timeslice;
-        CPUContext *context;
         PageDirectory* page_directory;
+		Address stackPointer;
+		Address basePointer;
+		Address instructionPointer;
     };
 }
 #endif

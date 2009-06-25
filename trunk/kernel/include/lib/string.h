@@ -3,9 +3,9 @@
 
 #include <lib/types.h>
 
-namespace Lib
+//namespace Lib
+extern "C"
 {
-
     void *memcpy(void *dest, const void* src, size_t count);
     void *memset(void *dest, int val, size_t count);
     void *memmove(void *dest, const void *src, size_t count);
@@ -22,6 +22,9 @@ namespace Lib
     char *strrchr(const char *s, int c);
     char *strcpy(char *dest, const char *src);
     char *strncpy(char *dest, const char *src, size_t count);
+    char * strncat(char *dst, const char *src, size_t n);
+    
+    unsigned long strtoul(const char *nptr, char **endptr, int base);
 }
 
 #endif

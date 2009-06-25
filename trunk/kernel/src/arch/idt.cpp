@@ -2,7 +2,6 @@
 #include <lib/string.h>
 #include <arch/idt.h>
 
-using namespace Lib;
 using namespace Arch;
 
 struct idt_entry idt[I86_IDT_MAX_ENTRY_COUNT];

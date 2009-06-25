@@ -38,40 +38,40 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
 
 void *operator new(size_t size)
 {
-    return memoryManager.kmalloc(size, false);
-}
-
-void *operator new(size_t size, bool pageAlign, Address *addr)
-{
-    return memoryManager.kmalloc(size, pageAlign, addr);
+    return memoryManager.kmalloc(size);
 }
 
 void *operator new[](size_t size)
 {
-    return memoryManager.kmalloc(size, false);
-}
-
-void *operator new[](size_t size, bool pageAlign, Address *addr)
-{
-    return memoryManager.kmalloc(size, pageAlign, addr);
+    return memoryManager.kmalloc(size);
 }
 
 void  operator delete(void *p)
 {
-    memoryManager.free(p);
+    memoryManager.kfree(p);
 }
 
 void  operator delete[](void *p)
 {
-    memoryManager.free(p);
+    memoryManager.kfree(p);
+}
+
+void *operator new(size_t size, bool pageAllocation)
+{
+    //FIXME: Implement allocation mechanism for PageTables and PageDirectories
+}
+
+void operator delete(void *p, bool pageAllocation)
+{
+    //FIXME: Implement deallocation mechanism for PageTables and PageDirectories
 }
 
 void* kmalloc(size_t size)
 {
-    return memoryManager.kmalloc(size, false);
+    return memoryManager.kmalloc(size);
 }
 
 void kfree(void* p)
 {
-    memoryManager.free(p);
+    memoryManager.kfree(p);
 }

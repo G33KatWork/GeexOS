@@ -7,6 +7,8 @@ namespace Arch
     extern "C"  Address readStackPointer();
     extern "C"  void    writeBasePointer(Address a);
     extern "C"  Address readBasePointer();
+	
+    extern "C"  Address readInstructionPointer();
 }
 
 #endif

@@ -8,30 +8,33 @@ TARGET = kernel.elf
 CCSOURCES = 
 
 # List C++ source files here
-CXXSOURCES = src/lib/string.cpp \
-             src/kernel/Memory/MemoryManager.cpp \
-             src/kernel/main.cpp \
-			 src/kernel/IO/Monitor.cpp \
-			 src/kernel/global.cpp \
-			 src/lib/cppruntime.cpp \
-			 src/kernel/debug.cpp \
-			 src/kernel/multiboot.cpp \
-			 src/kernel/Memory/Paging.cpp \
-			 src/arch/gdt.cpp \
-			 src/arch/idt.cpp \
-			 src/arch/pic.cpp  \
-			 src/arch/pit.cpp  \
-			 src/arch/hal.cpp  \
-			 src/arch/interrupts.cpp \
-			 src/kernel/Memory/Heap.cpp \
-			 src/kernel/Processes/Scheduler.cpp \
-			 src/kernel/Processes/Thread.cpp \
-			 src/kernel/DataStructures/OrderedArray.cpp \
-			 src/kernel/Memory/PageFaultHandler.cpp \
-			 src/kernel/DataStructures/List.cpp\
-			 src/kernel/Time/Timer.cpp\
-			 src/kernel/Time/TimerManager.cpp \
-			 src/arch/CPUContext.cpp
+CXXSOURCES = lib/string.cpp \
+             kernel/Memory/MemoryManager.cpp \
+             kernel/main.cpp \
+			 kernel/IO/Monitor.cpp \
+			 kernel/global.cpp \
+			 lib/cppruntime.cpp \
+			 kernel/debug.cpp \
+			 kernel/multiboot.cpp \
+			 kernel/Memory/Paging.cpp \
+			 arch/gdt.cpp \
+			 arch/idt.cpp \
+			 arch/pic.cpp  \
+			 arch/pit.cpp  \
+			 arch/hal.cpp  \
+			 arch/interrupts.cpp \
+			 kernel/Memory/Heap.cpp \
+			 kernel/Processes/Scheduler.cpp \
+			 kernel/Processes/Thread.cpp \
+			 kernel/DataStructures/OrderedArray.cpp \
+			 kernel/Memory/PageFaultHandler.cpp \
+			 kernel/DataStructures/List.cpp\
+			 kernel/Time/Timer.cpp\
+			 kernel/Time/TimerManager.cpp \
+			 kernel/Memory/Stack.cpp \
+ 			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp \
+ 			 kernel/Memory/PlacementAllocator.cpp
+#			 kernel/utils/demangle.cpp
 
 # List D source files here
 DSOURCES = 
@@ -40,13 +43,18 @@ DSOURCES =
 OBJCSOURCES = 
 
 # List Assembler to be assembled with NASM here
-ASOURCES = src/arch/start.S \
-		   src/arch/interrupts_stubs.S \
-		   src/arch/scheduling.S \
-		   src/arch/contextSwitch.S
+ASOURCES = arch/start.S \
+		   arch/interrupts_stubs.S \
+		   arch/scheduling.S
 
-# Addiotional include paths to consider
+# Additional include paths to consider
 INCLUDES =	include
+
+# Folder for object files
+OBJDIR = obj
+
+# Folder for sourcecode
+SRCDIR = src
 
 # C compiler flags
 CFLAGS += -g -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
@@ -79,18 +87,25 @@ ASFLAGS = -f elf -g
 LDFLAGS = -T linker.ld -Map kernel.map
 
 # Determinte objects to be created
-OBJECTS += $(ASOURCES:.S=.o)
-OBJECTS += $(GASOURCES:.s=.o)
-OBJECTS += $(CXXSOURCES:.cpp=.o)
-OBJECTS += $(CCSOURCES:.c=.o)
-OBJECTS += $(DSOURCES:.d=.o)
-OBJECTS += $(OBJCSOURCES:.m=.o)
+OBJECTS += $(ASOURCES:%.S=%.o)
+OBJECTS += $(GASOURCES:%.s=%.o)
+OBJECTS += $(CXXSOURCES:%.cpp=%.o)
+OBJECTS += $(CCSOURCES:%.c=%.o)
+OBJECTS += $(DSOURCES:%.d=%.o)
+OBJECTS += $(OBJCSOURCES:%.m=%.o)
 
 # Main targets
-all: $(TARGET)
+all: createdirs $(TARGET)
 	@:	#Shut up!
 
-$(TARGET): $(OBJECTS)
+# sort for removing duplicates
+$(sort $(addprefix $(OBJDIR)/, $(dir $(OBJECTS)))):
+	$(call cmd_msg,MKDIR,$(@))
+	$(Q)mkdir -p $@
+	
+createdirs: $(sort $(addprefix $(OBJDIR)/, $(dir $(OBJECTS))))
+
+$(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS))
 	$(call cmd_msg,LINK,$(@))
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^
 	$(call cmd_msg,OBJDUMP,$(@) -> source)
@@ -98,35 +113,36 @@ $(TARGET): $(OBJECTS)
 
 # Cleaning
 clean:
-	$(Q)rm -f $(TARGET) \
-	$(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
+	$(Q)rm -f $(TARGET)
+#$(Q)rm -f $(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
 	$(Q)rm -f source
 	$(Q)rm -f kernel.map
+	$(Q)rm -rf obj
 
 distclean: clean
 
 # Compile cpp files
-%.o: %.cpp
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(call cmd_msg,CXX,$<)
 	$(Q)$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Compile c files
-%.o: %.c
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(call cmd_msg,CC,$<)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
 
 # Compile d files
-%.o: %.d
+$(OBJDIR)/%.o: $(SRCDIR)/%.d
 	$(call cmd_msg,DC,$<)
 	$(Q)$(DC) $(DFLAGS) -c $< -o $@
 
 # Compile Objective-C files
-%.o: %.m
+$(OBJDIR)/%.o: $(SRCDIR)/%.m
 	$(call cmd_msg,OBJCC,$<)
 	$(Q)$(CC) $(OBJCFLAGS) -c $< -o $@
 
 # Assembler S files
-%.o: %.S
+$(OBJDIR)/%.o: $(SRCDIR)/%.S
 	$(call cmd_msg,NASM,$<)
 	$(Q)$(NASM) $(ASFLAGS) -o $@ $<
 

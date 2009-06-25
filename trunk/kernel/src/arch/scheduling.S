@@ -22,3 +22,9 @@ writeBasePointer:
 readBasePointer:
     mov eax, ebp
     ret
+
+[GLOBAL readInstructionPointer]
+readInstructionPointer:
+    pop eax     ; Get the return address
+    jmp eax     ; return - can't use RET because return address popped off
+                ; stack.

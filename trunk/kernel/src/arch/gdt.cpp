@@ -2,7 +2,6 @@
 #include <lib/string.h>
 #include <arch/gdt.h>
 
-using namespace Lib;
 using namespace Arch;
 
 struct gdt_entry gdt[I86_GDT_ENTRY_COUNT];

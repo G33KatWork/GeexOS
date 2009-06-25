@@ -3,7 +3,6 @@
 
 #include <lib/types.h>
 #include <kernel/Processes/Thread.h>
-#include <arch/CPUContext.h>
 #include <kernel/DataStructures/OrderedArray.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/Time/TimerManager.h>
@@ -19,7 +18,7 @@ namespace Processes
         static Scheduler* GetInstance();
         
         void Schedule();
-        void AddThread(Thread* t);
+        int Fork();
         
         void SetTimerManager(TimerManager* t) { tm = t; }
         
