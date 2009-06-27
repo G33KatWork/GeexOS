@@ -111,10 +111,10 @@ int main(MultibootHeader* multibootInfo)
     
     DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
-    Heap *h = new Heap(0xC0400000, 512*1024*1024, 1*1024);
-    memoryManager.SetAllocator(h);
-    DEBUG_MSG("Kernel heap initialized...");
-    DEBUG_MSG("Not really... Implement it, stupid sucker!")
+    //Heap *h = new Heap(0xC0400000, 512*1024*1024, 1*1024);
+    //memoryManager.SetAllocator(h);
+    //DEBUG_MSG("Kernel heap initialized...");
+    //DEBUG_MSG("Not really... Implement it, stupid sucker!")
     
     //Configure interrupt dispatcher
     InterruptDispatcher* irqD = InterruptDispatcher::GetInstance();
@@ -137,7 +137,6 @@ int main(MultibootHeader* multibootInfo)
     
     //Thread *t2 = new Thread(thread2, NULL, 10, NULL);
     //scheduler->AddThread(t2);
-    
     Arch::EnableInterrupts();
     DEBUG_MSG("Interrupts enabled...");
     
