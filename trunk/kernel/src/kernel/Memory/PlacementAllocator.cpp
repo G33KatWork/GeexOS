@@ -28,7 +28,7 @@ void* PlacementAllocator::Allocate(size_t len, bool pageAlign)
     return (void*)tmp;
 }
 
-void PlacementAllocator::Deallocate(void* p)
+void PlacementAllocator::Deallocate(void* UNUSED(p))
 {
     
 }

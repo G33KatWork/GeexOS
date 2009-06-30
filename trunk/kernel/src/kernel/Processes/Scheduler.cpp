@@ -22,7 +22,7 @@ Scheduler* Scheduler::GetInstance()
     return instance;
 }
 
-static bool threadLessThan(Thread *t1, Thread *t2)
+static bool threadLessThan(Thread* UNUSED(t1), Thread* UNUSED(t2))
 {
     //just return true to get the old thread positioned
     //at the end of the queue for now

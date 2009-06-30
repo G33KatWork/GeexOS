@@ -46,7 +46,7 @@ public:
         tm = timerManager;
     }
     
-    void Execute(registers_t *regs)
+    void Execute(registers_t* UNUSED(regs))
     {
         if(this->tm->HandleTick(&Arch::ClockSource))
             Scheduler::GetInstance()->Schedule();
@@ -62,6 +62,8 @@ public:
 
 void thread(void* arg)
 {
+    kout << "Thread 1 start... Arg: " << (char *)arg << endl;
+    
     for(;;)
     {
         kout << "b";
@@ -70,6 +72,8 @@ void thread(void* arg)
 
 void thread2(void* arg)
 {
+    kout << "Thread 2 start... Arg: " << (char *)arg << endl;
+    
     for(;;)
     {
         kout << "a";
@@ -167,6 +171,6 @@ DEBUG_MSG("f2: " << f2);
 DEBUG_MSG("I'm a DEBUG message!");*
 
 //BÄM!
-/*int* bla2 = (int*)0xA0000000;
+int* bla2 = (int*)0xA0000000;
 *bla2 = 1;*/
 

@@ -24,6 +24,15 @@ extern class Memory::MemoryManager memoryManager;
 #define DEBUG_MSG(msg)
 #endif
 
+#ifdef UNUSED 
+#elif defined(__GNUC__) 
+# define UNUSED(x) UNUSED_ ## x __attribute__((unused)) 
+#elif defined(__LCLINT__) 
+# define UNUSED(x) /*@unused@*/ x 
+#else 
+# define UNUSED(x) x 
+#endif
+
 extern void panic(const char *message);
 void panic_assert(const char *file, unsigned int line, const char *condition, const char *desc);
 
