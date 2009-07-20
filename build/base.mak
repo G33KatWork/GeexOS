@@ -50,6 +50,7 @@ endef
 
 # Define toolchain target
 TOOLCHAIN_TARGET    := i686-elf
+#TOOLCHAIN_TARGET    := avr32
 
 # Define root directory
 SRC                 := $(shell cd $(SRC); pwd)

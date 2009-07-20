@@ -1,10 +1,13 @@
-GCC_VERSION    := 4.1.2
-GDC_VERSION    := 0.24
+GCC_VERSION    := 4.2.2
 GCC_SOURCE     := $(TOOLCHAIN_SRCDIR)/gcc-$(GCC_VERSION).tar.bz2
-GDC_SOURCE     := $(TOOLCHAIN_SRCDIR)/gdc-$(GDC_VERSION).tar.bz2
 GCC_DOWNLOAD   := http://ftp.gnu.org/gnu/gcc/gcc-$(GCC_VERSION)/gcc-$(GCC_VERSION).tar.bz2
-GDC_DOWNLOAD   := http://freefr.dl.sourceforge.net/sourceforge/dgcc/gdc-$(GDC_VERSION)-src.tar.bz2
-GDC_PATCHES    := $(TOOLCHAIN_PATCHDIR)/gdc-0.24-cygwin_d_os_versym-define.patch
+GCC_PATCHES    := 
+
+ifeq ($(TOOLCHAIN_TARGET),avr32)
+GCC_PATCHES += $(TOOLCHAIN_PATCHDIR)/gcc-$(GCC_VERSION).atmel.1.1.3.patch
+endif
+
+#$(TOOLCHAIN_PATCHDIR)/gcc-$(GCC_VERSION).atmel.1.1.3-revert-broken-uclibc-stuff.patch $(TOOLCHAIN_PATCHDIR)/902-avr32-revert-broken-read-modify-write-stuff.patch
 
 PATH += :$(TOOLCHAIN_ROOTDIR)/bin
 
@@ -19,12 +22,6 @@ $(GCC_SOURCE):
 	$(call cmd_msg,WGET,$(subst $(SRC)/,,$(@)))
 	$(Q)wget -c -O $(@).part $(GCC_DOWNLOAD)
 	$(Q)mv $(@).part $(@)
-	
-$(GDC_SOURCE):
-	$(call target_mkdir)
-	$(call cmd_msg,WGET,$(subst $(SRC)/,,$(@)))
-	$(Q)wget -c -O $(@).part $(GDC_DOWNLOAD)
-	$(Q)mv $(@).part $(@)
 
 
 # Extract
@@ -32,22 +29,16 @@ $(TOOLCHAIN_ROOTDIR)/.gcc-extract: $(GCC_SOURCE)
 	$(Q)mkdir -p $(TOOLCHAIN_BUILDDIR)
 	$(call cmd_msg,EXTRACT,$(subst $(SRC)/$(SRCSUBDIR)/,,$(GCC_SOURCE)))
 	$(Q)tar -C $(TOOLCHAIN_BUILDDIR) -xjf $(GCC_SOURCE)
-	$(Q)touch $(@)
-	
-$(TOOLCHAIN_ROOTDIR)/.gdc-extract: $(GDC_SOURCE) $(TOOLCHAIN_ROOTDIR)/.gcc-extract
-	$(call cmd_msg,EXTRACT,$(subst $(SRC)/$(SRCSUBDIR)/,,$(GDC_SOURCE)))
-	$(Q)mkdir $(TOOLCHAIN_BUILDDIR)/gcc-$(GCC_VERSION)/gcc/d
-	$(Q)tar -C $(TOOLCHAIN_BUILDDIR)/gcc-$(GCC_VERSION)/gcc -xjf $(GDC_SOURCE)
-	$(Q)cd $(TOOLCHAIN_BUILDDIR)/gcc-$(GCC_VERSION); ./gcc/d/setup-gcc.sh $(QOUTPUT)
-	$(Q)$(foreach patch,$(GDC_PATCHES), \
+	$(call cmd_msg,PATCH,$(subst $(SRC)/$(SRCSUBDIR)/,,$(GCC_PATCHES)))
+	$(Q)$(foreach patch,$(GCC_PATCHES), \
 		cd $(TOOLCHAIN_BUILDDIR)/gcc-$(GCC_VERSION); \
-		patch -Np1 -i $(patch) $(QOUTPUT) \
+		patch -Np1 -i $(patch) $(QOUTPUT); \
 	)
 	$(Q)touch $(@)
 
 
 # Configure
-$(TOOLCHAIN_ROOTDIR)/.gcc-configure: $(TOOLCHAIN_ROOTDIR)/.gcc-extract $(TOOLCHAIN_ROOTDIR)/.gdc-extract
+$(TOOLCHAIN_ROOTDIR)/.gcc-configure: $(TOOLCHAIN_ROOTDIR)/.gcc-extract
 	$(Q)if [ -d "$(TOOLCHAIN_BUILDDIR)/gcc-build" ]; then \
 		rm -rf $(TOOLCHAIN_BUILDDIR)/gcc-build; \
 	fi
@@ -58,7 +49,7 @@ $(TOOLCHAIN_ROOTDIR)/.gcc-configure: $(TOOLCHAIN_ROOTDIR)/.gcc-extract $(TOOLCHA
 			--prefix=$(TOOLCHAIN_ROOTDIR) \
 			--target=$(TOOLCHAIN_TARGET) \
 			--without-headers \
-			--enable-languages=c,d,c++,objc,obj-c++ --disable-nls \
+			--enable-languages=c,c++ --disable-nls \
 			$(QOUTPUT) \
 			$(GCC_CONFOPTS)
 	$(Q)touch  $(@)

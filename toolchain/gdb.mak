@@ -1,7 +1,11 @@
-GDB_VERSION    := 6.8
+GDB_VERSION    := 6.7.1
 GDB_SOURCE     := $(TOOLCHAIN_SRCDIR)/gdb-$(GDB_VERSION).tar.bz2
 GDB_DOWNLOAD   := http://ftp.gnu.org/gnu/gdb/gdb-$(GDB_VERSION).tar.bz2
 GDB_PATCHES    := $(TOOLCHAIN_PATCHDIR)/gdb-$(GDB_VERSION)-anti_error_makefile.patch
+
+ifeq ($(TOOLCHAIN_TARGET),avr32)
+GDB_PATCHES += $(TOOLCHAIN_PATCHDIR)/gdb-$(GDB_VERSION).atmel.1.0.3.patch
+endif
 
 # Download
 $(GDB_SOURCE):
@@ -19,7 +23,7 @@ $(TOOLCHAIN_ROOTDIR)/.gdb-extract: $(GDB_SOURCE)
 	$(call cmd_msg,PATCH,$(subst $(SRC)/$(SRCSUBDIR)/,,$(GDB_PATCHES)))
 	$(Q)$(foreach patch,$(GDB_PATCHES), \
 		cd $(TOOLCHAIN_BUILDDIR)/gdb-$(GDB_VERSION); \
-		patch -Np1 -i $(patch) $(QOUTPUT) \
+		patch -Np1 -i $(patch) $(QOUTPUT); \
 	)
 	$(Q)touch $(@)
 

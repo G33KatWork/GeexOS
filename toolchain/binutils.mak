@@ -1,6 +1,11 @@
-BINUTILS_VERSION    := 2.19
+BINUTILS_VERSION    := 2.18
 BINUTILS_SOURCE     := $(TOOLCHAIN_SRCDIR)/binutils-$(BINUTILS_VERSION).tar.bz2
 BINUTILS_DOWNLOAD   := http://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
+BINUTILS_PATCHES    := 
+
+ifeq ($(TOOLCHAIN_TARGET),avr32)
+BINUTILS_PATCHES += $(TOOLCHAIN_PATCHDIR)/binutils-$(BINUTILS_VERSION).atmel.1.0.1.patch
+endif
 
 # Download
 $(BINUTILS_SOURCE):
@@ -15,6 +20,11 @@ $(TOOLCHAIN_ROOTDIR)/.binutils-extract: $(BINUTILS_SOURCE)
 	$(Q)mkdir -p $(TOOLCHAIN_BUILDDIR)
 	$(call cmd_msg,EXTRACT,$(subst $(SRC)/$(SRCSUBDIR)/,,$(BINUTILS_SOURCE)))
 	$(Q)tar -C $(TOOLCHAIN_BUILDDIR) -xjf $(BINUTILS_SOURCE)
+	$(call cmd_msg,PATCH,$(subst $(SRC)/$(SRCSUBDIR)/,,$(BINUTILS_PATCHES)))
+	$(Q)$(foreach patch,$(BINUTILS_PATCHES), \
+		cd $(TOOLCHAIN_BUILDDIR)/binutils-$(BINUTILS_VERSION); \
+		patch -Np1 -i $(patch) $(QOUTPUT); \
+	)
 	$(Q)touch $(@)
 
 

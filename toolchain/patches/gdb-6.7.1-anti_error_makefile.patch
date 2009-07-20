@@ -1,16 +1,16 @@
-diff -crB gdb-6.8-orig/gdb/Makefile.in gdb-6.8/gdb/Makefile.in
-*** gdb-6.8-orig/gdb/Makefile.in	2008-03-17 13:15:08.000000000 +0100
---- gdb-6.8/gdb/Makefile.in	2009-03-19 03:55:11.000000000 +0100
+diff -crB gdb-6.7.1-orig/gdb/Makefile.in gdb-6.7.1/gdb/Makefile.in
+*** gdb-6.7.1-orig/gdb/Makefile.in	2008-03-17 13:15:08.000000000 +0100
+--- gdb-6.7.1/gdb/Makefile.in	2009-03-19 03:55:11.000000000 +0100
 ***************
-*** 142,148 ****
+*** 136,142 ****
   LIBEXPAT = @LIBEXPAT@
-  
+
   WARN_CFLAGS = @WARN_CFLAGS@
 ! WERROR_CFLAGS = @WERROR_CFLAGS@
   GDB_WARN_CFLAGS = $(WARN_CFLAGS)
   GDB_WERROR_CFLAGS = $(WERROR_CFLAGS)
   
---- 142,148 ----
+--- 136,142 ----
   LIBEXPAT = @LIBEXPAT@
   
   WARN_CFLAGS = @WARN_CFLAGS@
