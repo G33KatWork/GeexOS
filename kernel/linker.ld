@@ -28,9 +28,6 @@ SECTIONS{
         start_ctors = .;
         *(.ctor*)
         end_ctors = .;
-        start_dtors = .;
-        *(.dtor*)
-        end_dtors = .;
         
         data = .; _data = .; __data = .;
         *(.data)

@@ -3,9 +3,8 @@ global start
 extern main
 
 extern start_ctors
-extern start_dtors
 extern end_ctors
-extern end_dtors
+extern __cxa_finalize
 
 MODULEALIGN        equ        1<<0
 MEMINFO            equ        1<<1
@@ -57,16 +56,9 @@ static_ctors_loop:				; Call constructors
 	call main					; Jump to C++-Code
 	cli
 	
-
-static_dtors_loop:				; Call destructors
-    mov ebx, start_dtors
-    jmp .test
-.body:
-    call [ebx]
-    add ebx,4
-.test:
-;    cmp ebx, end_dtors
-;    jb .body
+	push 0
+	call __cxa_finalize			; Call destructors with arg 0 (destroy all)
+	
 
 cpuhalt:
     hlt

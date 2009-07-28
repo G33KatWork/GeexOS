@@ -1,4 +1,5 @@
 #include <kernel/global.h>
+#include <lib/string.h>
 
 //C++ runtime shit
 //See: http://wiki.osdev.org/C_PlusPlus
@@ -22,16 +23,22 @@ extern "C"
  
 void *__dso_handle; /*only the address of this symbol is taken by gcc*/
  
-struct object
+typedef struct
 {
     void (*f)(void*);
     void *p;
     void *d;
-} object[NUM_MAX_STATIC_OBJECTS] = {0};
+} objects;
+objects object[NUM_MAX_STATIC_OBJECTS];
+
 unsigned int iObject = 0;
  
 int __cxa_atexit(void (*f)(void *), void *p, void *d)
 {
+    //initialize everything to 0
+    if(iObject == 0)
+        memset(object, NULL, sizeof(object));
+    
     if (iObject >= NUM_MAX_STATIC_OBJECTS) return -1;
     object[iObject].f = f;
     object[iObject].p = p;
@@ -41,12 +48,14 @@ int __cxa_atexit(void (*f)(void *), void *p, void *d)
 }
  
 /* This currently destroys all objects */
-void __cxa_finalize(void *d)
+void __cxa_finalize(void* UNUSED(d))
 {
     unsigned int i = iObject;
     for (; i > 0; --i)
     {
         --iObject;
-        object[iObject].f(object[iObject].p);
+        
+        if(object[iObject].f != NULL)
+            object[iObject].f(object[iObject].p);
     }
 }
