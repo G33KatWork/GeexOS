@@ -1,5 +1,6 @@
 #include <kernel/debug.h>
 #include <kernel/global.h>
+#include <kernel/utils/demangle.h>
 
 using namespace IO;
 
@@ -32,7 +33,12 @@ void Debug::PrintStacktrace(unsigned int n)
         if(symName == NULL)
             kout << "\t" << "<" << hex << eip << ">\t" << "<unknown symbol>" << endl;
         else
-            kout << "\t" << "<" << hex << symStart << ">\t" << symName << endl;
+        {
+            LargeStaticString demangled = LargeStaticString();
+            LargeStaticString toDemangle = LargeStaticString((const char*)symName);
+            demangle_full(toDemangle, demangled);
+            kout << "\t" << "<" << hex << symStart << ">\t" << demangled << endl;
+        }
         
         
         //kout << "\t" << hex << eip << endl;

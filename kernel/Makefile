@@ -33,8 +33,8 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/Time/TimerManager.cpp \
 			 kernel/Memory/Stack.cpp \
  			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp \
- 			 kernel/Memory/PlacementAllocator.cpp
-#			 kernel/utils/demangle.cpp
+ 			 kernel/Memory/PlacementAllocator.cpp \
+			 kernel/utils/demangle.cpp
 
 # List D source files here
 DSOURCES = 
