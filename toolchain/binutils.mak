@@ -1,7 +1,7 @@
 BINUTILS_VERSION    := 2.18
 BINUTILS_SOURCE     := $(TOOLCHAIN_SRCDIR)/binutils-$(BINUTILS_VERSION).tar.bz2
 BINUTILS_DOWNLOAD   := http://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
-BINUTILS_PATCHES    := 
+BINUTILS_PATCHES    := $(TOOLCHAIN_PATCHDIR)/binutils-$(BINUTILS_VERSION).texinfo_configure.patch
 
 ifeq ($(TOOLCHAIN_TARGET),avr32)
 BINUTILS_PATCHES += $(TOOLCHAIN_PATCHDIR)/binutils-$(BINUTILS_VERSION).atmel.1.0.1.patch
@@ -37,6 +37,7 @@ $(TOOLCHAIN_ROOTDIR)/.binutils-configure: $(TOOLCHAIN_ROOTDIR)/.binutils-extract
 	$(call cmd_msg,CONFIG,$(TOOLCHAIN_TARGET)/binutils-$(BINUTILS_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/binutils-build; \
 		../binutils-$(BINUTILS_VERSION)/configure \
+		--disable-werror \
 		--prefix=$(TOOLCHAIN_ROOTDIR) \
 		--target=$(TOOLCHAIN_TARGET) \
 		$(QOUTPUT)
