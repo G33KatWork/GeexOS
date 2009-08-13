@@ -1,7 +1,7 @@
 GDB_VERSION    := 6.7.1
 GDB_SOURCE     := $(TOOLCHAIN_SRCDIR)/gdb-$(GDB_VERSION).tar.bz2
 GDB_DOWNLOAD   := http://ftp.gnu.org/gnu/gdb/gdb-$(GDB_VERSION).tar.bz2
-GDB_PATCHES    := $(TOOLCHAIN_PATCHDIR)/gdb-$(GDB_VERSION)-anti_error_makefile.patch
+GDB_PATCHES    := 
 
 ifeq ($(TOOLCHAIN_TARGET),avr32)
 GDB_PATCHES += $(TOOLCHAIN_PATCHDIR)/gdb-$(GDB_VERSION).atmel.1.0.3.patch
@@ -37,6 +37,7 @@ $(TOOLCHAIN_ROOTDIR)/.gdb-configure: $(TOOLCHAIN_ROOTDIR)/.gdb-extract
 	$(call cmd_msg,CONFIG,$(TOOLCHAIN_TARGET)/gdb-$(GDB_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/gdb-build; \
 		../gdb-$(GDB_VERSION)/configure \
+		--disable-werror \
 		--prefix=$(TOOLCHAIN_ROOTDIR) \
 		--target=$(TOOLCHAIN_TARGET) \
 		$(QOUTPUT)

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int main(char argc, char** argv)
+int main(int argc, char** argv)
 {
     if(argc != 3)
     {
