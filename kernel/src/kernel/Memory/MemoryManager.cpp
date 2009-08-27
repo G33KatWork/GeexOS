@@ -23,9 +23,9 @@ void MemoryManager::SetPhysicalMemoryManager(IPhysicalMemoryManager *phys)
     physical = phys;
 }
 
-void* MemoryManager::kmalloc(size_t s)
+void* MemoryManager::kmalloc(size_t s, bool pageAlign)
 {
-    return allocator->Allocate(s, false);
+    return allocator->Allocate(s, pageAlign);
 }
 
 void MemoryManager::kfree(void* p)

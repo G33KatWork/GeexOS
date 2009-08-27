@@ -17,7 +17,7 @@ namespace Memory
         
         void SetPhysicalMemoryManager(IPhysicalMemoryManager *phys);
         
-        void* kmalloc(size_t s);
+        void* kmalloc(size_t s, bool pageAlign);
         void kfree(void* p);
         Address AllocateFrame();
         void DeallocateFrame(Address a);

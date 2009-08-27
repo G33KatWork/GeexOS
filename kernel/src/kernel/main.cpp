@@ -15,6 +15,13 @@
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Time/Timer.h>
 
+//just for readStackPointer()
+#include <arch/scheduling.h>
+
+#define     KHEAP_LOCATION      0xC0400000
+#define     KHEAP_MAX_SIZE      512*1024*1024
+#define     KHEAP_INITIAL_SIZE  8*1024
+
 using namespace Arch;
 using namespace Kernel;
 using namespace IO;
@@ -105,6 +112,7 @@ int main(MultibootHeader* multibootInfo)
     //The allocator is needed by the Paging class to get space for its page
     //directory and page table objects
     //TODO: use memory map
+    DEBUG_MSG("Installed amount of memory seems to be " << dec << m.GetLowerMemory() + m.GetUpperMemory() << "KB");
     BitfieldPhysicalMemoryManager *pm = new BitfieldPhysicalMemoryManager(m.GetLowerMemory() + m.GetUpperMemory());
     memoryManager.SetPhysicalMemoryManager(pm);
     DEBUG_MSG("Frame allocator initialized...");
@@ -115,16 +123,25 @@ int main(MultibootHeader* multibootInfo)
     
     DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
-    //Heap *h = new Heap(0xC0400000, 512*1024*1024, 1*1024);
-    //memoryManager.SetAllocator(h);
-    //DEBUG_MSG("Kernel heap initialized...");
-    //DEBUG_MSG("Not really... Implement it, stupid sucker!")
-    
     //Configure interrupt dispatcher
     InterruptDispatcher* irqD = InterruptDispatcher::GetInstance();
     irqD->RegisterHandler(14, new PageFaultHandler());
     irqD->RegisterHandler(6, new InvalidOpcodeHandler());
     DEBUG_MSG("Interrupt dispatcher initialized...");
+
+    //DEBUG_MSG("Setting up heap, starting at " << hex << KHEAP_LOCATION << " with maximum size of " << dec << KHEAP_MAX_SIZE/1024 << "KB and an initial size of " << KHEAP_INITIAL_SIZE/1024 << "KB");
+    //Heap *h = new Heap(KHEAP_LOCATION, KHEAP_MAX_SIZE, KHEAP_INITIAL_SIZE);
+    Address f = memoryManager.AllocateFrame();
+    Paging::GetInstance()->MapAddress(0xC0400000, f, true, false);
+    Address f2 = memoryManager.AllocateFrame();
+    Paging::GetInstance()->MapAddress(0xC0401000, f2, true, false);
+    *((int*)0xC0400000) = 123;
+    *((int*)0xC0401000) = 123;
+    //int* i = (int*)h->Allocate(sizeof(int), false);
+    //DEBUG_MSG("int* i = " << hex << (unsigned)i);
+    //memoryManager.SetAllocator(h);
+    //DEBUG_MSG("Kernel heap initialized...");
+    //DEBUG_MSG("Not really... Implement it, stupid sucker!")
     
     //Init timer
     InitializeTimer();
@@ -143,6 +160,8 @@ int main(MultibootHeader* multibootInfo)
     //scheduler->AddThread(t2);
     Arch::EnableInterrupts();
     DEBUG_MSG("Interrupts enabled...");
+    
+    DEBUG_MSG("Current kernel stack size: " << dec << ((unsigned)&bootStack - (unsigned)readStackPointer()) << " Bytes");
     
     for(;;) {
         //scheduler->Schedule();

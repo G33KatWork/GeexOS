@@ -11,7 +11,7 @@ namespace Memory
     public:
         BitfieldPhysicalMemoryManager(unsigned int memorySize);
         Address AllocateFrame();
-        void DeallocateFrame(Address a);
+        void DeallocateFrame(Address physAddr);
         
     private:
         uint32_t *frames;
@@ -19,6 +19,7 @@ namespace Memory
         
         unsigned int bitmap_get_first_free(void);
         void bitmap_set_frame(Address physAddr);
+        void bitmap_clear_frame(Address physAddr);
     };
 }
 #endif

@@ -11,10 +11,10 @@ using namespace Memory;
 BitfieldPhysicalMemoryManager::BitfieldPhysicalMemoryManager(unsigned int memorySize)
 {
     //setup bitmap
-	nFrames = memorySize / 4;
+	nFrames = memorySize * 1024 / PAGE_SIZE;
 	frames = (unsigned int*)kmalloc(INDEX_FROM_BIT(nFrames));
-	memset(frames, 0, INDEX_FROM_BIT(nFrames));
-	
+	memset(frames, 0, INDEX_FROM_BIT(nFrames) * sizeof(uint32_t));
+    
 	//mark 0 to 4MB for kernel as used
 	for(unsigned int i = 0; i < 1024; i++)
 		bitmap_set_frame(i*PAGE_SIZE);
@@ -24,7 +24,7 @@ unsigned int BitfieldPhysicalMemoryManager::bitmap_get_first_free(void)
 {
 	for(unsigned int i = 0; i < INDEX_FROM_BIT(nFrames); i++)
 	{
-		if(frames[i] != 0xFFFFFFFF)	//nothing is free, now we have a problem!
+		if(frames[i] != 0xFFFFFFFF)	//nothing is free here
 		{
 			// at least one bit is free here
 			for(unsigned int j = 0; j < 32; j++)
@@ -44,10 +44,18 @@ unsigned int BitfieldPhysicalMemoryManager::bitmap_get_first_free(void)
 
 void BitfieldPhysicalMemoryManager::bitmap_set_frame(Address physAddr)
 {
-	Address frame = physAddr / PAGE_SIZE; //FIXME: Make this platform independent
+	Address frame = physAddr / PAGE_SIZE;
 	unsigned int idx = INDEX_FROM_BIT(frame);
 	unsigned int off = OFFSET_FROM_BIT(frame);
 	frames[idx] |= (0x1 << off);
+}
+
+void BitfieldPhysicalMemoryManager::bitmap_clear_frame(Address physAddr)
+{
+	Address frame = physAddr / PAGE_SIZE;
+	unsigned int idx = INDEX_FROM_BIT(frame);
+	unsigned int off = OFFSET_FROM_BIT(frame);
+	frames[idx] &= ~(0x1 << off);
 }
 
 Address BitfieldPhysicalMemoryManager::AllocateFrame()
@@ -57,7 +65,7 @@ Address BitfieldPhysicalMemoryManager::AllocateFrame()
 	return page;
 }
 
-void BitfieldPhysicalMemoryManager::DeallocateFrame(Address a)
+void BitfieldPhysicalMemoryManager::DeallocateFrame(Address physAddr)
 {
-    //TOFO: Implement...
+    bitmap_clear_frame(physAddr);
 }

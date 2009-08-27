@@ -35,6 +35,7 @@ CXXSOURCES = lib/string.cpp \
  			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp \
  			 kernel/Memory/PlacementAllocator.cpp \
 			 kernel/utils/demangle.cpp
+#			 kernel/Memory/Slab/SlabManager.cpp
 
 # List D source files here
 DSOURCES = 
