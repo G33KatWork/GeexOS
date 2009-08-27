@@ -11,6 +11,7 @@ namespace Arch
     
     inline void HaltMachine()
     {
+        asm volatile ("cli");
         asm volatile ("hlt");
     }
     
