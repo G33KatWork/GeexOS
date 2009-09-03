@@ -93,7 +93,7 @@ endif
 # Start qemu
 qemu: bootfloppy
 	$(call cmd_msg,QEMU,floppy.img)
-	$(Q)$(QEMU) -fda floppy.img $(QOUTPUT)
+	$(Q)$(QEMU) -fda floppy.img -serial file:serialOut $(QOUTPUT)
 
 qemudebug: bootfloppy
 	$(call cmd_msg,QEMU,floppy.img)
