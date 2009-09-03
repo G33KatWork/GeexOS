@@ -9,8 +9,14 @@ using namespace Arch;
 using namespace Debug;
 using namespace Memory;
 
-Monitor kout = Monitor();
 MemoryManager memoryManager = MemoryManager();
+Monitor kout = Monitor();
+
+#ifdef SERIAL_DEBUG
+    SerialConsole kdbg = SerialConsole(SERIAL_COM1);
+#else
+    Monitor kdbg = kout;
+#endif
 
 void panic(const char *message)
 {

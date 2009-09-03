@@ -11,10 +11,6 @@ Monitor::Monitor()
     vidmem = (unsigned short *)0xC00B8000;
     cursorX = 0;
     cursorY = 0;
-    printMode = dec;
-    
-    foregroundColor = White;
-    backgroundColor = Black;
 }
 
 Monitor::~Monitor()
@@ -65,79 +61,6 @@ void Monitor::PrintChar(char c)
     moveCursor();
 }
 
-void Monitor::PrintString(char *c)
-{
-    unsigned int i = 0;
-    while(c[i])
-    {
-        PrintChar(c[i]);
-        i++;
-    }
-}
-
-void Monitor::PrintHex(unsigned int n)
-{
-    char hexChars[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    
-    char num[20];
-    memset(num, 0, 20);
-    
-    int i = 0;
-    do
-    {
-        num[i] = hexChars[n % 16];
-        n /= 16;
-        
-        i++;
-    } while(n != 0);
-    
-    reverseArray(num);
-    PrintString("0x");
-    PrintString(num);
-}
-
-void Monitor::PrintDec(unsigned int n)
-{
-    char num[20];
-    memset(num, 0, 20);
-    
-    int i = 0;
-    do
-    {
-        num[i] = (n % 10) + '0';
-        n /= 10;
-        
-        i++;
-    } while(n != 0);
-    
-    reverseArray(num);
-    PrintString(num);
-}
-
-void Monitor::PrintDec(int n)
-{
-    int sign;
-    char num[20];
-    memset(num, 0, 20);
-    
-    if((sign = n) < 0) n = -n;
-    
-    int i = 0;
-    do
-    {
-        num[i] = (n % 10) + '0';
-        n /= 10;
-        
-        i++;
-    } while(n != 0);
-    
-    if(sign < 0)
-        num[i] = '-';
-    
-    reverseArray(num);
-    PrintString(num);
-}
-
 void Monitor::Clear()
 {
     cursorX = 0;
@@ -150,12 +73,6 @@ void Monitor::Clear()
         vidmem[i] = blank;
     
     moveCursor();
-}
-
-void Monitor::Clear(Color c)
-{
-    backgroundColor = c;
-    Clear();
 }
 
 void Monitor::scroll()
@@ -186,77 +103,4 @@ void Monitor::moveCursor()
     outb(0x3D5, temp >> 8);
     outb(0x3D4, 15);
     outb(0x3D5, temp);
-}
-
-Monitor &Monitor::operator<<(char *c)
-{
-    PrintString(c);
-    return *this;
-}
-
-Monitor &Monitor::operator<<(const char *c)
-{
-    PrintString(c);
-    return *this;
-}
-
-Monitor &Monitor::operator<<(unsigned int i)
-{
-    if (printMode == dec)
-        PrintDec(i);
-    else
-        PrintHex(i);
-    
-    return *this;
-}
-
-Monitor &Monitor::operator<<(int i)
-{
-    if (printMode == dec)
-        PrintDec(i);
-    else
-        PrintHex(i);
-    
-    return *this;
-}
-
-Monitor &Monitor::operator<<(Special s)
-{
-    switch(s)
-    {
-        case endl:
-            PrintChar('\n');
-            break;
-        case dec:
-            printMode = dec;
-            break;
-        case hex:
-            printMode = hex;
-            break;
-      }
-      
-      return *this;
-}
-
-
-Monitor &Monitor::operator<<(Position p)
-{
-    cursorX = p.x;
-    cursorY = p.y;
-    
-    scroll();
-    moveCursor();
-      
-    return *this;
-}
-
-void Monitor::reverseArray(char* arr)
-{
-    int i, j;
-    for (i = 0, j = strlen(arr)-1; i<j; i++, j--)
-    {
-        int c = arr[i];
-        arr[i] = arr[j];
-        arr[j] = c;
-    }
 }

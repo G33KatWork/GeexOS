@@ -11,7 +11,9 @@ CCSOURCES =
 CXXSOURCES = lib/string.cpp \
              kernel/Memory/MemoryManager.cpp \
              kernel/main.cpp \
+             kernel/IO/CharacterOutputDevice.cpp \
 			 kernel/IO/Monitor.cpp \
+			 kernel/IO/SerialConsole.cpp \
 			 kernel/global.cpp \
 			 lib/cppruntime.cpp \
 			 kernel/debug.cpp \
