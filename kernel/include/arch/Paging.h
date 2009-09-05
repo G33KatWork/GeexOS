@@ -8,6 +8,8 @@
 
 namespace Arch
 {
+    class Paging;
+    
     class Page
     {
     public:
@@ -55,11 +57,6 @@ namespace Arch
     public:
         PageTable()
         {
-            Init();
-        }
-        
-        void Init()
-        {
             for(int i = 0; i < 1024; i++)
                 pages[i] = Page();
         }
@@ -83,13 +80,10 @@ namespace Arch
 
     class PageDirectory
     {
+        friend class Paging;
+        
     public:
         PageDirectory()
-        {
-            Init();
-        }
-        
-        void Init()
         {
             for (int i = 0; i < 1023; i++)
                 tables[i] = NULL;
@@ -97,14 +91,10 @@ namespace Arch
             identityTable = NULL;
         }
     
-        PageTable *GetTable(unsigned int index)
+        PageTable *GetTable(unsigned int index, bool assign = false)
         {
+            //TODO: Handle assign
             return tables[index];
-        }
-    
-        void SetTable(unsigned int index, PageTable* table)
-        {
-            tables[index] = table;
         }
     
         PageTable *GetIdentityTable()
@@ -112,14 +102,47 @@ namespace Arch
             return identityTable;
         }
     
+    private:
+        PageTable *tables[1023];
+        PageTable *identityTable;
+        
+        /** The following functions are only needed for initial setup **/
+        /** This is done by the Paging class and therefore they are   **/
+        /** only callable by it                                       **/
+        void SetTable(unsigned int index, PageTable* table)
+        {
+            tables[index] = table;
+        }
+        
         void SetIdentityTable(PageTable* table)
         {
             identityTable = table;
         }
+    };
     
+    class Paging
+    {
+    public:
+        static Paging* GetInstance();
+        
+        void Init(void);
+        
+        Address GetPhysicalAddress(Address virtualaddr);
+        void MapAddress(Address virt, Address phys, bool readwrite, bool usermode);
+        
+        void SwitchCurrentPageDirectory(PageDirectory* dir);
+        
+        PageDirectory* GetKernelDirectory() { return kernel_directory; }
+        
     private:
-        PageTable *tables[1023];
-        PageTable *identityTable;
+        static Paging* instance;
+        
+        Paging(){};
+        
+        PageDirectory *kernel_directory;
+        PageDirectory *current_directory;
+        
+        PageTable *lowpagetable;
     };
 
     inline void SwitchPageDirectory(Address pagedirectory)

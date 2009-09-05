@@ -3,8 +3,8 @@
 #include <kernel/global.h>
 #include <kernel/multiboot.h>
 #include <kernel/debug.h>
-#include <kernel/Memory/Paging.h>
-#include <kernel/Memory/PageFaultHandler.h>
+#include <arch/Paging.h>
+#include <arch/PageFaultHandler.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/Memory/BitfieldPhysicalMemoryManager.h>
 #include <kernel/Memory/Heap.h>

@@ -1,4 +1,4 @@
-#include <kernel/Memory/Paging.h>
+#include <arch/Paging.h>
 #include <lib/types.h>
 #include <lib/string.h>
 #include <kernel/global.h>
@@ -22,18 +22,8 @@ void Paging::Init()
     Address lowpagetablePtr = 0;
     int k = 0;
     
-    //kernel_directory = new (true) PageDirectory();
-    //lowpagetable = new (true) PageTable();
-    
-    //FIXME: HACK!
-    //We need to allocate the memory here by hand, because we don't have any mechanism for
-    //alocating page aligned space for our paging setup at this time. GetAllocator() returns a
-    //PlacementAllocator instance at this time
-    kernel_directory = (PageDirectory*) memoryManager.GetAllocator()->Allocate(sizeof(PageDirectory), true);
-    kernel_directory->Init();
-    lowpagetable = (PageTable*) memoryManager.GetAllocator()->Allocate(sizeof(PageTable), true);
-    lowpagetable->Init();
-    
+    kernel_directory = new(true /*page allocation*/) PageDirectory();
+    lowpagetable = new(true /*page allocation*/) PageTable();
     
     kernelpagedirPtr = (Address)kernel_directory + 0x40000000;
     lowpagetablePtr = (Address)lowpagetable + 0x40000000;

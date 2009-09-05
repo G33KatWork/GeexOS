@@ -18,7 +18,7 @@ CXXSOURCES = lib/string.cpp \
 			 lib/cppruntime.cpp \
 			 kernel/debug.cpp \
 			 kernel/multiboot.cpp \
-			 kernel/Memory/Paging.cpp \
+			 arch/Paging.cpp \
 			 arch/gdt.cpp \
 			 arch/idt.cpp \
 			 arch/pic.cpp  \
@@ -29,7 +29,7 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/Processes/Scheduler.cpp \
 			 kernel/Processes/Thread.cpp \
 			 kernel/DataStructures/OrderedArray.cpp \
-			 kernel/Memory/PageFaultHandler.cpp \
+			 arch/PageFaultHandler.cpp \
 			 kernel/DataStructures/List.cpp\
 			 kernel/Time/Timer.cpp\
 			 kernel/Time/TimerManager.cpp \

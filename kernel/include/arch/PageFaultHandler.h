@@ -6,7 +6,7 @@
 
 using namespace Kernel;
 
-namespace Memory
+namespace Arch
 {
     class PageFaultHandler : public IInterruptServiceRoutine
     {

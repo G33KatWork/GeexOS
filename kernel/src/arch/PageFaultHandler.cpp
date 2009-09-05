@@ -1,8 +1,8 @@
-#include <kernel/Memory/PageFaultHandler.h>
+#include <arch/PageFaultHandler.h>
 #include <kernel/global.h>
 
 using namespace IO;
-using namespace Memory;
+using namespace Arch;
 
 void PageFaultHandler::Execute(registers_t *regs)
 {
