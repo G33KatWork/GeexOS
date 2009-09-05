@@ -2,10 +2,9 @@
 #define PROCESSES_THREAD_H_
 
 #include <lib/types.h>
-#include <kernel/Memory/Paging.h>
+#include <arch/Paging.h>
 #include <arch/hal.h>
 
-using namespace Memory;
 using namespace Arch;
 
 #include <kernel/global.h>

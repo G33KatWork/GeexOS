@@ -1,6 +1,6 @@
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/global.h>
-#include <kernel/memory/Paging.h>
+#include <arch/Paging.h>
 
 using namespace Memory;
 

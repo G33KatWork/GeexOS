@@ -1,8 +1,9 @@
 #include <kernel/Memory/Heap.h>
-#include <kernel/Memory/Paging.h>
+#include <arch/Paging.h>
 #include <kernel/global.h>
 
 using namespace Memory;
+using namespace Arch;
 using namespace IO;
 
 static bool header_t_less_predicate(header_t* a, header_t* b)

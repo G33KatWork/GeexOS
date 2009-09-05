@@ -1,9 +1,10 @@
 #include <kernel/Memory/BitfieldPhysicalMemoryManager.h>
-#include <kernel/Memory/Paging.h>
+#include <arch/Paging.h>
 #include <lib/string.h>
 #include <kernel/global.h>
 
 using namespace Memory;
+using namespace Arch;
 
 #define INDEX_FROM_BIT(a) (a/(8*4))
 #define OFFSET_FROM_BIT(a) (a%(8*4))
