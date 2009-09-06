@@ -69,21 +69,21 @@ public:
 
 void thread(void* arg)
 {
-    kout << "Thread 1 start... Arg: " << (char *)arg << endl;
+    kdbg << "Thread 1 start... Arg: " << (char *)arg << endl;
     
     for(;;)
     {
-        kout << "b";
+        kdbg << "b";
     }
 }
 
 void thread2(void* arg)
 {
-    kout << "Thread 2 start... Arg: " << (char *)arg << endl;
+    kdbg << "Thread 2 start... Arg: " << (char *)arg << endl;
     
     for(;;)
     {
-        kout << "a";
+        kdbg << "a";
     }
 }
 
@@ -93,8 +93,7 @@ int main(MultibootHeader* multibootInfo)
     memoryManager.SetAllocator(&placementAllocator);
     
     //Prepare monitor output
-    kout.Clear();
-    kout << "GeexOS loading..." << endl;
+    kdbg.Clear();
     DEBUG_MSG("Boot stack starts at: " << hex << (unsigned)&bootStack);
     
     //Initialize paging
@@ -129,19 +128,14 @@ int main(MultibootHeader* multibootInfo)
     irqD->RegisterHandler(6, new InvalidOpcodeHandler());
     DEBUG_MSG("Interrupt dispatcher initialized...");
 
-    DEBUG_MSG("Setting up heap, starting at " << hex << KHEAP_LOCATION << " with maximum size of " << dec << KHEAP_MAX_SIZE/1024 << "KB and an initial size of " << KHEAP_INITIAL_SIZE/1024 << "KB");
-    Heap *h = new Heap(KHEAP_LOCATION, KHEAP_MAX_SIZE, KHEAP_INITIAL_SIZE);
-    //Address f = memoryManager.AllocateFrame();
-    //Paging::GetInstance()->MapAddress(0xC0400000, f, true, false);
-    //Address f2 = memoryManager.AllocateFrame();
-    //Paging::GetInstance()->MapAddress(0xC0401000, f2, true, false);
-	//*((int*)0xC0400000) = 123;
-    //*((int*)0xC0401000) = 123;
-    //int* i = (int*)h->Allocate(sizeof(int), false);
-    //DEBUG_MSG("int* i = " << hex << (unsigned)i);
-    //memoryManager.SetAllocator(h);
-    //DEBUG_MSG("Kernel heap initialized...");
-    //DEBUG_MSG("Not really... Implement it, stupid sucker!")
+    //DEBUG_MSG("Setting up heap, starting at " << hex << KHEAP_LOCATION << " with maximum size of " << dec << KHEAP_MAX_SIZE/1024 << "KB and an initial size of " << KHEAP_INITIAL_SIZE/1024 << "KB");
+    //Heap *h = new Heap(KHEAP_LOCATION, KHEAP_MAX_SIZE, KHEAP_INITIAL_SIZE);
+    Address f = memoryManager.AllocateFrame();
+    Paging::GetInstance()->MapAddress(0xC0400000, f, true, false);
+    Address f2 = memoryManager.AllocateFrame();
+    Paging::GetInstance()->MapAddress(0xC0401000, f2, true, false);
+	*((int*)0xC0400000) = 123;
+    *((int*)0xC0401000) = 123;
     
     //Init timer
     InitializeTimer();

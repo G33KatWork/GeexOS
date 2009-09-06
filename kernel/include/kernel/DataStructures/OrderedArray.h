@@ -72,12 +72,12 @@ namespace DataStructures
         
         void DebugDump()
         {
-            kout << "Dumping ordered array at " << hex << (unsigned)this << endl;
+            kdbg << "Dumping ordered array at " << hex << (unsigned)this << endl;
             
             for(int i = 0; i < size; i++)
-                kout << "\t" << (unsigned)arr[i] << endl;
+                kdbg << "\t" << (unsigned)arr[i] << endl;
             
-            kout << endl;
+            kdbg << endl;
         }
         
         unsigned int GetSize()

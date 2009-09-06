@@ -105,7 +105,7 @@ all: createdirs $(TARGET)
 $(sort $(addprefix $(OBJDIR)/, $(dir $(OBJECTS)))):
 	$(call cmd_msg,MKDIR,$(@))
 	$(Q)mkdir -p $@
-	
+
 createdirs: $(sort $(addprefix $(OBJDIR)/, $(dir $(OBJECTS))))
 
 $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS))

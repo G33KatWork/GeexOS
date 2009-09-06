@@ -12,7 +12,10 @@ namespace Arch
     
     class Page
     {
-    public:
+        friend class Paging;
+        friend class PageTable;
+        
+    private:
         Page() : present(0), rw(0), user(0), writethrough(0),
                  cachedisabled(0), accessed(0), dirty(0),
                  zero(0), global(0), unused(0), frame(0)
@@ -37,8 +40,8 @@ namespace Arch
         void Dirty(bool d)      { d ? dirty = 1 : dirty = 0; }
         void Global(bool g)     { g ? global = 1 : global = 0; }
         void Frame(Address a)   { frame = (a >> 12); }
-    
-    private:
+        
+        
         unsigned int present        : 1;   // Page present in memory
         unsigned int rw             : 1;   // Read-only if clear, readwrite if set
         unsigned int user           : 1;   // Supervisor level only if clear
@@ -54,7 +57,9 @@ namespace Arch
 
     class PageTable
     {
-    public:
+        friend class Paging;
+        
+    private:
         PageTable()
         {
             for(int i = 0; i < 1024; i++)
@@ -74,7 +79,7 @@ namespace Arch
                 pages[index] = *page;
         }
     
-    private:
+    
         Page pages[1024];
     };
 
@@ -82,42 +87,47 @@ namespace Arch
     {
         friend class Paging;
         
-    public:
+    private:
         PageDirectory()
         {
-            for (int i = 0; i < 1023; i++)
+            for (int i = 0; i < 1024; i++)
+            {
+                tablesPhysical[i] = NULL;
                 tables[i] = NULL;
-            
-            identityTable = NULL;
+            }
         }
-    
-        PageTable *GetTable(unsigned int index, bool assign = false)
+        
+        Address GetTablePhysical(unsigned int index, bool assign = false)
+        {
+            //TODO: Handle assign
+            return tablesPhysical[index];
+        }
+        
+        PageTable* GetTable(unsigned int index, bool assign = false)
         {
             //TODO: Handle assign
             return tables[index];
         }
-    
-        PageTable *GetIdentityTable()
-        {
-            return identityTable;
-        }
-    
-    private:
-        PageTable *tables[1023];
-        PageTable *identityTable;
         
-        /** The following functions are only needed for initial setup **/
-        /** This is done by the Paging class and therefore they are   **/
-        /** only callable by it                                       **/
-        void SetTable(unsigned int index, PageTable* table)
+        void SetTable(unsigned int index, PageTable* table, Address tablePhysical)
         {
+            tablesPhysical[index] = tablePhysical;
             tables[index] = table;
         }
         
-        void SetIdentityTable(PageTable* table)
+        void SetIdentityTable(Address table)
         {
-            identityTable = table;
+            tablesPhysical[1023] = table;
         }
+        
+        Address GetIdentityTable()
+        {
+            return tablesPhysical[1023];
+        }
+        
+        
+        Address tablesPhysical[1024];
+        PageTable* tables[1024];
     };
     
     class Paging
@@ -143,16 +153,16 @@ namespace Arch
         PageDirectory *current_directory;
         
         PageTable *lowpagetable;
+        
+        inline void SwitchPageDirectory(Address pagedirectoryPhysical)
+        {
+            asm volatile (	"mov %0, %%eax\n"
+    			"mov %%eax, %%cr3\n"
+    			"mov %%cr0, %%eax\n"
+    			"orl $0x80000000, %%eax\n"
+    			"mov %%eax, %%cr0\n" :: "m" (pagedirectoryPhysical));
+        }
     };
-
-    inline void SwitchPageDirectory(Address pagedirectory)
-    {
-        asm volatile (	"mov %0, %%eax\n"
-			"mov %%eax, %%cr3\n"
-			"mov %%cr0, %%eax\n"
-			"orl $0x80000000, %%eax\n"
-			"mov %%eax, %%cr0\n" :: "m" (pagedirectory));
-    }
 }
 
 #endif

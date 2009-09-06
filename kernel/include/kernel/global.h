@@ -7,9 +7,8 @@
 #include <kernel/Memory/MemoryManager.h>
 
 //Comment out for on screen debugging
-#define     SERIAL_DEBUG
+//#define     SERIAL_DEBUG
 
-extern class IO::Monitor kout;
 extern class Memory::MemoryManager memoryManager;
 
 #ifdef SERIAL_DEBUG
