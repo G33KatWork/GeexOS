@@ -10,20 +10,19 @@ using namespace Debug;
 using namespace Memory;
 
 MemoryManager memoryManager = MemoryManager();
-Monitor kout = Monitor();
 
 #ifdef SERIAL_DEBUG
     SerialConsole kdbg = SerialConsole(SERIAL_COM1);
 #else
-    Monitor kdbg = kout;
+    Monitor kdbg = Monitor();
 #endif
 
 void panic(const char *message)
 {
     DisableInterrupts();
     
-    kout.SetForeground(Red);
-    kout << "[PANIC] Kernel Panic: " << message << endl;
+    kdbg.SetForeground(Red);
+    kdbg << "[PANIC] Kernel Panic: " << message << endl;
     
     PrintStacktrace();
     
@@ -34,8 +33,8 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
 {
     DisableInterrupts();
     
-    kout.SetForeground(Red);
-    kout << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
+    kdbg.SetForeground(Red);
+    kdbg << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
     
     PrintStacktrace();
     

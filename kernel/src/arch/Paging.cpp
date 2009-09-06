@@ -35,13 +35,10 @@ void Paging::Init()
         lowpagetable->GetPage(k)->RW(true);
 	}
 	
-	for(k = 0; k < 1023; k++)
-		kernel_directory->SetTable(k, NULL);
-	
-    kernel_directory->SetIdentityTable((PageTable *)(kernelpagedirPtr | 0x3));
+    kernel_directory->SetIdentityTable((Address)(kernelpagedirPtr | 0x3));
     
-    kernel_directory->SetTable(0, (PageTable *)(lowpagetablePtr | 0x3));
-	kernel_directory->SetTable(768, (PageTable *)(lowpagetablePtr | 0x3));
+    kernel_directory->SetTable(0, lowpagetable, (Address)(lowpagetablePtr | 0x3));
+	kernel_directory->SetTable(768, lowpagetable, (Address)(lowpagetablePtr | 0x3));
 	
     current_directory = kernel_directory;
 	
@@ -61,38 +58,33 @@ Address Paging::GetPhysicalAddress(Address virtualaddr)
 
     return ((pt[ptindex] & ~0xFFF) + ((unsigned int)virtualaddr & 0xFFF));
 }
-using namespace IO;
+
 void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermode)
-{
+{   
     unsigned int pdindex = virt >> 22;
     unsigned int ptindex = (virt >> 12) & 0x03FF;
-    DEBUG_MSG("pdindex: " << dec << pdindex << " - ptindex: " << ptindex);
     
     PageTable *t = kernel_directory->GetTable(pdindex);
     
     if(t == NULL) //there is no PageTable for this address
     {
         t = new (true /*page align*/) PageTable();
-        //DEBUG_MSG("Created new table at " << hex << (unsigned)t);
         Address physicalPageTableAddress = GetPhysicalAddress((Address) t);
-        //DEBUG_MSG("Physical address is " << hex << (unsigned)physicalPageTableAddress);
-        kernel_directory->SetTable(pdindex, (PageTable*)(physicalPageTableAddress | 0x3));
+        kernel_directory->SetTable(pdindex, t, physicalPageTableAddress | 0x3);
     }
     
     Page *p = t->GetPage(ptindex);
-    DEBUG_MSG("Mapping page " << hex << (unsigned)p << " in PageDirectory " << (unsigned)t);
     if(!p->Present()) //mapped? TODO: really mapped?
     {
         p->Frame(phys);
         p->Present(true);
         p->RW(readwrite);
         p->User(usermode);
-        DEBUG_MSG(hex << (unsigned)phys);
     }
 }
 
 void Paging::SwitchCurrentPageDirectory(PageDirectory* dir)
 {
     current_directory = dir;
-    SwitchPageDirectory(GetPhysicalAddress((Address)current_directory));
+    SwitchPageDirectory(GetPhysicalAddress((Address)(current_directory->tablesPhysical)));
 }

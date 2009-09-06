@@ -15,7 +15,7 @@ void Debug::PrintStacktrace(unsigned int n)
     //  ebp of calling function (pointed to by current ebp)
     
     unsigned int * ebp = &n - 2;
-    kout << "Stack trace:" << endl;
+    kdbg << "Stack trace:" << endl;
     
     for(unsigned int frame = 0; frame < n; ++frame)
     {
@@ -31,13 +31,13 @@ void Debug::PrintStacktrace(unsigned int n)
         Address symStart;
         char *symName = FindSymbol(eip, &symStart);
         if(symName == NULL)
-            kout << "\t" << "<" << hex << eip << ">\t" << "<unknown symbol>" << endl;
+            kdbg << "\t" << "<" << hex << eip << ">\t" << "<unknown symbol>" << endl;
         else
         {
             LargeStaticString demangled = LargeStaticString();
             LargeStaticString toDemangle = LargeStaticString((const char*)symName);
             demangle_full(toDemangle, demangled);
-            kout << "\t" << "<" << hex << symStart << ">\t" << demangled << endl;
+            kdbg << "\t" << "<" << hex << symStart << ">\t" << demangled << endl;
         }
         
         

@@ -106,6 +106,9 @@ clean:
 	$(call call_submake,kernel,clean)
 	$(call call_submake,toolchain,clean)
 	$(call call_submake,utils,clean)
+	$(call call_submake,applications,clean)
+	$(call call_submake,drivers,clean)
+	$(call call_submake,servers,clean)
 	$(Q)rm -f floppy.img
 	$(Q)rm -f initrd.img
 	$(Q)rm -f bochsout.txt
