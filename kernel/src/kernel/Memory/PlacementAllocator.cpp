@@ -17,7 +17,7 @@ void* PlacementAllocator::Allocate(size_t len, bool pageAlign)
 {
     unsigned int tmp;
 
-    if(pageAlign && (placement_address & IDENTITY_POSITION))
+    if(pageAlign && (placement_address % PAGE_SIZE != 0))
     {
         // Align the placement address;
         placement_address &= IDENTITY_POSITION;

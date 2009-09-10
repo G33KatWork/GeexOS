@@ -20,7 +20,7 @@
 
 #define     KHEAP_LOCATION      0xC0400000
 #define     KHEAP_MAX_SIZE      512*1024*1024
-#define     KHEAP_INITIAL_SIZE  8*1024
+#define     KHEAP_INITIAL_SIZE  1 *1024
 
 using namespace Arch;
 using namespace Kernel;
@@ -128,34 +128,62 @@ int main(MultibootHeader* multibootInfo)
     irqD->RegisterHandler(6, new InvalidOpcodeHandler());
     DEBUG_MSG("Interrupt dispatcher initialized...");
 
-    //DEBUG_MSG("Setting up heap, starting at " << hex << KHEAP_LOCATION << " with maximum size of " << dec << KHEAP_MAX_SIZE/1024 << "KB and an initial size of " << KHEAP_INITIAL_SIZE/1024 << "KB");
-    //Heap *h = new Heap(KHEAP_LOCATION, KHEAP_MAX_SIZE, KHEAP_INITIAL_SIZE);
-    Address f = memoryManager.AllocateFrame();
+    Arch::EnableInterrupts();
+    DEBUG_MSG("Interrupts enabled...");
+
+    DEBUG_MSG("Setting up heap, starting at " << hex << KHEAP_LOCATION << " with maximum size of " << dec << KHEAP_MAX_SIZE/1024 << "KB and an initial size of " << KHEAP_INITIAL_SIZE/1024 << "KB");
+    Heap *h = new Heap(KHEAP_LOCATION, KHEAP_MAX_SIZE, KHEAP_INITIAL_SIZE);
+    /*Address f = memoryManager.AllocateFrame();
     Paging::GetInstance()->MapAddress(0xC0400000, f, true, false);
     Address f2 = memoryManager.AllocateFrame();
     Paging::GetInstance()->MapAddress(0xC0401000, f2, true, false);
 	*((int*)0xC0400000) = 123;
-    *((int*)0xC0401000) = 123;
+    *((int*)0xC0401000) = 123;*/
+    
+    /*void* a = h->Allocate(0x1000, true);
+    void* b = h->Allocate(sizeof(int), false);
+    void* c = h->Allocate(0x1000, true);
+    void* d = h->Allocate(sizeof(int), false);*/
+        /*for(int i = 0; i < 8*1024/4; i++)
+            h->Allocate(4, false);*/
+    
+    h->Allocate(0x1000, true);
+    h->Allocate(0x2000, true);
+    h->Allocate(0x32, false);
+    h->Allocate(0x2000, true);
+    
+    for(int i = 0; i < 0x3C; i++)
+        h->Allocate(0x100000, false);
+    DEBUG_MSG("abc");
+    
+    
+    h->Allocate(0x100000, false);
+    DEBUG_MSG("done");
+    
+    /*void* a = h->Allocate(0x1000, true);
+    void* b = h->Allocate(sizeof(int), false);
+    void* c = h->Allocate(0x1000, true);
+    void* d = h->Allocate(sizeof(int), false);
+    
+    DEBUG_MSG(hex << "a: " << (unsigned)a << "    b: " << (unsigned)b << endl << "c: " << (unsigned)c << endl << "d: " << (unsigned)d);*/
     
     //Init timer
-    InitializeTimer();
+    /*InitializeTimer();
     TimerManager *tm = new TimerManager(&Arch::ClockSource);
     irqD->RegisterHandler(32, new TimerHandler(tm));
     DEBUG_MSG("Timer initialized...");
     
     Scheduler* scheduler = Scheduler::GetInstance();
     scheduler->SetTimerManager(tm);
-    DEBUG_MSG("Scheduler initialized");
+    DEBUG_MSG("Scheduler initialized");*/
     
     //Thread *t = new Thread(thread, NULL, 10, NULL);
     //scheduler->AddThread(t);
     
     //Thread *t2 = new Thread(thread2, NULL, 10, NULL);
     //scheduler->AddThread(t2);
-    Arch::EnableInterrupts();
-    DEBUG_MSG("Interrupts enabled...");
     
-    DEBUG_MSG("Current kernel stack size: " << dec << ((unsigned)&bootStack - (unsigned)readStackPointer()) << " Bytes");
+    //DEBUG_MSG("Current kernel stack size: " << dec << ((unsigned)&bootStack - (unsigned)readStackPointer()) << " Bytes");
     
     for(;;) {
         //scheduler->Schedule();
