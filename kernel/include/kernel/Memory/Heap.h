@@ -3,9 +3,9 @@
 
 #include <lib/types.h>
 #include <kernel/Memory/IMemoryAllocator.h>
-#include <kernel/DataStructures/OrderedArray.h>
+#include <kernel/IO/CharacterOutputDevice.h>
 
-using namespace DataStructures;
+using namespace IO;
 
 namespace Memory
 {
@@ -36,6 +36,8 @@ namespace Memory
         
         void* Allocate(size_t len, bool pageAlign);
         void Deallocate(void* p);
+        
+        void DumpCurrentStructure(CharacterOutputDevice& out);
         
         size_t getCurrentSize()
         {

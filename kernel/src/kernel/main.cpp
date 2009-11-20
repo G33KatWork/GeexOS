@@ -14,13 +14,18 @@
 #include <kernel/IInterruptServiceRoutine.h>
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Time/Timer.h>
+#include <kernel/Memory/Stack.h>
 
 //just for readStackPointer()
 #include <arch/scheduling.h>
 
+//see doc/memory_layout.txt
 #define     KHEAP_LOCATION      0xC0400000
-#define     KHEAP_MAX_SIZE      512*1024*1024
-#define     KHEAP_INITIAL_SIZE  1 *1024
+#define     KHEAP_MAX_SIZE      512 * 1024 * 1024
+#define     KHEAP_INITIAL_SIZE  1 * 1024
+
+#define     KSTACK_LOCATION     0xE0400000
+#define     KSTACK_SIZE         16 * 1024
 
 using namespace Arch;
 using namespace Kernel;
@@ -29,7 +34,7 @@ using namespace Memory;
 using namespace Processes;
 using namespace Time;
 
-extern Address bootStack;
+extern Address initialESP;
 
 class InvalidOpcodeHandler : public IInterruptServiceRoutine
 {
@@ -38,6 +43,17 @@ public:
     {
         DEBUG_MSG("Invalid Opcode: EIP: " << hex << (unsigned) regs->eip);
         PANIC("Invalid opcode!");
+        for(;;);
+    }
+};
+
+class ExceptionHandler : public IInterruptServiceRoutine
+{
+public:
+    void Execute(registers_t *regs)
+    {
+        DEBUG_MSG("Exception " << dec << regs->int_no << ": EIP: " << hex << (unsigned) regs->eip);
+        PANIC("Unhandled exception!");
         for(;;);
     }
 };
@@ -94,7 +110,7 @@ int main(MultibootHeader* multibootInfo)
     
     //Prepare monitor output
     kdbg.Clear();
-    DEBUG_MSG("Boot stack starts at: " << hex << (unsigned)&bootStack);
+    DEBUG_MSG("Initial boot ESP is: " << hex << (unsigned)&initialESP);
     
     //Initialize paging
     Paging::GetInstance()->Init();
@@ -126,54 +142,59 @@ int main(MultibootHeader* multibootInfo)
     InterruptDispatcher* irqD = InterruptDispatcher::GetInstance();
     irqD->RegisterHandler(14, new PageFaultHandler());
     irqD->RegisterHandler(6, new InvalidOpcodeHandler());
+    ExceptionHandler *ex = new ExceptionHandler();
+    irqD->RegisterHandler(0, ex);
+    irqD->RegisterHandler(1, ex);
+    irqD->RegisterHandler(2, ex);
+    irqD->RegisterHandler(3, ex);
+    irqD->RegisterHandler(4, ex);
+    irqD->RegisterHandler(5, ex);
+    irqD->RegisterHandler(7, ex);
+    irqD->RegisterHandler(8, ex);
+    irqD->RegisterHandler(9, ex);
+    irqD->RegisterHandler(10, ex);
+    irqD->RegisterHandler(11, ex);
+    irqD->RegisterHandler(12, ex);
+    irqD->RegisterHandler(13, ex);
+    irqD->RegisterHandler(15, ex);
+    irqD->RegisterHandler(16, ex);
     DEBUG_MSG("Interrupt dispatcher initialized...");
 
     Arch::EnableInterrupts();
     DEBUG_MSG("Interrupts enabled...");
 
+    DEBUG_MSG("Setting up new stack at a defined position...");
+    Stack *stack = new Stack(KSTACK_LOCATION, KSTACK_SIZE);
+    stack->MoveCurrentStackHere((Address)&initialESP);
+    DEBUG_MSG("Stack seems to be successfully moved...");
+
     DEBUG_MSG("Setting up heap, starting at " << hex << KHEAP_LOCATION << " with maximum size of " << dec << KHEAP_MAX_SIZE/1024 << "KB and an initial size of " << KHEAP_INITIAL_SIZE/1024 << "KB");
     Heap *h = new Heap(KHEAP_LOCATION, KHEAP_MAX_SIZE, KHEAP_INITIAL_SIZE);
-    /*Address f = memoryManager.AllocateFrame();
-    Paging::GetInstance()->MapAddress(0xC0400000, f, true, false);
-    Address f2 = memoryManager.AllocateFrame();
-    Paging::GetInstance()->MapAddress(0xC0401000, f2, true, false);
-	*((int*)0xC0400000) = 123;
-    *((int*)0xC0401000) = 123;*/
     
-    /*void* a = h->Allocate(0x1000, true);
-    void* b = h->Allocate(sizeof(int), false);
-    void* c = h->Allocate(0x1000, true);
-    void* d = h->Allocate(sizeof(int), false);*/
-        /*for(int i = 0; i < 8*1024/4; i++)
-            h->Allocate(4, false);*/
+    int *a = (int*)h->Allocate(sizeof(int), false);
+    int *b = (int*)h->Allocate(sizeof(int), false);
+    DEBUG_MSG("Allocated 2 integer on heap: A: " << hex << (unsigned)a << " B: " << (unsigned)b);
+
+    int *c = (int*)h->Allocate(sizeof(int), true);
+    DEBUG_MSG("Allocated page aligned integer on heap: " << hex << (unsigned)c);
     
-    h->Allocate(0x1000, true);
-    h->Allocate(0x2000, true);
-    h->Allocate(0x32, false);
-    h->Allocate(0x2000, true);
+    void *d = h->Allocate(1024*1024, false);
+    DEBUG_MSG("Allocated 1MB not page aligned on heap: " << hex << (unsigned)d);
     
-    for(int i = 0; i < 0x3C; i++)
-        h->Allocate(0x100000, false);
-    DEBUG_MSG("abc");
+    void *e = h->Allocate(2*1024*1024, false);
+    DEBUG_MSG("Allocated 2MB not page aligned on heap: " << hex << (unsigned)e);
     
-    
-    h->Allocate(0x100000, false);
-    DEBUG_MSG("done");
-    
-    /*void* a = h->Allocate(0x1000, true);
-    void* b = h->Allocate(sizeof(int), false);
-    void* c = h->Allocate(0x1000, true);
-    void* d = h->Allocate(sizeof(int), false);
-    
-    DEBUG_MSG(hex << "a: " << (unsigned)a << "    b: " << (unsigned)b << endl << "c: " << (unsigned)c << endl << "d: " << (unsigned)d);*/
+    DEBUG_MSG("Dumping current heap state to COM1...");
+    SerialConsole ser = SerialConsole(SERIAL_COM1);
+    h->DumpCurrentStructure(ser);
     
     //Init timer
-    /*InitializeTimer();
+    InitializeTimer();
     TimerManager *tm = new TimerManager(&Arch::ClockSource);
     irqD->RegisterHandler(32, new TimerHandler(tm));
     DEBUG_MSG("Timer initialized...");
     
-    Scheduler* scheduler = Scheduler::GetInstance();
+    /*Scheduler* scheduler = Scheduler::GetInstance();
     scheduler->SetTimerManager(tm);
     DEBUG_MSG("Scheduler initialized");*/
     
@@ -183,8 +204,6 @@ int main(MultibootHeader* multibootInfo)
     //Thread *t2 = new Thread(thread2, NULL, 10, NULL);
     //scheduler->AddThread(t2);
     
-    //DEBUG_MSG("Current kernel stack size: " << dec << ((unsigned)&bootStack - (unsigned)readStackPointer()) << " Bytes");
-    
     for(;;) {
         //scheduler->Schedule();
         asm volatile("hlt"); //halt cpu until next irq (timer etc.) to switch to next time slice
@@ -192,26 +211,3 @@ int main(MultibootHeader* multibootInfo)
     
     return 0; 
 }
-
-
-
-
-
-//Test some frame mapping
-/*Paging::GetInstance()->MapAddress(0x30000000, 0x0, true, false);
-int* bla = (int*)0x30000000;
-DEBUG_MSG("Value at 0x30000000: " << hex << *bla);
-
-//Allocate some frames
-Address f1 = memoryManager.AllocateFrame();
-Address f2 = memoryManager.AllocateFrame();
-DEBUG_MSG("f1: " << hex << f1);
-DEBUG_MSG("f2: " << f2);
-
-//Print some debugging stuff
-DEBUG_MSG("I'm a DEBUG message!");*
-
-//BÄM!
-int* bla2 = (int*)0xA0000000;
-*bla2 = 1;*/
-

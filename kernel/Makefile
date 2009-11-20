@@ -35,8 +35,8 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/Time/TimerManager.cpp \
 			 kernel/Memory/Stack.cpp \
  			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp \
- 			 kernel/Memory/PlacementAllocator.cpp \
-			 kernel/utils/demangle.cpp
+ 			 kernel/Memory/PlacementAllocator.cpp
+#			 kernel/utils/demangle.cpp
 #			 kernel/Memory/Slab/SlabManager.cpp
 
 # List D source files here
@@ -111,14 +111,14 @@ createdirs: $(sort $(addprefix $(OBJDIR)/, $(dir $(OBJECTS))))
 $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS))
 	$(call cmd_msg,LINK,$(@))
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^
-	$(call cmd_msg,OBJDUMP,$(@) -> source)
-	$(Q)$(OBJDUMP) --source $(TARGET) > source
+	$(call cmd_msg,DISASM,$(@) -> disasm)
+	$(Q)$(OBJDUMP) -d $(TARGET) > disasm
 
 # Cleaning
 clean:
 	$(Q)rm -f $(TARGET)
 #$(Q)rm -f $(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
-	$(Q)rm -f source
+	$(Q)rm -f disasm
 	$(Q)rm -f kernel.map
 	$(Q)rm -rf obj
 

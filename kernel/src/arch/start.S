@@ -20,7 +20,7 @@ MultiBootHeader:
     dd FLAGS
     dd CHECKSUM
 
-STACKSIZE equ 0x4000  ; 16k if you're wondering
+STACKSIZE equ 0x400             ; 1k initial stack - will be moved later
 
 start:
     cli
@@ -35,8 +35,8 @@ start:
 	
 	jmp 0x08:higherhalf			; Far jump to higher half kernel
 	
-higherhalf:						; Here the CPU adds 0x40000000 to all addresses due to the trck gdt
-	mov esp, bootStack			; Setup stack
+higherhalf:						; Here the CPU adds 0x40000000 to all addresses due to the trick gdt
+	mov esp, initialESP			; Setup stack
 	mov ebp, esp
 	push ebp
 	push ebx					; Push pointer to GRUB multiboot-information
@@ -102,6 +102,7 @@ gdt_end:
 section .bss
 align 32
 
-global bootStack
+global initialESP
 bootStack:
 	resb      STACKSIZE
+initialESP:
