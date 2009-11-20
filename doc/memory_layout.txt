@@ -1,15 +1,23 @@
 Kernel:
 
 4 GiB +-------------------------+ 0xFFFFFFFF
-      | Page Table Mapping      | Identity pagin = 4MB
+      | Page Table Mapping      | Identity paging = 4MB
       |_________________________| 0xFFC00000
-      |                         | K_HEAP_END = 0xFFBFFFFF
       |                         |
-      | Kernel heap             |   = 1016MB
+      | Free                    |
+      |                         |
+      |_________________________|
+      |                         | K_STACK_END = 0xE0403FFF
+      | Kernel Stack            |   = 16KB
+      |                         |
+      |_________________________| K_STACK_START = 0xE0400000
+      |                         | K_HEAP_END = 0xE03FFFFF
+      |                         |
+      | Kernel heap             |   = 512MB
       |                         |
       |_________________________| K_HEAP_START = 0xC0400000
       |                         | K_SPACE_END = 0xC03FFFFF
-      | Kernel itself, Stack    |   = 4MB
+      | Kernel itself           |   = 4MB
       | and placement addr.stuff|
 3 GiB |_________________________| K_BEGINNING = 0xC0000000
       |                         |

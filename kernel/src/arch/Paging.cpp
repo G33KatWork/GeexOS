@@ -64,14 +64,7 @@ void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermod
     unsigned int pdindex = virt >> 22;
     unsigned int ptindex = (virt >> 12) & 0x03FF;
     
-    PageTable *t = kernel_directory->GetTable(pdindex);
-    
-    if(t == NULL) //there is no PageTable for this address
-    {
-        t = new (true /*page align*/) PageTable();
-        Address physicalPageTableAddress = GetPhysicalAddress((Address) t);
-        kernel_directory->SetTable(pdindex, t, physicalPageTableAddress | 0x3);
-    }
+    PageTable *t = kernel_directory->GetTable(pdindex, true);
     
     Page *p = t->GetPage(ptindex);
     if(!p->Present()) //mapped? TODO: really mapped?
@@ -87,4 +80,18 @@ void Paging::SwitchCurrentPageDirectory(PageDirectory* dir)
 {
     current_directory = dir;
     SwitchPageDirectory(GetPhysicalAddress((Address)(current_directory->tablesPhysical)));
+}
+
+using namespace IO;
+PageTable* PageDirectory::GetTable(unsigned int index, bool assign)
+{
+    //create new page table if we should and there is no table yet
+    if(assign && GetTable(index) == NULL)
+    {
+        PageTable* t = new (true /*page align*/) PageTable();
+        Address physicalPageTableAddress = Paging::GetInstance()->GetPhysicalAddress((Address) t);
+        SetTable(index, t, physicalPageTableAddress | 0x3);
+    }
+    
+    return tables[index];
 }

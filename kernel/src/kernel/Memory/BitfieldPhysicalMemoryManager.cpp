@@ -13,9 +13,9 @@ BitfieldPhysicalMemoryManager::BitfieldPhysicalMemoryManager(unsigned int memory
 {
     //setup bitmap
 	nFrames = memorySize * 1024 / PAGE_SIZE;
-	frames = (unsigned int*)kmalloc(INDEX_FROM_BIT(nFrames));
+	frames = (unsigned int*)kmalloc(INDEX_FROM_BIT(nFrames) * sizeof(uint32_t));
 	memset(frames, 0, INDEX_FROM_BIT(nFrames) * sizeof(uint32_t));
-    
+	
 	//mark 0 to 4MB for kernel as used
 	for(unsigned int i = 0; i < 1024; i++)
 		bitmap_set_frame(i*PAGE_SIZE);

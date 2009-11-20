@@ -7,6 +7,8 @@ using namespace IO;
 Elf32SectionHeader* Debug::symbolTable = NULL;
 Elf32SectionHeader* Debug::stringTable = NULL;
 
+//TODO: Check if code is broken...
+
 void Debug::PrintStacktrace(unsigned int n)
 {
     // Stack contains:
@@ -34,10 +36,11 @@ void Debug::PrintStacktrace(unsigned int n)
             kdbg << "\t" << "<" << hex << eip << ">\t" << "<unknown symbol>" << endl;
         else
         {
-            LargeStaticString demangled = LargeStaticString();
+            /*LargeStaticString demangled = LargeStaticString();
             LargeStaticString toDemangle = LargeStaticString((const char*)symName);
             demangle_full(toDemangle, demangled);
-            kdbg << "\t" << "<" << hex << symStart << ">\t" << demangled << endl;
+            kdbg << "\t" << "<" << hex << symStart << ">\t" << demangled << endl;*/
+            kdbg << "\t" << "<" << hex << symStart << ">\t" << symName << endl;
         }
         
         

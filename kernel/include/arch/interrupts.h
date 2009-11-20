@@ -22,6 +22,10 @@
 #define		IRQ_FPU				42
 #define		IRQ_HDC				43
 
+// Set the following number to the maximum nested exceptions
+// the kernel tries to resolve before it will panic
+#define     MAX_NESTED_EXCEPTIONS   1
+
 using namespace Kernel;
 
 //Handler called by our asm stubs

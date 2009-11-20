@@ -8,16 +8,16 @@ namespace Memory
     class Stack
     {
     public:
-        Stack(Address addr, unsigned int s);
-        Stack(unsigned int s);
+        Stack(Address end, size_t s);
         
-        Address GetAddress();
+        Address GetStartAddress();
         unsigned int GetSize();
         Address GetEndAddress();
+        void MoveCurrentStackHere(Address oldESP);
         
     private:
-        Address address;
-        unsigned int size;
+        Address endAddr;
+        size_t size;
     };
 }
 #endif

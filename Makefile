@@ -6,6 +6,7 @@ STARTTIME := $(shell date +%s)
 #Programs
 BOCHSMACOS = resources/bochs.app/Contents/MacOS/bochs
 #BOCHSMACOS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
+#BOCHSMACOS = /usr/local/bochs/bin/bochs
 BOCHS = /usr/bin/bochs
 QEMU = qemu
 
@@ -88,7 +89,6 @@ else
 endif
 	$(Q)sleep 2
 	$(call cmd_msg,GDB,Attaching debugger)
-	#$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
 
 # Start qemu
 qemu: bootfloppy
@@ -98,8 +98,7 @@ qemu: bootfloppy
 qemudebug: bootfloppy
 	$(call cmd_msg,QEMU,floppy.img)
 	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
-	$(Q)$(QEMU) -fda floppy.img -s -S $(QOUTPUT)
-	#$(Q)gdb -q $(TARGET).elf -x resources/gdbinit
+	$(Q)$(QEMU) -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
 
 # Cleaning
 clean:

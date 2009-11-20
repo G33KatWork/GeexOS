@@ -8,7 +8,43 @@
 
 namespace Arch
 {
-    class Paging;
+    class PageDirectory;
+    class PageTable;
+    class Page;
+    
+    class Paging
+    {
+    public:
+        static Paging* GetInstance();
+        
+        void Init(void);
+        
+        Address GetPhysicalAddress(Address virtualaddr);
+        void MapAddress(Address virt, Address phys, bool readwrite, bool usermode);
+        
+        void SwitchCurrentPageDirectory(PageDirectory* dir);
+        
+        PageDirectory* GetKernelDirectory() { return kernel_directory; }
+        
+    private:
+        static Paging* instance;
+        
+        Paging(){};
+        
+        PageDirectory *kernel_directory;
+        PageDirectory *current_directory;
+        
+        PageTable *lowpagetable;
+        
+        inline void SwitchPageDirectory(Address pagedirectoryPhysical)
+        {
+            asm volatile (	"mov %0, %%eax\n"
+    			"mov %%eax, %%cr3\n"
+    			"mov %%cr0, %%eax\n"
+    			"orl $0x80000000, %%eax\n"
+    			"mov %%eax, %%cr0\n" :: "m" (pagedirectoryPhysical));
+        }
+    };
     
     class Page
     {
@@ -58,6 +94,7 @@ namespace Arch
     class PageTable
     {
         friend class Paging;
+        friend class PageDirectory;
         
     private:
         PageTable()
@@ -97,17 +134,12 @@ namespace Arch
             }
         }
         
-        Address GetTablePhysical(unsigned int index, bool assign = false)
+        Address GetTablePhysical(unsigned int index)
         {
-            //TODO: Handle assign
             return tablesPhysical[index];
         }
         
-        PageTable* GetTable(unsigned int index, bool assign = false)
-        {
-            //TODO: Handle assign
-            return tables[index];
-        }
+        PageTable* GetTable(unsigned int index, bool assign = false);
         
         void SetTable(unsigned int index, PageTable* table, Address tablePhysical)
         {
@@ -128,40 +160,6 @@ namespace Arch
         
         Address tablesPhysical[1024];
         PageTable* tables[1024];
-    };
-    
-    class Paging
-    {
-    public:
-        static Paging* GetInstance();
-        
-        void Init(void);
-        
-        Address GetPhysicalAddress(Address virtualaddr);
-        void MapAddress(Address virt, Address phys, bool readwrite, bool usermode);
-        
-        void SwitchCurrentPageDirectory(PageDirectory* dir);
-        
-        PageDirectory* GetKernelDirectory() { return kernel_directory; }
-        
-    private:
-        static Paging* instance;
-        
-        Paging(){};
-        
-        PageDirectory *kernel_directory;
-        PageDirectory *current_directory;
-        
-        PageTable *lowpagetable;
-        
-        inline void SwitchPageDirectory(Address pagedirectoryPhysical)
-        {
-            asm volatile (	"mov %0, %%eax\n"
-    			"mov %%eax, %%cr3\n"
-    			"mov %%cr0, %%eax\n"
-    			"orl $0x80000000, %%eax\n"
-    			"mov %%eax, %%cr0\n" :: "m" (pagedirectoryPhysical));
-        }
     };
 }
 
