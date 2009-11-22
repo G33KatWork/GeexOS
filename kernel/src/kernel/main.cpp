@@ -16,9 +16,6 @@
 #include <kernel/Time/Timer.h>
 #include <kernel/Memory/Stack.h>
 
-//just for readStackPointer()
-#include <arch/scheduling.h>
-
 //see doc/memory_layout.txt
 #define     KHEAP_LOCATION      0xC0400000
 #define     KHEAP_MAX_SIZE      512 * 1024 * 1024
@@ -27,14 +24,15 @@
 #define     KSTACK_LOCATION     0xE0400000
 #define     KSTACK_SIZE         16 * 1024
 
+extern      Address             bootStack;
+#define     BOOTSTACK_SIZE      0x1000              //change this in start.S, too!
+
 using namespace Arch;
 using namespace Kernel;
 using namespace IO;
 using namespace Memory;
 using namespace Processes;
 using namespace Time;
-
-extern Address initialESP;
 
 class InvalidOpcodeHandler : public IInterruptServiceRoutine
 {
@@ -73,13 +71,31 @@ public:
     {
         if(this->tm->HandleTick(&Arch::ClockSource))
             Scheduler::GetInstance()->Schedule();
-            
-        /*kout << Monitor::SetPosition(0, 15);
-        kout << "EIP: " << hex << regs->eip << endl;
-        kout << "CS: " << regs->cs << endl;
-        kout << "EFLAGS: " << regs->eflags << endl;
-        kout << "USERSP: " << regs->useresp << endl;
-        kout << "SS: " << regs->ss << endl;*/
+    }
+};
+
+bool timerExpired(void)
+{
+    DEBUG_MSG("The timer has expired");
+    return false; //should the scheduler pick a new process?
+}
+
+class KeyboardHandler : public IInterruptServiceRoutine
+{
+private:
+    TimerManager *tm;
+    
+public:
+    KeyboardHandler(TimerManager* timerManager)
+    {
+        tm = timerManager;
+    }
+    
+    void Execute(registers_t* UNUSED(regs))
+    {
+        Timer *t = new Timer(FUNCTION, timerExpired, NULL);
+        tm->StartTimer(t, 1000000000);
+        DEBUG_MSG("Timer started");
     }
 };
 
@@ -110,7 +126,11 @@ int main(MultibootHeader* multibootInfo)
     
     //Prepare monitor output
     kdbg.Clear();
-    DEBUG_MSG("Initial boot ESP is: " << hex << (unsigned)&initialESP);
+    
+    //Setup temporary bootstack - will be moved later when we have full blown paging
+    DEBUG_MSG("Initial boot stackpointer is: " << hex << (unsigned)&bootStack);
+    Stack bStack = Stack((Address)&bootStack, BOOTSTACK_SIZE);
+    memoryManager.SetKernelStack(&bStack);
     
     //Initialize paging
     Paging::GetInstance()->Init();
@@ -121,6 +141,7 @@ int main(MultibootHeader* multibootInfo)
     DEBUG_MSG("CPU and Interrupts initialized...");
     
     //Get information about environment from GRUB
+    DEBUG_MSG("Multiboot structure is at " << hex << (unsigned)multibootInfo);
     Multiboot m = Multiboot(multibootInfo);
     
     //Give our memory manager some information about the installed RAM
@@ -131,6 +152,13 @@ int main(MultibootHeader* multibootInfo)
     BitfieldPhysicalMemoryManager *pm = new BitfieldPhysicalMemoryManager(m.GetLowerMemory() + m.GetUpperMemory());
     memoryManager.SetPhysicalMemoryManager(pm);
     DEBUG_MSG("Frame allocator initialized...");
+    
+    DEBUG_MSG("Setting up new stack at " << hex << KSTACK_LOCATION << " with size of " << dec << KSTACK_SIZE/1024 << " KB");
+    Stack *stack = new Stack(KSTACK_LOCATION, KSTACK_SIZE);
+    stack->AllocateSpace();
+    stack->MoveCurrentStackHere((Address)&bootStack);
+    memoryManager.SetKernelStack(stack);
+    DEBUG_MSG("Stack seems to be successfully moved...");
     
     //Init symtab and strtab for stacktraces
     Debug::stringTable = m.StrtabStart();
@@ -160,14 +188,6 @@ int main(MultibootHeader* multibootInfo)
     irqD->RegisterHandler(16, ex);
     DEBUG_MSG("Interrupt dispatcher initialized...");
 
-    Arch::EnableInterrupts();
-    DEBUG_MSG("Interrupts enabled...");
-
-    DEBUG_MSG("Setting up new stack at a defined position...");
-    Stack *stack = new Stack(KSTACK_LOCATION, KSTACK_SIZE);
-    stack->MoveCurrentStackHere((Address)&initialESP);
-    DEBUG_MSG("Stack seems to be successfully moved...");
-
     DEBUG_MSG("Setting up heap, starting at " << hex << KHEAP_LOCATION << " with maximum size of " << dec << KHEAP_MAX_SIZE/1024 << "KB and an initial size of " << KHEAP_INITIAL_SIZE/1024 << "KB");
     Heap *h = new Heap(KHEAP_LOCATION, KHEAP_MAX_SIZE, KHEAP_INITIAL_SIZE);
     
@@ -191,8 +211,14 @@ int main(MultibootHeader* multibootInfo)
     //Init timer
     InitializeTimer();
     TimerManager *tm = new TimerManager(&Arch::ClockSource);
-    irqD->RegisterHandler(32, new TimerHandler(tm));
+    irqD->RegisterHandler(IRQ_TIMER, new TimerHandler(tm));
     DEBUG_MSG("Timer initialized...");
+    
+    Arch::EnableInterrupts();
+    DEBUG_MSG("Interrupts enabled...");
+    
+    irqD->RegisterHandler(IRQ_KEYBOARD, new KeyboardHandler(tm));
+    Arch::UnmaskIRQ(IRQ_KEYBOARD);
     
     /*Scheduler* scheduler = Scheduler::GetInstance();
     scheduler->SetTimerManager(tm);

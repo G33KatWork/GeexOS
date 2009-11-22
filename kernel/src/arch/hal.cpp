@@ -22,7 +22,7 @@ void Arch::InitializeCPU()
 
 ClockSource_t Arch::ClockSource  = {
     "PIT",
-    1000000000 / 1000,
+    1000000,  //ticklength in ns: 1000ms = 1000000ns
     PERIODIC,
     NULL,
     PIT::Enable,

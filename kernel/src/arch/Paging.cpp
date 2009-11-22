@@ -86,7 +86,7 @@ using namespace IO;
 PageTable* PageDirectory::GetTable(unsigned int index, bool assign)
 {
     //create new page table if we should and there is no table yet
-    if(assign && GetTable(index) == NULL)
+    if(assign && tables[index] == NULL)
     {
         PageTable* t = new (true /*page align*/) PageTable();
         Address physicalPageTableAddress = Paging::GetInstance()->GetPhysicalAddress((Address) t);
