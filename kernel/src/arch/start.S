@@ -20,7 +20,7 @@ MultiBootHeader:
     dd FLAGS
     dd CHECKSUM
 
-STACKSIZE equ 0x400             ; 1k initial stack - will be moved later
+STACKSIZE equ 0x1000            ; 16k initial stack - will be moved later
 
 start:
     cli
@@ -36,13 +36,27 @@ start:
 	jmp 0x08:higherhalf			; Far jump to higher half kernel
 	
 higherhalf:						; Here the CPU adds 0x40000000 to all addresses due to the trick gdt
-	mov esp, initialESP			; Setup stack
+	mov esp, bootStack			; Setup stack
 	mov ebp, esp
 	push ebp
-	push ebx					; Push pointer to GRUB multiboot-information
 
+    call static_ctors_loop
+    
+    push ebx					; Push pointer to GRUB multiboot-information
+	call main					; Jump to C++-Code
+	cli
+	
+	push 0
+	call __cxa_finalize			; Call destructors with arg 0 (destroy all)
+
+cpuhalt:
+    hlt
+    jmp cpuhalt
+	
 	
 static_ctors_loop:				; Call constructors
+    push ebx
+    
 	mov ebx, start_ctors
     jmp .test
 .body:
@@ -51,18 +65,9 @@ static_ctors_loop:				; Call constructors
 .test:
     cmp ebx, end_ctors
     jb .body
-
-	
-	call main					; Jump to C++-Code
-	cli
-	
-	push 0
-	call __cxa_finalize			; Call destructors with arg 0 (destroy all)
-	
-
-cpuhalt:
-    hlt
-    jmp cpuhalt
+    
+    pop ebx
+    ret
 
 ;---------------------------------------------------------------------------------------------
 
@@ -100,9 +105,8 @@ gdt_end:
 ;---------------------------------------------------------------------------------------------
 
 section .bss
-align 32
-
-global initialESP
-bootStack:
+align 0x1000                                            ; align to page boundary
+global bootStack
+bootStackEnd:
 	resb      STACKSIZE
-initialESP:
+bootStack:

@@ -10,10 +10,13 @@ namespace Memory
     public:
         Stack(Address end, size_t s);
         
-        Address GetStartAddress();
-        unsigned int GetSize();
-        Address GetEndAddress();
+        Address GetStartAddress() { return endAddr + size; }
+        unsigned int GetSize() { return size; }
+        Address GetEndAddress() { return endAddr; }
+        
+        void AllocateSpace();
         void MoveCurrentStackHere(Address oldESP);
+        void PrintStacktrace(unsigned int n = 15);
         
     private:
         Address endAddr;

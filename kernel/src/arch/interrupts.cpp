@@ -10,7 +10,7 @@ using namespace IO;
 int nestedExceptions = 0;
 
 void fault_handler(registers_t regs)
-{    
+{
     if(nestedExceptions > MAX_NESTED_EXCEPTIONS) PANIC("Maximum number of nested exceptions reached.");
     nestedExceptions++;
     

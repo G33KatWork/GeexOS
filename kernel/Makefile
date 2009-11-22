@@ -9,7 +9,6 @@ CCSOURCES =
 
 # List C++ source files here
 CXXSOURCES = lib/string.cpp \
-             kernel/Memory/MemoryManager.cpp \
              kernel/main.cpp \
              kernel/IO/CharacterOutputDevice.cpp \
 			 kernel/IO/Monitor.cpp \
@@ -36,7 +35,6 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/Memory/Stack.cpp \
  			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp \
  			 kernel/Memory/PlacementAllocator.cpp
-#			 kernel/utils/demangle.cpp
 #			 kernel/Memory/Slab/SlabManager.cpp
 
 # List D source files here

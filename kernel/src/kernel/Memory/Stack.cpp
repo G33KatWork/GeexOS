@@ -3,46 +3,31 @@
 #include <arch/Paging.h>
 #include <arch/scheduling.h>
 #include <lib/string.h>
+#include <kernel/debug.h>
 
 using namespace Memory;
 using namespace Arch;
 using namespace IO;
 
-//TODO: check if this code is broken
-
 Stack::Stack(Address end, size_t s)
 {
-    DEBUG_MSG("Creating stack at " << hex << (unsigned)end << " with size of " << dec <<( unsigned)(s/1024) << "KB");
-    
     ASSERT(end % PAGE_SIZE == 0, "Stack end (lowermost address) must be page aligned");
     ASSERT((end + s) % PAGE_SIZE == 0, "Stack beginning (uppermost address) must be page aligned");
     
     this->endAddr = end;
     this->size = s;
-    
+}
+
+void Stack::AllocateSpace()
+{
     //Assign space to our defined addresses
     size_t i = 0;
-    while(i < s)
+    while(i < size)
     {
         Address newFrame = memoryManager.AllocateFrame();
-        Paging::GetInstance()->MapAddress(end + i, newFrame, true, false);
+        Paging::GetInstance()->MapAddress(endAddr + i, newFrame, true, false);
         i += PAGE_SIZE;
     }
-}
-
-Address Stack::GetEndAddress()
-{
-    return endAddr;
-}
-
-unsigned int Stack::GetSize()
-{
-    return size;
-}
-
-Address Stack::GetStartAddress()
-{
-    return endAddr + size;
 }
 
 void Stack::MoveCurrentStackHere(Address initialESP)
@@ -63,7 +48,7 @@ void Stack::MoveCurrentStackHere(Address initialESP)
     {
         Address tmp = * (Address*)i;
         
-        if (( oldStackPointer < tmp) && (tmp < initialESP))
+        if (( oldStackPointer < tmp) && (tmp <= initialESP))
         {
             tmp = tmp + offset;
             Address *tmp2 = (Address*)i;
@@ -75,3 +60,83 @@ void Stack::MoveCurrentStackHere(Address initialESP)
     writeBasePointer(newBasePointer);
 }
 
+void Stack::PrintStacktrace(unsigned int n)
+{
+    // Stack contains:
+    //  function argument (n)
+    //  ebp of calling function (pointed to by current ebp)
+    //  Return address in calling function
+    unsigned int * ebp = &n + 1;
+    kdbg << "Stack trace:" << endl;
+    
+    for(unsigned int frame = 0; frame < n; ++frame)
+    {
+        if((Address)ebp == GetStartAddress() || ebp[1] == 0) // No caller on stack
+            break;
+        
+        unsigned int eip = ebp[1];
+            
+        // Unwind to previous stack frame
+        ebp = reinterpret_cast<unsigned int *>(ebp[0]);
+        //unsigned int * arguments = &ebp[2];
+        
+        //get symbol name
+        Address symStart;
+        char *symName = Debug::FindSymbol(eip, &symStart);
+        if(symName == NULL)
+            kdbg << "\t" << "<" << hex << eip << ">\t" << "<unknown symbol>" << endl;
+        else
+            kdbg << "\t" << "<" << hex << symStart << ">\t" << symName << endl;
+    }
+}
+
+//debug version...
+/*void Stack::PrintStacktrace(unsigned int n)
+{
+    unsigned int *stack = &n;
+    for(int i = 0; i < 60; i++)
+        kdbg << hex << (unsigned)(((unsigned)stack) + (i*sizeof(unsigned int))) << ": " << stack[i] << endl;
+    
+    // Stack contains:
+    //  function argument (n)
+    //  ebp of calling function (pointed to by current ebp)
+    //  Return address in calling function
+    unsigned int * ebp = &n + 1;
+    DEBUG_MSG("address of n: " << hex << (unsigned)&n);
+    DEBUG_MSG("initial ebp: " << hex << (unsigned)ebp);
+    kdbg << "Stack trace:" << endl;
+    
+    for(unsigned int frame = 0; frame < n; ++frame)
+    {
+        DEBUG_MSG("frame " << dec << frame);
+        
+        if((Address)ebp == GetStartAddress() || ebp[1] == 0) // No caller on stack
+            break;
+        
+        unsigned int eip = ebp[1];
+        DEBUG_MSG("location of EIP on stack: " << hex << (unsigned)(ebp + 1));
+        DEBUG_MSG("eip of caller: " << hex << eip);
+            
+        // Unwind to previous stack frame
+        ebp = reinterpret_cast<unsigned int *>(ebp[0]);
+        DEBUG_MSG("ebp of caller: " << hex << (unsigned)ebp);
+        //unsigned int * arguments = &ebp[2];
+        
+        //get symbol name
+        Address symStart;
+        char *symName = Debug::FindSymbol(eip, &symStart);
+        if(symName == NULL)
+            kdbg << "\t" << "<" << hex << eip << ">\t" << "<unknown symbol>" << endl;
+        else
+        {
+            //LargeStaticString demangled = LargeStaticString();
+            //LargeStaticString toDemangle = LargeStaticString((const char*)symName);
+            //demangle_full(toDemangle, demangled);
+            //kdbg << "\t" << "<" << hex << symStart << ">\t" << demangled << endl;
+            kdbg << "\t" << "<" << hex << symStart << ">\t" << symName << endl;
+        }
+        
+        DEBUG_MSG("next stackframe...");
+        //kout << "\t" << hex << eip << endl;
+    }
+}*/

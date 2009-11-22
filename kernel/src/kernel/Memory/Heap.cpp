@@ -230,5 +230,9 @@ void* Heap::Allocate(size_t len, bool pageAlign)
 
 void Heap::Deallocate(void* p)
 {
+    //free our block
+    list_item* block = (list_item*)(((Address)p) - sizeof(list_item));
+    block->free = true;
     
+    //TODO: contract two adjacent blocks if free
 }

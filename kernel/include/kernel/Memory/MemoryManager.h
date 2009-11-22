@@ -4,27 +4,63 @@
 #include <lib/types.h>
 #include <kernel/Memory/IMemoryAllocator.h>
 #include <kernel/Memory/IPhysicalMemoryManager.h>
+#include <kernel/Memory/Stack.h>
 
 namespace Memory
 {
     class MemoryManager
     {
     public:
-        MemoryManager();
+        IMemoryAllocator* GetAllocator()
+        {
+            return allocator;
+        }
         
-        IMemoryAllocator* GetAllocator();
-        void SetAllocator(IMemoryAllocator *alloc);
+        void SetAllocator(IMemoryAllocator *alloc)
+        {
+            allocator = alloc;
+        }
         
-        void SetPhysicalMemoryManager(IPhysicalMemoryManager *phys);
+        void SetPhysicalMemoryManager(IPhysicalMemoryManager *phys)
+        {
+            physical = phys;
+        }
         
-        void* kmalloc(size_t s, bool pageAlign);
-        void kfree(void* p);
-        Address AllocateFrame();
-        void DeallocateFrame(Address a);
+        Stack* GetKernelStack()
+        {
+            return kernelStack;
+        }
+        
+        void SetKernelStack(Stack* s)
+        {
+            kernelStack = s;
+        }
+        
+        void* kmalloc(size_t s, bool pageAlign)
+        {
+            return allocator->Allocate(s, pageAlign);
+        }
+        
+        void kfree(void* p)
+        {
+            allocator->Deallocate(p);
+        }
+        
+        Address AllocateFrame()
+        {
+            return physical->AllocateFrame();
+        }
+        
+        void DeallocateFrame(Address a)
+        {
+            physical->DeallocateFrame(a);
+        }
         
     private:
         IMemoryAllocator *allocator;
         IPhysicalMemoryManager *physical;
+        
+        Stack* kernelStack;
     };
 }
 #endif

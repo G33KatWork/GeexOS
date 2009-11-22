@@ -24,7 +24,7 @@ void panic(const char *message)
     kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: " << message << endl;
     
-    //PrintStacktrace();
+    memoryManager.GetKernelStack()->PrintStacktrace();
     
     HaltMachine();
 }
@@ -36,7 +36,7 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
     kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
     
-    //PrintStacktrace();
+    memoryManager.GetKernelStack()->PrintStacktrace();
     
     HaltMachine();
 }
@@ -66,9 +66,9 @@ void *operator new(size_t size, bool pageAllocation)
     return memoryManager.kmalloc(size, pageAllocation);
 }
 
-void operator delete(void *p, bool pageAllocation)
+void operator delete(void *p, bool UNUSED(pageAllocation))
 {
-    //FIXME: Implement deallocation mechanism for PageTables and PageDirectories
+    memoryManager.DeallocateFrame((Address)p);
 }
 
 void* kmalloc(size_t size)
