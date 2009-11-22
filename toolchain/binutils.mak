@@ -1,7 +1,7 @@
-BINUTILS_VERSION    := 2.18
+BINUTILS_VERSION    := 2.20
 BINUTILS_SOURCE     := $(TOOLCHAIN_SRCDIR)/binutils-$(BINUTILS_VERSION).tar.bz2
 BINUTILS_DOWNLOAD   := http://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
-BINUTILS_PATCHES    := $(TOOLCHAIN_PATCHDIR)/binutils-$(BINUTILS_VERSION).texinfo_configure.patch
+BINUTILS_PATCHES    := #$(TOOLCHAIN_PATCHDIR)/binutils-$(BINUTILS_VERSION).texinfo_configure.patch
 
 ifeq ($(TOOLCHAIN_TARGET),avr32)
 BINUTILS_PATCHES += $(TOOLCHAIN_PATCHDIR)/binutils-$(BINUTILS_VERSION).atmel.1.0.1.patch

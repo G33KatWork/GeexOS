@@ -1,4 +1,4 @@
-GDB_VERSION    := 6.7.1
+GDB_VERSION    := 7.0
 GDB_SOURCE     := $(TOOLCHAIN_SRCDIR)/gdb-$(GDB_VERSION).tar.bz2
 GDB_DOWNLOAD   := http://ftp.gnu.org/gnu/gdb/gdb-$(GDB_VERSION).tar.bz2
 GDB_PATCHES    := 
