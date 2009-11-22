@@ -58,7 +58,7 @@ OBJDIR = obj
 SRCDIR = src
 
 # C compiler flags
-CFLAGS += -g -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
+CFLAGS += -ggdb -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
 CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 			-Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
 			-Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
@@ -67,7 +67,7 @@ CFLAGS += -DARCH_X86 -DDEBUG
 CFLAGS += $(addprefix -I,$(INCLUDES))
 
 # C++ compiler flags
-CXXFLAGS += -g -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
+CXXFLAGS += -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long \
 			-Wconversion #-Werror
@@ -82,7 +82,7 @@ DFLAGS += $(addprefix -I,$(INCLUDES))
 OBJCFLAGS := $(CFLAGS) -fnext-runtime -Wno-import
 
 # NASM flags
-ASFLAGS = -f elf -g
+ASFLAGS = -f elf -ggdb
 
 # Linker flags
 LDFLAGS = -T linker.ld -Map kernel.map
