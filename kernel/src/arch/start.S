@@ -12,16 +12,18 @@ FLAGS              equ        MODULEALIGN | MEMINFO
 MAGIC              equ        0x1BADB002
 CHECKSUM           equ        -(MAGIC + FLAGS)
 
-section .text      ; Next is the Grub Multiboot Header
+STACKSIZE          equ        0x1000            ; 16k initial stack - will be moved later
 
+section .multibootHeader       ; Next is the Grub Multiboot Header
 align 4
 MultiBootHeader:
 	dd MAGIC
     dd FLAGS
     dd CHECKSUM
 
-STACKSIZE equ 0x1000            ; 16k initial stack - will be moved later
 
+section .text
+align 4
 start:
     cli
 	lgdt [trickgdt]				; load a temp gdt which adds 0x40000000 to all addresses
