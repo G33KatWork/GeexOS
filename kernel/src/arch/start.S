@@ -26,18 +26,7 @@ section .text
 align 4
 start:
     cli
-	lgdt [trickgdt]				; load a temp gdt which adds 0x40000000 to all addresses
     
-	mov ax, 0x10                ; Segment setup - 0x10 = Kernel data GDT descriptor
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-	
-	jmp 0x08:higherhalf			; Far jump to higher half kernel
-	
-higherhalf:						; Here the CPU adds 0x40000000 to all addresses due to the trick gdt
 	mov esp, bootStack			; Setup stack
 	mov ebp, esp
 	push ebp
@@ -89,20 +78,6 @@ gdt_flush:
 
 flush2:
 	ret
-
-;---------------------------------------------------------------------------------------------
-
-section .setup
-trickgdt:
-	dw gdt_end - gdt - 1 ; size of the GDT
-	dd gdt				 ; linear address of GDT
-
-gdt:
-	dd 0, 0												; null gate
-	db 0xFF, 0xFF, 0, 0, 0, 10011010b, 11001111b, 0x40	; code selector 0x08: base 0x40000000, limit 0xFFFFFFFF, type 0x9A, granularity 0xCF
-	db 0xFF, 0xFF, 0, 0, 0, 10010010b, 11001111b, 0x40	; data selector 0x10: base 0x40000000, limit 0xFFFFFFFF, type 0x92, granularity 0xCF
-
-gdt_end:
 
 ;---------------------------------------------------------------------------------------------
 

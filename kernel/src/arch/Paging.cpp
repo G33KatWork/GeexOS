@@ -25,8 +25,8 @@ void Paging::Init()
     kernel_directory = new(true /*page allocation*/) PageDirectory();
     lowpagetable = new(true /*page allocation*/) PageTable();
     
-    kernelpagedirPtr = (Address)kernel_directory + 0x40000000;
-    lowpagetablePtr = (Address)lowpagetable + 0x40000000;
+    kernelpagedirPtr = (Address)kernel_directory;
+    lowpagetablePtr = (Address)lowpagetable;
     
     for (k = 0; k < 1024; k++)
 	{
@@ -37,8 +37,8 @@ void Paging::Init()
 	
     kernel_directory->SetIdentityTable((Address)(kernelpagedirPtr | 0x3));
     
+    //Map first physical 4 MB at virtual 0x0
     kernel_directory->SetTable(0, lowpagetable, (Address)(lowpagetablePtr | 0x3));
-	kernel_directory->SetTable(768, lowpagetable, (Address)(lowpagetablePtr | 0x3));
 	
     current_directory = kernel_directory;
 	

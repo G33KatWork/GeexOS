@@ -8,7 +8,7 @@ using namespace Arch;
 
 Monitor::Monitor()
 {
-    vidmem = (unsigned short *)0xC00B8000;
+    vidmem = (unsigned short *)0x000B8000;
     cursorX = 0;
     cursorY = 0;
 }

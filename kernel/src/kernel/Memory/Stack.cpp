@@ -24,7 +24,9 @@ void Stack::AllocateSpace()
     size_t i = 0;
     while(i < size)
     {
-        Address newFrame = memoryManager.AllocateFrame();
+        //FIXME: make this work again, if we use this class!!1!
+        //Address newFrame = memoryManager.AllocateFrame();
+        Address newFrame = NULL;
         Paging::GetInstance()->MapAddress(endAddr + i, newFrame, true, false);
         i += PAGE_SIZE;
     }

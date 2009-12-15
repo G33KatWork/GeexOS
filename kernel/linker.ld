@@ -8,27 +8,20 @@ SECTIONS{
     {
         *(.multibootHeader)
     }
-
-    .setup :
-	{
-		*(.setup)
-	}
-
-    . += 0xC0000000;
     
-    .text : AT(ADDR(.text) - 0xC0000000)
+    .text : AT(ADDR(.text))
     {
         code = .; _code = .; __code = .;
         *(.text)
         *(.rodata)
     }
 
-    .rodata ALIGN (4096) : AT(ADDR(.rodata) - 0xC0000000)
+    .rodata ALIGN (4096) : AT(ADDR(.rodata))
     {
         *(.rodata)
     }
 
-    .data ALIGN (4096) : AT(ADDR(.data) - 0xC0000000)
+    .data ALIGN (4096) : AT(ADDR(.data))
     {
         start_ctors = .;
         *(.ctor*)
@@ -38,7 +31,7 @@ SECTIONS{
         *(.data)
     }
 
-    .bss ALIGN (4096) : AT(ADDR(.bss) - 0xC0000000)
+    .bss ALIGN (4096) : AT(ADDR(.bss))
     {
         sbss = .;
         bss = .; _bss = .; __bss = .;

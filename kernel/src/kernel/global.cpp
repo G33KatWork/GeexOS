@@ -2,14 +2,14 @@
 #include <arch/hal.h>
 #include <arch/interrupts.h>
 #include <kernel/debug.h>
-#include <kernel/Memory/MemoryManager.h>
+#include <kernel/Memory/PlacementAllocator.h>
 
 using namespace IO;
 using namespace Arch;
 using namespace Debug;
 using namespace Memory;
 
-MemoryManager memoryManager = MemoryManager();
+PlacementAllocator placementAlloc = PlacementAllocator();
 
 #ifdef SERIAL_DEBUG
     SerialConsole kdbg = SerialConsole(SERIAL_COM1);
@@ -24,7 +24,7 @@ void panic(const char *message)
     kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: " << message << endl;
     
-    memoryManager.GetKernelStack()->PrintStacktrace();
+    //memoryManager.GetKernelStack()->PrintStacktrace();
     
     HaltMachine();
 }
@@ -36,47 +36,47 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
     kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
     
-    memoryManager.GetKernelStack()->PrintStacktrace();
+    //memoryManager.GetKernelStack()->PrintStacktrace();
     
     HaltMachine();
 }
 
 void *operator new(size_t size)
 {
-    return memoryManager.kmalloc(size, false);
+    return placementAlloc.Allocate(size, false);
 }
 
 void *operator new[](size_t size)
 {
-    return memoryManager.kmalloc(size, false);
+    return placementAlloc.Allocate(size, false);
 }
 
 void  operator delete(void *p)
 {
-    memoryManager.kfree(p);
+    
 }
 
 void  operator delete[](void *p)
 {
-    memoryManager.kfree(p);
+    
 }
 
 void *operator new(size_t size, bool pageAllocation)
 {
-    return memoryManager.kmalloc(size, pageAllocation);
+    return placementAlloc.Allocate(size, pageAllocation);
 }
 
 void operator delete(void *p, bool UNUSED(pageAllocation))
 {
-    memoryManager.DeallocateFrame((Address)p);
+    
 }
 
 void* kmalloc(size_t size)
 {
-    return memoryManager.kmalloc(size, false);
+    return placementAlloc.Allocate(size, false);
 }
 
 void kfree(void* p)
 {
-    memoryManager.kfree(p);
+    
 }

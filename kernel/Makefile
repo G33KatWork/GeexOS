@@ -24,7 +24,6 @@ CXXSOURCES = lib/string.cpp \
 			 arch/pit.cpp  \
 			 arch/hal.cpp  \
 			 arch/interrupts.cpp \
-			 kernel/Memory/Heap.cpp \
 			 kernel/Processes/Scheduler.cpp \
 			 kernel/Processes/Thread.cpp \
 			 kernel/DataStructures/OrderedArray.cpp \
@@ -33,8 +32,8 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/Time/Timer.cpp\
 			 kernel/Time/TimerManager.cpp \
 			 kernel/Memory/Stack.cpp \
- 			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp \
- 			 kernel/Memory/PlacementAllocator.cpp
+ 			 kernel/Memory/PlacementAllocator.cpp \
+             kernel/Memory/MemoryManager.cpp
 #			 kernel/Memory/Slab/SlabManager.cpp
 
 # List D source files here
