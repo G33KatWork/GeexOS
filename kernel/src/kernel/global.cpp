@@ -80,3 +80,8 @@ void kfree(void* p)
 {
     
 }
+
+unsigned int getPlacementPointer()
+{
+    return placementAlloc.GetPointerPosition();
+}

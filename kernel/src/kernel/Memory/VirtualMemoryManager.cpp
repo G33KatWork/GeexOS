@@ -1,4 +1,4 @@
-#include <kernel/Memory/MemoryManager.h>
+#include <kernel/Memory/VirtualMemoryManager.h>
 #include <arch/Paging.h>
 
 using namespace Arch;
@@ -11,9 +11,9 @@ using namespace IO;
 
 using namespace Memory;
 
-MemoryManager::MemoryManager(unsigned int memsize)
+VirtualMemoryManager::VirtualMemoryManager(size_t memsize)
 {
-    DEBUG_MEMORY_MSG("Initializing memory subsystem. Memory size: " << dec << memsize/1024 << "KB");
+    DEBUG_MEMORY_MSG("Initializing virtual kernel memory subsystem. Memory size: " << dec << (unsigned int)memsize/1024 << "KB");
 
     Paging::GetInstance()->Init();
     DEBUG_MEMORY_MSG("Paging initialized...");

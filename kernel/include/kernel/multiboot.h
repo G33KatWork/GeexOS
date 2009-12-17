@@ -3,6 +3,7 @@
 
 #include <lib/types.h>
 #include <kernel/elf32.h>
+#include <kernel/ElfInformation.h>
 
 #define MULTIBOOT_FLAG_MEM     0x001
 #define MULTIBOOT_FLAG_DEVICE  0x002
@@ -107,42 +108,10 @@ namespace Kernel
         char* GetKernelCommandline() { return (char *)header->cmdLine; }
         bool IsElf() { return header->flags & MULTIBOOT_FLAG_ELF; }
         
-        Address StrtabEnd()
-        {
-            if (strtab)
-                return (Address) strtab->addr+strtab->size;
-            else
-                return 0;
-        }
-
-        Address SymtabEnd()
-        {
-            if (symtab)
-                return (Address) symtab->addr+symtab->size;
-            else
-                return 0;
-        }
-
-        Elf32SectionHeader *SymtabStart()
-        {
-            if (symtab)
-                return (Elf32SectionHeader *)symtab;
-            else
-                return 0;
-        }
-
-        Elf32SectionHeader *StrtabStart()
-        {
-            if (strtab)
-                return (Elf32SectionHeader *)strtab;
-            else
-                return 0;
-        }
+        ElfInformation *elfInfo;
         
     private:
         MultibootHeader *header;
-        Elf32SectionHeader *symtab;
-        Elf32SectionHeader *strtab;
     };
 
 }

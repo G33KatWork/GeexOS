@@ -4,12 +4,12 @@
 #include <lib/types.h>
 #include <kernel/IO/Monitor.h>
 #include <kernel/IO/SerialConsole.h>
-#include <kernel/Memory/MemoryManager.h>
+#include <kernel/Memory/VirtualMemoryManager.h>
 
 //Comment out for on screen debugging
 //#define     SERIAL_DEBUG
 
-extern class Memory::MemoryManager memoryManager;
+extern class Memory::VirtualMemoryManager memoryManager;
 
 #ifdef SERIAL_DEBUG
     extern class IO::SerialConsole kdbg;
@@ -58,5 +58,7 @@ void operator delete(void *p, bool pageAllocation);
 
 void* kmalloc(size_t size);
 void kfree(void* p);
+
+unsigned int getPlacementPointer();
 
 #endif

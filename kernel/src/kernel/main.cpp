@@ -10,7 +10,7 @@
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/Memory/Stack.h>
-#include <kernel/Memory/MemoryManager.h>
+#include <kernel/Memory/VirtualMemoryManager.h>
 
 extern      Address             bootStack;
 #define     BOOTSTACK_SIZE      0x1000              //change this in start.S, too!
@@ -103,7 +103,7 @@ int main(MultibootHeader* multibootInfo)
     DEBUG_MSG("CPU and Interrupt tables initialized...");
     
     //Initialize Memory
-    MemoryManager *mm = new MemoryManager(m.GetLowerMemory() + m.GetUpperMemory());
+    VirtualMemoryManager *mm = new VirtualMemoryManager(m.GetLowerMemory() + m.GetUpperMemory());
     
     /*DEBUG_MSG("Setting up new stack at " << hex << KSTACK_LOCATION << " with size of " << dec << KSTACK_SIZE/1024 << " KB");
     Stack *stack = new Stack(KSTACK_LOCATION, KSTACK_SIZE);
@@ -113,8 +113,17 @@ int main(MultibootHeader* multibootInfo)
     DEBUG_MSG("Stack seems to be successfully moved...");*/
     
     //Init symtab and strtab for stacktraces
-    Debug::stringTable = m.StrtabStart();
-    Debug::symbolTable = m.SymtabStart();
+    Debug::stringTable = m.elfInfo->GetSection(".strtab");
+    Debug::symbolTable = m.elfInfo->GetSection(".symtab");
+    
+    Elf32SectionHeader *text = m.elfInfo->GetSection(".text");
+    DEBUG_MSG("Text address: " << hex << text->addr);
+    Elf32SectionHeader *data = m.elfInfo->GetSection(".data");
+    DEBUG_MSG("Data address: " << hex << data->addr);
+    Elf32SectionHeader *rodata = m.elfInfo->GetSection(".rodata");
+    DEBUG_MSG("Rodata address: " << hex << rodata->addr);
+    Elf32SectionHeader *bss = m.elfInfo->GetSection(".bss");
+    DEBUG_MSG("BSS address: " << hex << bss->addr);
     
     DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
@@ -151,6 +160,8 @@ int main(MultibootHeader* multibootInfo)
     
     irqD->RegisterHandler(IRQ_KEYBOARD, new KeyboardHandler(tm));
     Arch::UnmaskIRQ(IRQ_KEYBOARD);
+    
+    DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
     for(;;) {
         //scheduler->Schedule();

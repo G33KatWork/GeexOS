@@ -13,7 +13,6 @@ SECTIONS{
     {
         code = .; _code = .; __code = .;
         *(.text)
-        *(.rodata)
     }
 
     .rodata ALIGN (4096) : AT(ADDR(.rodata))
@@ -41,4 +40,11 @@ SECTIONS{
     }
     
     end = .; _end = .; __end = .;
+
+    . = 0x300000;
+    .placement ALIGN(4096) : AT(ADDR(.placement))
+    {
+        placement = .;
+        *(.placement)
+    }
 }

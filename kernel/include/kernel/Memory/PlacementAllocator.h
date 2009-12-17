@@ -11,6 +11,7 @@ namespace Memory
         PlacementAllocator();
         
         void* Allocate(size_t len, bool pageAlign);
+        unsigned int GetPointerPosition();
 
     private:
         unsigned int placement_address;
