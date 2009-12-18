@@ -56,14 +56,24 @@ namespace DataStructures
         
         void addAfter(int element, T data)
         {
+            //list head?
+            if(element == 0)
+            {
+                addFirst(data);
+                return;
+            }
+            
             node *q,*t;
             int i;
             
             for(i=0, q=p; i<element; i++)
             {
                 q = q->link;
-                if(q == NULL)
+                if(q == NULL) //list end reached?
+                {
+                    append(data);
                     return;
+                }
             }
 
             t = new node;

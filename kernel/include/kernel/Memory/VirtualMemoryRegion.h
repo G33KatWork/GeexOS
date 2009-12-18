@@ -13,20 +13,18 @@ namespace Memory
      */
     class VirtualMemoryRegion
     {
+    friend class VirtualMemorySpace;
+        
     public:
-        VirtualMemoryRegion(Address RegionStart, size_t RegionSize, char* RegionName, VirtualMemoryRegion* NextRegion)
-        {
-            StartAddress = RegionStart;
-            Size = RegionSize;
-            Name = RegionName;
-            Next = NextRegion;
-        }
+        VirtualMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName);
         
         Address StartAddress;
         size_t Size;
-        char* Name;
-        VirtualMemoryRegion *Next;
+        const char* Name;
         VirtualMemoryAllocator *Allocator;
+    
+    private:
+        VirtualMemoryRegion *Next;
     };
 }
 #endif

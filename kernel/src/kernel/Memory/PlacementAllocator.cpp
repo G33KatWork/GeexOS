@@ -8,8 +8,7 @@ extern unsigned int placement;
 
 PlacementAllocator::PlacementAllocator()
 {
-    //FIXME: Why +0x20000? if not, it would overwrite the ELF tables used by stacktraces
-    //FIXME: Just move this thing to somewhere else...
+    //See the linker script for an exact location of placement stuff
     placement_address = (unsigned int)&placement;
 }
 

@@ -11,6 +11,7 @@
 #include <kernel/Time/Timer.h>
 #include <kernel/Memory/Stack.h>
 #include <kernel/Memory/VirtualMemoryManager.h>
+#include <kernel/Memory/VirtualMemorySpace.h>
 
 extern      Address             bootStack;
 #define     BOOTSTACK_SIZE      0x1000              //change this in start.S, too!
@@ -105,25 +106,35 @@ int main(MultibootHeader* multibootInfo)
     //Initialize Memory
     VirtualMemoryManager *mm = new VirtualMemoryManager(m.GetLowerMemory() + m.GetUpperMemory());
     
+    //Init symtab and strtab for stacktraces
+    Debug::stringTable = m.elfInfo->GetSection(".strtab");
+    Debug::symbolTable = m.elfInfo->GetSection(".symtab");
+    
+    //Build virtual memory space
+    VirtualMemorySpace *vm = new VirtualMemorySpace();
+    
+    Elf32SectionHeader *text = m.elfInfo->GetSection(".text");
+    VirtualMemoryRegion* textRegion = new VirtualMemoryRegion((Address)text->addr, (size_t)text->size, ".text");
+    vm->AddRegion(textRegion);
+    
+    Elf32SectionHeader *data = m.elfInfo->GetSection(".data");
+    VirtualMemoryRegion* dataRegion = new VirtualMemoryRegion((Address)data->addr, (size_t)data->size, ".data");
+    vm->AddRegion(dataRegion);
+    
+    Elf32SectionHeader *rodata = m.elfInfo->GetSection(".rodata");
+    VirtualMemoryRegion* rodataRegion = new VirtualMemoryRegion((Address)rodata->addr, (size_t)rodata->size, ".rodata");
+    vm->AddRegion(rodataRegion);
+    
+    Elf32SectionHeader *bss = m.elfInfo->GetSection(".bss");
+    VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)bss->size, ".bss");
+    vm->AddRegion(bssRegion);
+    
     /*DEBUG_MSG("Setting up new stack at " << hex << KSTACK_LOCATION << " with size of " << dec << KSTACK_SIZE/1024 << " KB");
     Stack *stack = new Stack(KSTACK_LOCATION, KSTACK_SIZE);
     stack->AllocateSpace();
     stack->MoveCurrentStackHere((Address)&bootStack);
     memoryManager.SetKernelStack(stack);
     DEBUG_MSG("Stack seems to be successfully moved...");*/
-    
-    //Init symtab and strtab for stacktraces
-    Debug::stringTable = m.elfInfo->GetSection(".strtab");
-    Debug::symbolTable = m.elfInfo->GetSection(".symtab");
-    
-    Elf32SectionHeader *text = m.elfInfo->GetSection(".text");
-    DEBUG_MSG("Text address: " << hex << text->addr);
-    Elf32SectionHeader *data = m.elfInfo->GetSection(".data");
-    DEBUG_MSG("Data address: " << hex << data->addr);
-    Elf32SectionHeader *rodata = m.elfInfo->GetSection(".rodata");
-    DEBUG_MSG("Rodata address: " << hex << rodata->addr);
-    Elf32SectionHeader *bss = m.elfInfo->GetSection(".bss");
-    DEBUG_MSG("BSS address: " << hex << bss->addr);
     
     DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
