@@ -1,4 +1,4 @@
-#include <kernel/Memory/VirtualMemorySpace.h>
+#include <kernel/Memory/Virtual/VirtualMemorySpace.h>
 #include <lib/string.h>
 #include <kernel/global.h>
 

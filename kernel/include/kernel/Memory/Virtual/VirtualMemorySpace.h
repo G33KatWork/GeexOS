@@ -2,7 +2,7 @@
 #define VIRTUALMEMORYSPACE_H_
 
 #include <lib/types.h>
-#include <kernel/Memory/VirtualMemoryRegion.h>
+#include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
 
 #include <kernel/IO/CharacterOutputDevice.h>
 

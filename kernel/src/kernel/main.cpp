@@ -10,8 +10,9 @@
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/Memory/Stack.h>
-#include <kernel/Memory/VirtualMemoryManager.h>
-#include <kernel/Memory/VirtualMemorySpace.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <kernel/Memory/Virtual/VirtualMemorySpace.h>
+#include <kernel/Memory/Virtual/Allocator/StaticMemoryAllocator.h>
 
 extern      Address             bootStack;
 #define     BOOTSTACK_SIZE      0x1000              //change this in start.S, too!
@@ -113,20 +114,26 @@ int main(MultibootHeader* multibootInfo)
     //Build virtual memory space
     VirtualMemorySpace *vm = new VirtualMemorySpace();
     
+    StaticMemoryAllocator *staticKernelAllocator = new StaticMemoryAllocator();
+    
     Elf32SectionHeader *text = m.elfInfo->GetSection(".text");
     VirtualMemoryRegion* textRegion = new VirtualMemoryRegion((Address)text->addr, (size_t)text->size, ".text");
+    textRegion->Allocator = staticKernelAllocator;
     vm->AddRegion(textRegion);
     
     Elf32SectionHeader *data = m.elfInfo->GetSection(".data");
     VirtualMemoryRegion* dataRegion = new VirtualMemoryRegion((Address)data->addr, (size_t)data->size, ".data");
+    dataRegion->Allocator = staticKernelAllocator;
     vm->AddRegion(dataRegion);
     
     Elf32SectionHeader *rodata = m.elfInfo->GetSection(".rodata");
     VirtualMemoryRegion* rodataRegion = new VirtualMemoryRegion((Address)rodata->addr, (size_t)rodata->size, ".rodata");
+    rodataRegion->Allocator = staticKernelAllocator;
     vm->AddRegion(rodataRegion);
     
     Elf32SectionHeader *bss = m.elfInfo->GetSection(".bss");
     VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)bss->size, ".bss");
+    bssRegion->Allocator = staticKernelAllocator;
     vm->AddRegion(bssRegion);
     
     /*DEBUG_MSG("Setting up new stack at " << hex << KSTACK_LOCATION << " with size of " << dec << KSTACK_SIZE/1024 << " KB");

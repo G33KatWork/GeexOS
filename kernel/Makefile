@@ -33,10 +33,11 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/Time/TimerManager.cpp \
 			 kernel/Memory/Stack.cpp \
  			 kernel/Memory/PlacementAllocator.cpp \
-             kernel/Memory/VirtualMemoryManager.cpp \
-             kernel/Memory/VirtualMemorySpace.cpp \
-             kernel/Memory/VirtualMemoryRegion.cpp \
-             kernel/Memory/VirtualMemoryAllocator.cpp
+             kernel/Memory/Virtual/VirtualMemoryManager.cpp \
+             kernel/Memory/Virtual/VirtualMemorySpace.cpp \
+             kernel/Memory/Virtual/VirtualMemoryRegion.cpp \
+             kernel/Memory/Virtual/VirtualMemoryAllocator.cpp \
+             kernel/Memory/Virtual/Allocator/StaticMemoryAllocator.cpp
 #			 kernel/Memory/Slab/SlabManager.cpp
 
 # List D source files here

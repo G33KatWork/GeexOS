@@ -4,7 +4,7 @@
 #include <lib/types.h>
 #include <kernel/IO/Monitor.h>
 #include <kernel/IO/SerialConsole.h>
-#include <kernel/Memory/VirtualMemoryManager.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 
 //Comment out for on screen debugging
 //#define     SERIAL_DEBUG

@@ -2,7 +2,7 @@
 #define VIRTUALMEMORYREGION_H_
 
 #include <lib/types.h>
-#include <kernel/Memory/VirtualMemoryAllocator.h>
+#include <kernel/Memory/Virtual/VirtualMemoryAllocator.h>
 
 namespace Memory
 {

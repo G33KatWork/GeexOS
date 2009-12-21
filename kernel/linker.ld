@@ -41,7 +41,7 @@ SECTIONS{
     
     end = .; _end = .; __end = .;
 
-    . = 0x300000;
+    . = 0x200000;
     .placement ALIGN(4096) : AT(ADDR(.placement))
     {
         placement = .;
