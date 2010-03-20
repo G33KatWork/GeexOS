@@ -12,10 +12,11 @@
 #include <kernel/Memory/Stack.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/Memory/Virtual/VirtualMemorySpace.h>
-#include <kernel/Memory/Virtual/Allocator/StaticMemoryAllocator.h>
 
 extern      Address             bootStack;
-#define     BOOTSTACK_SIZE      0x1000              //change this in start.S, too!
+//#define     BOOTSTACK_SIZE      0x1000              //change this in start.S, too!
+#define     STACK_ADDRESS       0xFFFF0000          //Uppermost address -64 KByte
+#define     STACK_SIZE          0x10000             //64KByte
 
 using namespace Arch;
 using namespace Kernel;
@@ -113,34 +114,28 @@ int main(MultibootHeader* multibootInfo)
     
     //Build virtual memory space
     VirtualMemorySpace *vm = new VirtualMemorySpace();
-    StaticMemoryAllocator *staticKernelAllocator = new StaticMemoryAllocator();
     
     Elf32SectionHeader *text = m.elfInfo->GetSection(".text");
-    VirtualMemoryRegion* textRegion = new VirtualMemoryRegion(((Address)text->addr) & IDENTITY_POSITION, (size_t)text->size, ".text");
-    textRegion->Allocator = staticKernelAllocator;
-    AllocationFlags fText = {0, 0, 1, 0};
-    staticKernelAllocator->CorrectAllocationFlags(textRegion, fText);
+    VirtualMemoryRegion* textRegion = new VirtualMemoryRegion(((Address)text->addr) & IDENTITY_POSITION, (size_t)text->size, ".text", ALLOCFLAG_EXECUTABLE);
+    textRegion->SetFlags(textRegion->GetFlags());
     vm->AddRegion(textRegion);
     
     Elf32SectionHeader *data = m.elfInfo->GetSection(".data");
-    VirtualMemoryRegion* dataRegion = new VirtualMemoryRegion((Address)data->addr, (size_t)data->size, ".data");
-    dataRegion->Allocator = staticKernelAllocator;
-    AllocationFlags fData = {0, 1, 0, 0};
-    staticKernelAllocator->CorrectAllocationFlags(dataRegion, fData);
+    VirtualMemoryRegion* dataRegion = new VirtualMemoryRegion((Address)data->addr, (size_t)data->size, ".data", ALLOCFLAG_WRITABLE);
+    dataRegion->SetFlags(dataRegion->GetFlags());
     vm->AddRegion(dataRegion);
     
     Elf32SectionHeader *rodata = m.elfInfo->GetSection(".rodata");
-    VirtualMemoryRegion* rodataRegion = new VirtualMemoryRegion((Address)rodata->addr, (size_t)rodata->size, ".rodata");
-    rodataRegion->Allocator = staticKernelAllocator;
-    AllocationFlags fRodata = {0, 0, 0, 0};
-    staticKernelAllocator->CorrectAllocationFlags(rodataRegion, fRodata);
+    VirtualMemoryRegion* rodataRegion = new VirtualMemoryRegion((Address)rodata->addr, (size_t)rodata->size, ".rodata", ALLOCFLAG_NONE);
+    rodataRegion->SetFlags(rodataRegion->GetFlags());
     vm->AddRegion(rodataRegion);
     
     Elf32SectionHeader *bss = m.elfInfo->GetSection(".bss");
-    VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)bss->size, ".bss");
-    bssRegion->Allocator = staticKernelAllocator;
-    staticKernelAllocator->CorrectAllocationFlags(bssRegion, fData);
+    VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)bss->size, ".bss", ALLOCFLAG_WRITABLE);
+    bssRegion->SetFlags(bssRegion->GetFlags());
     vm->AddRegion(bssRegion);
+    
+    //VirtualMemoryRegion* stackRegion = new VirtualMemoryRegion(STACK_ADDRESS, STACK_SIZE, "Kernel Stack");
     
     //vm->DumpRegions(kdbg);
     
@@ -183,6 +178,9 @@ int main(MultibootHeader* multibootInfo)
     
     Arch::EnableInterrupts();
     MAIN_DEBUG_MSG("Interrupts enabled...");
+    
+    //int* a = (int*)0x100000;
+    //*a = 0x41414141;
     
     irqD->RegisterHandler(IRQ_KEYBOARD, new KeyboardHandler(tm));
     Arch::UnmaskIRQ(IRQ_KEYBOARD);

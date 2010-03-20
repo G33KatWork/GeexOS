@@ -12,7 +12,7 @@ FLAGS              equ        MODULEALIGN | MEMINFO
 MAGIC              equ        0x1BADB002
 CHECKSUM           equ        -(MAGIC + FLAGS)
 
-STACKSIZE          equ        0x1000            ; 16k initial stack - will be moved later
+STACKSIZE          equ        0x400 ; 1k initial stack - will be moved later
 
 section .multibootHeader       ; Next is the Grub Multiboot Header
 align 4

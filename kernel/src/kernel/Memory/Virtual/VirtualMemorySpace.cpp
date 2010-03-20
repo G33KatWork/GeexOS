@@ -32,6 +32,16 @@ void VirtualMemorySpace::RemoveRegion(VirtualMemoryRegion* region)
     }
 }
 
+VirtualMemoryRegion* VirtualMemorySpace::Allocate(Address address, size_t size, AllocationFlags flags)
+{
+    return NULL;
+}
+
+void VirtualMemorySpace::Deallocate(VirtualMemoryRegion* region)
+{
+    
+}
+
 VirtualMemoryRegion* VirtualMemorySpace::FindRegionByName(const char* name)
 {
     for(VirtualMemoryRegion* curRegion = ListHead; curRegion != NULL; curRegion = curRegion->Next)
@@ -61,7 +71,6 @@ void VirtualMemorySpace::DumpRegions(CharacterOutputDevice& c)
         c << "VMEMSPACE: " << "\tName: " << curRegion->Name << endl;
         c << "VMEMSPACE: " << "\tStartAddress: " << hex << (unsigned int)curRegion->StartAddress << endl;
         c << "VMEMSPACE: " << "\tSize: " << hex << (unsigned int)curRegion->Size << endl;
-        c << "VMEMSPACE: " << "\tAllocator: " << hex << (unsigned int)curRegion->Allocator << endl;
         c << endl;
     }
 }

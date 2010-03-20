@@ -20,6 +20,9 @@ namespace Memory
 		void AddRegion(VirtualMemoryRegion* region);
 		void RemoveRegion(VirtualMemoryRegion* region);
 		
+		VirtualMemoryRegion* Allocate(Address address, size_t size, AllocationFlags flags);
+        void Deallocate(VirtualMemoryRegion* region);
+		
 		VirtualMemoryRegion* FindRegionByName(const char* name);
 		VirtualMemoryRegion* FindRegionByStartAddress(Address start);
 		
