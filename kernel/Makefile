@@ -15,7 +15,7 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/IO/SerialConsole.cpp \
 			 kernel/global.cpp \
 			 lib/cppruntime.cpp \
-			 kernel/debug.cpp \
+			 kernel/utils/DebuggingSymbols.cpp \
 			 kernel/multiboot.cpp \
 			 arch/Paging.cpp \
 			 arch/gdt.cpp \

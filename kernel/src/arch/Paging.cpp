@@ -5,6 +5,7 @@
 
 using namespace Memory;
 using namespace Arch;
+using namespace IO;
 
 Paging* Paging::instance = NULL;
 
@@ -61,19 +62,24 @@ Address Paging::GetPhysicalAddress(Address virtualaddr)
 
 void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermode)
 {   
+    ARCH_PAGING_DEBUG_MSG("Mappging physical " << hex << (unsigned)phys << " to virtual " << (unsigned)virt);
+    ARCH_PAGING_DEBUG_MSG("Flags: " << (readwrite?"rw":"ro") << " " << (usermode?"umode":"kmode"));
+    
     unsigned int pdindex = virt >> 22;
     unsigned int ptindex = (virt >> 12) & 0x03FF;
     
     PageTable *t = kernel_directory->GetTable(pdindex, true);
-    
+    ARCH_PAGING_DEBUG_MSG("Address of PageTable: " << (unsigned)t);
     Page *p = t->GetPage(ptindex);
-    if(!p->Present()) //mapped? TODO: really mapped?
-    {
-        p->Frame(phys);
+    ARCH_PAGING_DEBUG_MSG("Address of Page: " << (unsigned)p);
+    if(!p->Present()) //mapped? TODO: really mapped?        
         p->Present(true);
-        p->RW(readwrite);
-        p->User(usermode);
-    }
+
+    p->Frame(phys);
+    p->RW(readwrite);
+    p->User(usermode);
+
+    asm volatile("invlpg %0"::"m" (*(char *)virt));
 }
 
 void Paging::SwitchCurrentPageDirectory(PageDirectory* dir)
@@ -82,7 +88,6 @@ void Paging::SwitchCurrentPageDirectory(PageDirectory* dir)
     SwitchPageDirectory(GetPhysicalAddress((Address)(current_directory->tablesPhysical)));
 }
 
-using namespace IO;
 PageTable* PageDirectory::GetTable(unsigned int index, bool assign)
 {
     //create new page table if we should and there is no table yet

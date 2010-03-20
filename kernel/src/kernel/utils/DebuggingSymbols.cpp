@@ -1,4 +1,4 @@
-#include <kernel/debug.h>
+#include <kernel/utils/DebuggingSymbols.h>
 
 Elf32SectionHeader* Debug::symbolTable = NULL;
 Elf32SectionHeader* Debug::stringTable = NULL;

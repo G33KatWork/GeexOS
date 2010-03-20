@@ -6,6 +6,10 @@
 #define IDENTITY_POSITION   0xFFFFF000
 #define PAGE_SIZE           0x1000
 
+#define PAGE_ALIGN(x)       ((x & IDENTITY_POSITION) + PAGE_SIZE)
+
+#define IS_PAGE_ALIGNED(x)  ((x % PAGE_SIZE) == 0)
+
 namespace Arch
 {
     class PageDirectory;

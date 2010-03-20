@@ -2,6 +2,8 @@
 #define VIRTUALMEMORYREGION_H_
 
 #include <lib/types.h>
+#include <arch/Paging.h>
+#include <kernel/global.h>
 #include <kernel/Memory/Virtual/VirtualMemoryAllocator.h>
 
 namespace Memory

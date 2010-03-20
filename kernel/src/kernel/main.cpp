@@ -2,7 +2,7 @@
 #include <kernel/IO/Monitor.h>
 #include <kernel/global.h>
 #include <kernel/multiboot.h>
-#include <kernel/debug.h>
+#include <kernel/utils/DebuggingSymbols.h>
 #include <arch/PageFaultHandler.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <arch/interrupts.h>
@@ -29,7 +29,7 @@ class InvalidOpcodeHandler : public IInterruptServiceRoutine
 public:
     void Execute(registers_t *regs)
     {
-        DEBUG_MSG("Invalid Opcode: EIP: " << hex << (unsigned) regs->eip);
+        MAIN_DEBUG_MSG("Invalid Opcode: EIP: " << hex << (unsigned) regs->eip);
         PANIC("Invalid opcode!");
         for(;;);
     }
@@ -40,7 +40,7 @@ class ExceptionHandler : public IInterruptServiceRoutine
 public:
     void Execute(registers_t *regs)
     {
-        DEBUG_MSG("Exception " << dec << regs->int_no << ": EIP: " << hex << (unsigned) regs->eip);
+        MAIN_DEBUG_MSG("Exception " << dec << regs->int_no << ": EIP: " << hex << (unsigned) regs->eip);
         PANIC("Unhandled exception!");
         for(;;);
     }
@@ -67,7 +67,7 @@ public:
 
 bool timerExpired(void)
 {
-    DEBUG_MSG("The timer has expired");
+    MAIN_DEBUG_MSG("The timer has expired");
     return false; //should the scheduler pick a new process?
 }
 
@@ -86,7 +86,7 @@ public:
     {
         Timer *t = new Timer(FUNCTION, timerExpired, NULL);
         tm->StartTimer(t, 1000000000);
-        DEBUG_MSG("Timer started");
+        MAIN_DEBUG_MSG("Timer started");
     }
 };
 
@@ -94,15 +94,15 @@ int main(MultibootHeader* multibootInfo)
 {   
     //Prepare monitor output
     kdbg.Clear();
-    DEBUG_MSG("GeexOS Kernel booting...");
+    MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
     //Get information about environment from GRUB
-    DEBUG_MSG("Multiboot structure is at " << hex << (unsigned)multibootInfo);
+    MAIN_DEBUG_MSG("Multiboot structure is at " << hex << (unsigned)multibootInfo);
     Multiboot m = Multiboot(multibootInfo);
     
     //Flush GDT and initialize IDT (Interrupts)
     InitializeCPU();
-    DEBUG_MSG("CPU and Interrupt tables initialized...");
+    MAIN_DEBUG_MSG("CPU and Interrupt tables initialized...");
     
     //Initialize Memory
     VirtualMemoryManager *mm = new VirtualMemoryManager(m.GetLowerMemory() + m.GetUpperMemory());
@@ -113,37 +113,45 @@ int main(MultibootHeader* multibootInfo)
     
     //Build virtual memory space
     VirtualMemorySpace *vm = new VirtualMemorySpace();
-    
     StaticMemoryAllocator *staticKernelAllocator = new StaticMemoryAllocator();
     
     Elf32SectionHeader *text = m.elfInfo->GetSection(".text");
-    VirtualMemoryRegion* textRegion = new VirtualMemoryRegion((Address)text->addr, (size_t)text->size, ".text");
+    VirtualMemoryRegion* textRegion = new VirtualMemoryRegion(((Address)text->addr) & IDENTITY_POSITION, (size_t)text->size, ".text");
     textRegion->Allocator = staticKernelAllocator;
+    AllocationFlags fText = {0, 0, 1, 0};
+    staticKernelAllocator->CorrectAllocationFlags(textRegion, fText);
     vm->AddRegion(textRegion);
     
     Elf32SectionHeader *data = m.elfInfo->GetSection(".data");
     VirtualMemoryRegion* dataRegion = new VirtualMemoryRegion((Address)data->addr, (size_t)data->size, ".data");
     dataRegion->Allocator = staticKernelAllocator;
+    AllocationFlags fData = {0, 1, 0, 0};
+    staticKernelAllocator->CorrectAllocationFlags(dataRegion, fData);
     vm->AddRegion(dataRegion);
     
     Elf32SectionHeader *rodata = m.elfInfo->GetSection(".rodata");
     VirtualMemoryRegion* rodataRegion = new VirtualMemoryRegion((Address)rodata->addr, (size_t)rodata->size, ".rodata");
     rodataRegion->Allocator = staticKernelAllocator;
+    AllocationFlags fRodata = {0, 0, 0, 0};
+    staticKernelAllocator->CorrectAllocationFlags(rodataRegion, fRodata);
     vm->AddRegion(rodataRegion);
     
     Elf32SectionHeader *bss = m.elfInfo->GetSection(".bss");
     VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)bss->size, ".bss");
     bssRegion->Allocator = staticKernelAllocator;
+    staticKernelAllocator->CorrectAllocationFlags(bssRegion, fData);
     vm->AddRegion(bssRegion);
     
-    /*DEBUG_MSG("Setting up new stack at " << hex << KSTACK_LOCATION << " with size of " << dec << KSTACK_SIZE/1024 << " KB");
+    //vm->DumpRegions(kdbg);
+    
+    /*MAIN_DEBUG_MSG("Setting up new stack at " << hex << KSTACK_LOCATION << " with size of " << dec << KSTACK_SIZE/1024 << " KB");
     Stack *stack = new Stack(KSTACK_LOCATION, KSTACK_SIZE);
     stack->AllocateSpace();
     stack->MoveCurrentStackHere((Address)&bootStack);
     memoryManager.SetKernelStack(stack);
-    DEBUG_MSG("Stack seems to be successfully moved...");*/
+    MAIN_DEBUG_MSG("Stack seems to be successfully moved...");*/
     
-    DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
+    MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
     //Configure interrupt dispatcher
     InterruptDispatcher* irqD = InterruptDispatcher::GetInstance();
@@ -165,21 +173,21 @@ int main(MultibootHeader* multibootInfo)
     irqD->RegisterHandler(13, ex);
     irqD->RegisterHandler(15, ex);
     irqD->RegisterHandler(16, ex);
-    DEBUG_MSG("Interrupt dispatcher initialized...");
+    MAIN_DEBUG_MSG("Interrupt dispatcher initialized...");
     
     //Init timer
     InitializeTimer();
     TimerManager *tm = new TimerManager(&Arch::ClockSource);
     irqD->RegisterHandler(IRQ_TIMER, new TimerHandler(tm));
-    DEBUG_MSG("Timer initialized...");
+    MAIN_DEBUG_MSG("Timer initialized...");
     
     Arch::EnableInterrupts();
-    DEBUG_MSG("Interrupts enabled...");
+    MAIN_DEBUG_MSG("Interrupts enabled...");
     
     irqD->RegisterHandler(IRQ_KEYBOARD, new KeyboardHandler(tm));
     Arch::UnmaskIRQ(IRQ_KEYBOARD);
     
-    DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
+    MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
     for(;;) {
         //scheduler->Schedule();

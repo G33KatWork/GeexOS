@@ -1,20 +1,15 @@
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <arch/Paging.h>
+#include <kernel/debug.h>
 
 using namespace Arch;
-
-#include <kernel/global.h>
-using namespace IO;
-
-#define DEBUG_MEMORY_MSG(x) DEBUG_MSG(x)
-//#define DEBUG_MEMORY_MSG(x)
-
 using namespace Memory;
+using namespace IO;
 
 VirtualMemoryManager::VirtualMemoryManager(size_t memsize)
 {
-    DEBUG_MEMORY_MSG("Initializing virtual kernel memory subsystem. Memory size: " << dec << (unsigned int)memsize << "KB");
+    VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Initializing virtual kernel memory subsystem. Memory size: " << dec << (unsigned int)memsize << "KB");
 
     Paging::GetInstance()->Init();
-    DEBUG_MEMORY_MSG("Paging initialized...");
+    VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Paging initialized...");
 }

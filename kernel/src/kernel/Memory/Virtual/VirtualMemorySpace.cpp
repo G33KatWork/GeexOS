@@ -1,6 +1,7 @@
 #include <kernel/Memory/Virtual/VirtualMemorySpace.h>
 #include <lib/string.h>
 #include <kernel/global.h>
+#include <kernel/debug.h>
 
 using namespace Memory;
 using namespace IO;
@@ -26,7 +27,7 @@ void VirtualMemorySpace::RemoveRegion(VirtualMemoryRegion* region)
     
     if(curItem->Next == region)
     {
-        DEBUG_MSG("Removing item at " << hex << (unsigned)curItem->Next);
+        VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Removing item at " << hex << (unsigned)curItem->Next);
         curItem->Next = curItem->Next->Next;
     }
 }

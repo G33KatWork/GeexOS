@@ -1,5 +1,6 @@
 #include <arch/interrupts.h>
 #include <kernel/global.h>
+#include <kernel/IO/Monitor.h>
 #include <arch/pit.h>
 #include <arch/pic.h>
 
@@ -67,11 +68,11 @@ void InterruptDispatcher::Execute(registers_t *regs)
     {
         if(regs->int_no < 32)
         {
-            DEBUG_MSG("Unhandled fault: " << dec << regs->int_no);
+            ARCH_INTERRUPTS_DEBUG_MSG("Unhandled fault: " << dec << regs->int_no);
         }
         else
         {
-            DEBUG_MSG("Unhandled interrupt: " << dec << regs->int_no);
+            ARCH_INTERRUPTS_DEBUG_MSG("Unhandled interrupt: " << dec << regs->int_no);
         }
     }
 }

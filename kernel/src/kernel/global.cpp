@@ -1,7 +1,7 @@
 #include <kernel/global.h>
 #include <arch/hal.h>
 #include <arch/interrupts.h>
-#include <kernel/debug.h>
+#include <kernel/utils/DebuggingSymbols.h>
 #include <kernel/Memory/PlacementAllocator.h>
 
 using namespace IO;

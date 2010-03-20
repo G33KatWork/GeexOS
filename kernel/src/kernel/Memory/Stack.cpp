@@ -3,7 +3,7 @@
 #include <arch/Paging.h>
 #include <arch/scheduling.h>
 #include <lib/string.h>
-#include <kernel/debug.h>
+#include <kernel/utils/DebuggingSymbols.h>
 
 using namespace Memory;
 using namespace Arch;

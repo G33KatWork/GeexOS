@@ -93,12 +93,12 @@ endif
 # Start qemu
 qemu: bootfloppy
 	$(call cmd_msg,QEMU,floppy.img)
-	$(Q)$(QEMU) -fda floppy.img -serial file:serialOut $(QOUTPUT)
+	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut $(QOUTPUT)
 
 qemudebug: bootfloppy
 	$(call cmd_msg,QEMU,floppy.img)
 	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
-	$(Q)$(QEMU) -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
+	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
 
 # Cleaning
 clean:

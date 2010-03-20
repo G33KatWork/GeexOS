@@ -11,7 +11,7 @@ namespace Memory
     struct _AllocationFlags
     {
         unsigned int usermode:1;
-        unsigned int writeable:1;
+        unsigned int writable:1;
         unsigned int executable:1;
         
         unsigned int unused:29;
