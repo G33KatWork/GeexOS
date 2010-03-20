@@ -32,7 +32,7 @@ void VirtualMemorySpace::RemoveRegion(VirtualMemoryRegion* region)
     }
 }
 
-VirtualMemoryRegion* VirtualMemorySpace::Allocate(Address address, size_t size, AllocationFlags flags)
+VirtualMemoryRegion* VirtualMemorySpace::Allocate(Address address, size_t size, const char* name, AllocationFlags flags)
 {
     return NULL;
 }

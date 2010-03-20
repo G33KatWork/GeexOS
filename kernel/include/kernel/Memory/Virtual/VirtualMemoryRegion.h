@@ -31,7 +31,7 @@ namespace Memory
     friend class VirtualMemorySpace;
         
     public:
-        VirtualMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName, AllocationFlags f);
+        VirtualMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName);
         
         Address StartAddress;
         size_t Size;

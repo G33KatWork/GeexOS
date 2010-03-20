@@ -5,14 +5,13 @@ using namespace Memory;
 using namespace Arch;
 using namespace IO;
 
-VirtualMemoryRegion::VirtualMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName, AllocationFlags f)
+VirtualMemoryRegion::VirtualMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName)
 {
     ASSERT(IS_PAGE_ALIGNED(RegionStart), "Start address needs to be page aligned.");
     
     StartAddress = RegionStart;
     Size = RegionSize;
     Name = RegionName;
-    flags = f;
     Next = NULL;
     SwappingAllowed = false;
 }
