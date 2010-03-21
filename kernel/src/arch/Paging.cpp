@@ -3,7 +3,6 @@
 #include <lib/string.h>
 #include <kernel/global.h>
 
-using namespace Memory;
 using namespace Arch;
 using namespace IO;
 

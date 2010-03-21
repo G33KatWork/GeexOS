@@ -18,8 +18,7 @@
 //Debugging of several submodules
 //undef, if not wanted
 #define EN_DEBUG_MSG_MAIN
-/*#define EN_DEBUG_MSG_VIRTUAL_MEMORY_REGION
-#define EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG
+/*#define EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG
 #define EN_VIRTUAL_MEMORY_SPACE_DEBUG_MSG
 #define EN_ARCH_INTERRUPTS_DEBUG_MSG
 #define EN_ARCH_PAGING_DEBUG_MSG*/
@@ -41,12 +40,6 @@
     #define     MAIN_DEBUG_MSG(x)               DEBUG_MSG("MAIN: "x)
 #else
     #define     MAIN_DEBUG_MSG(x)
-#endif
-
-#ifdef EN_DEBUG_MSG_VIRTUAL_MEMORY_REGION
-    #define VIRTUAL_MEMORY_REGION_DEBUG_MSG(x)  DEBUG_MSG("VMEM_REGION: "x)
-#else
-    #define VIRTUAL_MEMORY_REGION_DEBUG_MSG(x)
 #endif
 
 #ifdef EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG

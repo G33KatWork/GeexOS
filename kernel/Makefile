@@ -35,14 +35,9 @@ CXXSOURCES = lib/string.cpp \
  			 kernel/Memory/PlacementAllocator.cpp \
              kernel/Memory/Virtual/VirtualMemoryManager.cpp \
              kernel/Memory/Virtual/VirtualMemorySpace.cpp \
-             kernel/Memory/Virtual/VirtualMemoryRegion.cpp
+             kernel/Memory/Virtual/VirtualMemoryRegion.cpp \
+			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp
 #			 kernel/Memory/Slab/SlabManager.cpp
-
-# List D source files here
-DSOURCES = 
-
-# List Objective-C source files here
-OBJCSOURCES = 
 
 # List Assembler to be assembled with NASM here
 ASOURCES = arch/start.S \
@@ -75,13 +70,6 @@ CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 CXXFLAGS += -DARCH_X86 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
-# D compiler flags
-DFLAGS += -nostdlib -nodefaultlibs -g #-mcmodel=kernel
-DFLAGS += $(addprefix -I,$(INCLUDES))
-
-# Objective-C compiler flags
-OBJCFLAGS := $(CFLAGS) -fnext-runtime -Wno-import
-
 # NASM flags
 ASFLAGS = -f elf -ggdb
 
@@ -93,8 +81,6 @@ OBJECTS += $(ASOURCES:%.S=%.o)
 OBJECTS += $(GASOURCES:%.s=%.o)
 OBJECTS += $(CXXSOURCES:%.cpp=%.o)
 OBJECTS += $(CCSOURCES:%.c=%.o)
-OBJECTS += $(DSOURCES:%.d=%.o)
-OBJECTS += $(OBJCSOURCES:%.m=%.o)
 
 # Main targets
 all: createdirs $(TARGET)
@@ -132,16 +118,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(call cmd_msg,CC,$<)
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
-
-# Compile d files
-$(OBJDIR)/%.o: $(SRCDIR)/%.d
-	$(call cmd_msg,DC,$<)
-	$(Q)$(DC) $(DFLAGS) -c $< -o $@
-
-# Compile Objective-C files
-$(OBJDIR)/%.o: $(SRCDIR)/%.m
-	$(call cmd_msg,OBJCC,$<)
-	$(Q)$(CC) $(OBJCFLAGS) -c $< -o $@
 
 # Assembler S files
 $(OBJDIR)/%.o: $(SRCDIR)/%.S

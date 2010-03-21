@@ -3,9 +3,9 @@
 
 #include <lib/types.h>
 #include <kernel/debug.h>
-#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+//#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 
-extern class Memory::VirtualMemoryManager memoryManager;
+//extern class Memory::VirtualMemoryManager memoryManager;
 
 #define ASSERT(b, msg)      ((b) ? (void)0 : panic_assert(__FILE__, __LINE__, #b, #msg))
 #define PANIC(msg)          panic(msg)

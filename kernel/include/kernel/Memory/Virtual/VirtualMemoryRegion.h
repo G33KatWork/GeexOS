@@ -2,7 +2,6 @@
 #define VIRTUALMEMORYREGION_H_
 
 #include <lib/types.h>
-#include <arch/Paging.h>
 #include <kernel/global.h>
 
 namespace Memory
@@ -33,19 +32,17 @@ namespace Memory
     public:
         VirtualMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName);
         
-        Address StartAddress;
-        size_t Size;
-        const char* Name;
-        
-        bool SwapOutRegion(Address address, size_t size);
-        bool SwapInRegion(Address address, size_t size);
-        
-        AllocationFlags GetFlags() { return flags; }
-        void SetFlags(AllocationFlags f);
+        Address StartAddress() { return startAddress; }
+        size_t Size() { return size; }
+        const char* Name() { return name; }
     
     private:
-        VirtualMemoryRegion *Next;
         AllocationFlags flags;
+        Address startAddress;
+        size_t size;
+        const char* name;
+        
+        VirtualMemoryRegion *Next;
         
         //Set this variable to false is no swapping should ever occour
         //Standard is true

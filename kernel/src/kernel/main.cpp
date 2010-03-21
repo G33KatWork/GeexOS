@@ -53,9 +53,11 @@ int main(MultibootHeader* multibootInfo)
     Debug::symbolTable = m.elfInfo->GetSection(".symtab");
     
     //Build virtual memory space
-    VirtualMemorySpace *kernelSpace = new VirtualMemorySpace();
-    setupKernelMemRegions(&m, kernelSpace);
-    //kernelSpace->DumpRegions(kdbg);
+    mm->KernelSpace(new VirtualMemorySpace(mm, "KernelSpace"));
+    setupKernelMemRegions(&m, mm->KernelSpace());
+    
+    //mm->KernelSpace()->Allocate(0xC000000, 0x2000, "test", ALLOCFLAG_WRITABLE);
+    //mm->KernelSpace()->DumpRegions(kdbg);
     
     /*MAIN_DEBUG_MSG("Setting up new stack at " << hex << KSTACK_LOCATION << " with size of " << dec << KSTACK_SIZE/1024 << " KB");
     Stack *stack = new Stack(KSTACK_LOCATION, KSTACK_SIZE);
@@ -100,21 +102,22 @@ void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm)
 {
     Elf32SectionHeader *text = m->elfInfo->GetSection(".text");
     VirtualMemoryRegion* textRegion = new VirtualMemoryRegion(((Address)text->addr) & IDENTITY_POSITION, (size_t)text->size, ".text");
-    textRegion->SetFlags(ALLOCFLAG_EXECUTABLE);
+    vm->SetFlags(textRegion, ALLOCFLAG_EXECUTABLE);
     vm->AddRegion(textRegion);
+    
     Elf32SectionHeader *data = m->elfInfo->GetSection(".data");
     VirtualMemoryRegion* dataRegion = new VirtualMemoryRegion((Address)data->addr, (size_t)data->size, ".data");
-    dataRegion->SetFlags(ALLOCFLAG_WRITABLE);
+    vm->SetFlags(dataRegion, ALLOCFLAG_WRITABLE);
     vm->AddRegion(dataRegion);
     
     Elf32SectionHeader *rodata = m->elfInfo->GetSection(".rodata");
     VirtualMemoryRegion* rodataRegion = new VirtualMemoryRegion((Address)rodata->addr, (size_t)rodata->size, ".rodata");
-    rodataRegion->SetFlags(ALLOCFLAG_NONE);
+    vm->SetFlags(rodataRegion, ALLOCFLAG_NONE);
     vm->AddRegion(rodataRegion);
     
     Elf32SectionHeader *bss = m->elfInfo->GetSection(".bss");
     VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)bss->size, ".bss");
-    bssRegion->SetFlags(ALLOCFLAG_WRITABLE);
+    vm->SetFlags(bssRegion, ALLOCFLAG_WRITABLE);
     vm->AddRegion(bssRegion);
 }
 
