@@ -6,6 +6,7 @@
 #include <kernel/IO/Monitor.h>
 #include <kernel/IO/SerialConsole.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <kernel/debug.h>
 
 using namespace IO;
 using namespace Arch;

@@ -4,6 +4,7 @@
 #include <arch/pic.h>
 #include <kernel/debug.h>
 
+using namespace IO;
 using namespace Arch;
 using namespace Kernel;
 

@@ -89,8 +89,6 @@ int main(MultibootHeader* multibootInfo)
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
-    PANIC("test");
-    
     for(;;) {
         //scheduler->Schedule();
         asm volatile("hlt"); //halt cpu until next irq (timer etc.) to switch to next time slice
