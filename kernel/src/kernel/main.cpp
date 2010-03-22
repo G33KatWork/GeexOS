@@ -45,16 +45,17 @@ int main(MultibootHeader* multibootInfo)
     MAIN_DEBUG_MSG("CPU and Interrupt tables initialized...");
     
     //Initialize Memory
-    VirtualMemoryManager *mm = new VirtualMemoryManager(m.GetLowerMemory() + m.GetUpperMemory());
+    VirtualMemoryManager::GetInstance()->Init(m.GetLowerMemory() + m.GetUpperMemory());
     
     //Build virtual memory space
-    mm->KernelSpace(new VirtualMemorySpace(mm, "KernelSpace"));
-    setupKernelMemRegions(&m, mm->KernelSpace());
+    VirtualMemoryManager::GetInstance()->KernelSpace(new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace"));
+    setupKernelMemRegions(&m, VirtualMemoryManager::GetInstance()->KernelSpace());
     
     //Create defined Stack and move boot stack to new position
-    mm->KernelSpace()->Allocate(STACK_ADDRESS - STACK_SIZE, STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(STACK_ADDRESS - STACK_SIZE, STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
     Stack *kernelStack = new Stack(STACK_ADDRESS - STACK_SIZE, STACK_SIZE);
     kernelStack->MoveCurrentStackHere((Address)&bootStack);
+    VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
     MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
     MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
     

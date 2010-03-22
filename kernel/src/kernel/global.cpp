@@ -5,6 +5,7 @@
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/IO/Monitor.h>
 #include <kernel/IO/SerialConsole.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 
 using namespace IO;
 using namespace Arch;
@@ -26,7 +27,7 @@ void panic(const char *message)
     kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: " << message << endl;
     
-    //memoryManager.GetKernelStack()->PrintStacktrace();
+    VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
     
     HaltMachine();
 }
@@ -38,7 +39,7 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
     kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
     
-    //memoryManager.GetKernelStack()->PrintStacktrace();
+    VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
     
     HaltMachine();
 }

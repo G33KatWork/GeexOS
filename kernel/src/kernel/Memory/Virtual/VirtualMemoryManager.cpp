@@ -7,7 +7,17 @@ using namespace Arch;
 using namespace Memory;
 using namespace IO;
 
-VirtualMemoryManager::VirtualMemoryManager(size_t MemorySize)
+VirtualMemoryManager* VirtualMemoryManager::instance = NULL;
+
+VirtualMemoryManager* VirtualMemoryManager::GetInstance()
+{
+    if(instance == NULL)
+        instance = new VirtualMemoryManager();
+
+    return instance;
+}
+
+void VirtualMemoryManager::Init(size_t MemorySize)
 {
     VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Initializing virtual kernel memory subsystem. Memory size: " << dec << (unsigned int)MemorySize << "KB");
 
