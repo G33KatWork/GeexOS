@@ -2,6 +2,7 @@
 #include <lib/types.h>
 #include <lib/string.h>
 #include <kernel/global.h>
+#include <kernel/debug.h>
 
 using namespace Arch;
 using namespace IO;
@@ -71,6 +72,7 @@ void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermod
     ARCH_PAGING_DEBUG_MSG("Address of PageTable: " << (unsigned)t);
     Page *p = t->GetPage(ptindex);
     ARCH_PAGING_DEBUG_MSG("Address of Page: " << (unsigned)p);
+    
     if(!p->Present()) //mapped? TODO: really mapped?        
         p->Present(true);
 
@@ -79,6 +81,23 @@ void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermod
     p->User(usermode);
 
     asm volatile("invlpg %0"::"m" (*(char *)virt));
+}
+
+void Paging::UnmapAddress(Address virt)
+{
+    ARCH_PAGING_DEBUG_MSG("Unmappging virtual " << hex << (unsigned)virt);
+    
+    unsigned int pdindex = virt >> 22;
+    unsigned int ptindex = (virt >> 12) & 0x03FF;
+    
+    PageTable *t = kernel_directory->GetTable(pdindex, true);
+    ARCH_PAGING_DEBUG_MSG("Address of PageTable: " << (unsigned)t);
+    Page *p = t->GetPage(ptindex);
+    ARCH_PAGING_DEBUG_MSG("Address of Page: " << (unsigned)p);
+    
+    p->Present(false);
+    p->Frame(0);
+    p->RW(false);
 }
 
 void Paging::SwitchCurrentPageDirectory(PageDirectory* dir)

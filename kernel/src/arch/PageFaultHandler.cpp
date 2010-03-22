@@ -1,5 +1,6 @@
 #include <arch/PageFaultHandler.h>
 #include <kernel/global.h>
+#include <kernel/debug.h>
 
 using namespace IO;
 using namespace Arch;

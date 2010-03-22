@@ -4,8 +4,6 @@
 #include <lib/types.h>
 #include <kernel/global.h>
 
-using namespace IO;
-
 namespace DataStructures
 {
     template <class T, unsigned int capacity>
@@ -72,12 +70,12 @@ namespace DataStructures
         
         void DebugDump()
         {
-            kdbg << "Dumping ordered array at " << hex << (unsigned)this << endl;
+            /*kdbg << "Dumping ordered array at " << hex << (unsigned)this << endl;
             
             for(int i = 0; i < size; i++)
                 kdbg << "\t" << (unsigned)arr[i] << endl;
             
-            kdbg << endl;
+            kdbg << endl;*/
         }
         
         unsigned int GetSize()

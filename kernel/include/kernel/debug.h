@@ -18,17 +18,18 @@
 //Debugging of several submodules
 //undef, if not wanted
 #define EN_DEBUG_MSG_MAIN
-/*#define EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG
-#define EN_VIRTUAL_MEMORY_SPACE_DEBUG_MSG
-#define EN_ARCH_INTERRUPTS_DEBUG_MSG
+//#define EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG
+//#define EN_VIRTUAL_MEMORY_SPACE_DEBUG_MSG
+#define EN_STACK_DEBUG_MSG
+/*#define EN_ARCH_INTERRUPTS_DEBUG_MSG
 #define EN_ARCH_PAGING_DEBUG_MSG*/
 
 #define DEBUG_MSG(msg) \
 { \
-    Color foreground = kdbg.GetForeground(); \
-    kdbg.SetForeground(LightBlue); \
+    IO::Color foreground = kdbg.GetForeground(); \
+    kdbg.SetForeground(IO::LightBlue); \
     kdbg.PrintString("[DEBUG] "); \
-    kdbg << msg << endl; \
+    kdbg << msg << IO::endl; \
     kdbg.SetForeground(foreground); \
 }
 #else
@@ -52,6 +53,12 @@
     #define VIRTUAL_MEMORY_SPACE_DEBUG_MSG(x)   DEBUG_MSG("VMEM_SPACE: "x)
 #else
     #define VIRTUAL_MEMORY_SPACE_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_STACK_DEBUG_MSG    
+    #define STACK_DEBUG_MSG(x)                  DEBUG_MSG("STACK: "x)
+#else
+    #define STACK_DEBUG_MSG(x)
 #endif
 
 #ifdef EN_ARCH_INTERRUPTS_DEBUG_MSG

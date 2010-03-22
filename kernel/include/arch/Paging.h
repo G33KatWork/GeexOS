@@ -25,6 +25,7 @@ namespace Arch
         
         Address GetPhysicalAddress(Address virtualaddr);
         void MapAddress(Address virt, Address phys, bool readwrite, bool usermode);
+        void UnmapAddress(Address virt);
         
         void SwitchCurrentPageDirectory(PageDirectory* dir);
         

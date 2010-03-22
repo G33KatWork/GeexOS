@@ -14,7 +14,6 @@ namespace Memory
         unsigned int GetSize() { return size; }
         Address GetEndAddress() { return endAddr; }
         
-        void AllocateSpace();
         void MoveCurrentStackHere(Address oldESP);
         void PrintStacktrace(unsigned int n = 15);
         

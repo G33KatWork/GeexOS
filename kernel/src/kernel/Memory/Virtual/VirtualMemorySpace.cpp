@@ -38,8 +38,8 @@ void VirtualMemorySpace::RemoveRegion(VirtualMemoryRegion* region)
 
 VirtualMemoryRegion* VirtualMemorySpace::Allocate(Address address, size_t size, const char* regionName, AllocationFlags flags)
 {
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Allocating a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace" << name);
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << (unsigned)address <<
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Allocating a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace " << name);
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << (unsigned)address <<
                                    " Size: " << (unsigned)size <<
                                    " Flags: " << (flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
                                           " " << (flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
@@ -73,15 +73,15 @@ void VirtualMemorySpace::Deallocate(VirtualMemoryRegion* region)
 
 void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
 {
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Correcting alloc flags for " << Name);
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Correcting alloc flags for VirtualMemoryRegion " << r->Name() << " in VirtualMemorySpace " << this->name);
     
     r->flags = f;
     
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting address: " << hex << (unsigned)r->startAddress);
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Size: " << hex << (unsigned)r->size);
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("New flags: " << (f & ALLOCFLAG_WRITABLE?"rw":"ro") <<
-                                    " " << (f & ALLOCFLAG_USERMODE?"umode":"kmode") << 
-                                    " " << (f & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << (unsigned)r->startAddress <<
+                                   " Size: " << (unsigned)r->size <<
+                                   " Flags: " << (f & ALLOCFLAG_WRITABLE?"rw":"ro") <<
+                                          " " << (f & ALLOCFLAG_USERMODE?"umode":"kmode") << 
+                                          " " << (f & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
     
     for(Address i = r->startAddress; i < PAGE_ALIGN(r->startAddress + r->size); i += PAGE_SIZE)
     {

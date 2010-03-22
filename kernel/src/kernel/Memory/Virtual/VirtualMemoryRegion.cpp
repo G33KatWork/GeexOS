@@ -1,5 +1,6 @@
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
 #include <arch/paging.h>
+#include <kernel/debug.h>
 
 using namespace Memory;
 using namespace IO;

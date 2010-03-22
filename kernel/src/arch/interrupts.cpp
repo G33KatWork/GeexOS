@@ -1,12 +1,11 @@
 #include <arch/interrupts.h>
 #include <kernel/global.h>
-#include <kernel/IO/Monitor.h>
 #include <arch/pit.h>
 #include <arch/pic.h>
+#include <kernel/debug.h>
 
 using namespace Arch;
 using namespace Kernel;
-using namespace IO;
 
 int nestedExceptions = 0;
 

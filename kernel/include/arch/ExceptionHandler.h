@@ -1,7 +1,10 @@
 #ifndef EXCEPTIONHANDLER_H_
 #define EXCEPTIONHANDLER_H_
 
+#include <kernel/debug.h>
 #include <lib/types.h>
+
+using namespace IO;
 
 class InvalidOpcodeHandler : public IInterruptServiceRoutine
 {

@@ -15,15 +15,14 @@
 #include <arch/ExceptionHandler.h>
 #include <kernel/Time/TimerHandler.h>
 #include <arch/KeyboardHandler.h>
+#include <arch/scheduling.h>
 
-extern      Address             bootStack;
-//#define     BOOTSTACK_SIZE      0x1000              //change this in start.S, too!
+extern      Address             bootStack;          //defined in start.S
 #define     STACK_ADDRESS       0xFFFF0000          //Uppermost address -64 KByte
-#define     STACK_SIZE          0x10000             //64KByte
+#define     STACK_SIZE          0x10000             //64KByte, so stack lives from 0xFFFF0000 to 0xFFFE0000
 
 using namespace Arch;
 using namespace Kernel;
-using namespace IO;
 using namespace Memory;
 using namespace Processes;
 using namespace Time;
@@ -48,23 +47,22 @@ int main(MultibootHeader* multibootInfo)
     //Initialize Memory
     VirtualMemoryManager *mm = new VirtualMemoryManager(m.GetLowerMemory() + m.GetUpperMemory());
     
-    //Init symtab and strtab for stacktraces
-    Debug::stringTable = m.elfInfo->GetSection(".strtab");
-    Debug::symbolTable = m.elfInfo->GetSection(".symtab");
-    
     //Build virtual memory space
     mm->KernelSpace(new VirtualMemorySpace(mm, "KernelSpace"));
     setupKernelMemRegions(&m, mm->KernelSpace());
     
-    //mm->KernelSpace()->Allocate(0xC000000, 0x2000, "test", ALLOCFLAG_WRITABLE);
-    //mm->KernelSpace()->DumpRegions(kdbg);
+    //Create defined Stack and move boot stack to new position
+    mm->KernelSpace()->Allocate(STACK_ADDRESS - STACK_SIZE, STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
+    Stack *kernelStack = new Stack(STACK_ADDRESS - STACK_SIZE, STACK_SIZE);
+    kernelStack->MoveCurrentStackHere((Address)&bootStack);
+    MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
+    MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
     
-    /*MAIN_DEBUG_MSG("Setting up new stack at " << hex << KSTACK_LOCATION << " with size of " << dec << KSTACK_SIZE/1024 << " KB");
-    Stack *stack = new Stack(KSTACK_LOCATION, KSTACK_SIZE);
-    stack->AllocateSpace();
-    stack->MoveCurrentStackHere((Address)&bootStack);
-    memoryManager.SetKernelStack(stack);
-    MAIN_DEBUG_MSG("Stack seems to be successfully moved...");*/
+    //Init symtab and strtab for stacktraces
+    Debug::stringTable = m.elfInfo->GetSection(".strtab");
+    Debug::symbolTable = m.elfInfo->GetSection(".symtab");
+    
+    //mm->KernelSpace()->DumpRegions(kdbg);
     
     MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
@@ -89,6 +87,8 @@ int main(MultibootHeader* multibootInfo)
     Arch::UnmaskIRQ(IRQ_KEYBOARD);
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
+    
+    PANIC("test");
     
     for(;;) {
         //scheduler->Schedule();

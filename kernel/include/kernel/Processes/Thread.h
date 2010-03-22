@@ -7,9 +7,6 @@
 
 using namespace Arch;
 
-#include <kernel/global.h>
-using namespace IO;
-
 namespace Processes
 {
     class Thread

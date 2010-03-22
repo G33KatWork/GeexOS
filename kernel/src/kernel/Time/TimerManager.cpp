@@ -6,7 +6,7 @@
 using namespace Time;
 using namespace DataStructures;
 
-#include <kernel/global.h>
+#include <kernel/debug.h>
 using namespace IO;
 
 void TimerManager::prepareClock(unsigned long ns)

@@ -3,7 +3,7 @@
 
 using namespace Kernel;
 
-using namespace IO;
+//using namespace IO;
 
 Multiboot::Multiboot(MultibootHeader *h)
 {

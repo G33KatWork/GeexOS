@@ -3,6 +3,8 @@
 #include <arch/interrupts.h>
 #include <kernel/utils/DebuggingSymbols.h>
 #include <kernel/Memory/PlacementAllocator.h>
+#include <kernel/IO/Monitor.h>
+#include <kernel/IO/SerialConsole.h>
 
 using namespace IO;
 using namespace Arch;

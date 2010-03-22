@@ -6,7 +6,6 @@
 #include <lib/string.h>
 
 #include <kernel/global.h>
-using namespace IO;
 
 class ElfInformation
 {
