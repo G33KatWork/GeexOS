@@ -85,6 +85,7 @@ void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
     
     for(Address i = r->startAddress; i < PAGE_ALIGN(r->startAddress + r->size); i += PAGE_SIZE)
     {
+        VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Remapping page at virtual " << hex << (unsigned)i);
         Paging::GetInstance()->MapAddress(
             i,
             Paging::GetInstance()->GetPhysicalAddress(i),

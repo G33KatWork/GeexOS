@@ -17,9 +17,12 @@
 #include <arch/KeyboardHandler.h>
 #include <arch/scheduling.h>
 
+extern      Address             placement;          //defined in linker script
+#define     PLACEMENT_SIZE      0x10000             //64KByte
+
 extern      Address             bootStack;          //defined in start.S
-#define     STACK_ADDRESS       0xFFFF0000          //Uppermost address -64 KByte
-#define     STACK_SIZE          0x10000             //64KByte, so stack lives from 0xFFFF0000 to 0xFFFE0000
+#define     STACK_ADDRESS       0xFFC00000          //Uppermost address we can use
+#define     STACK_SIZE          0x10000             //64KByte
 
 using namespace Arch;
 using namespace Kernel;
@@ -47,7 +50,7 @@ int main(MultibootHeader* multibootInfo)
     //Initialize Memory
     VirtualMemoryManager::GetInstance()->Init(m.GetLowerMemory() + m.GetUpperMemory());
     
-    //Build virtual memory space
+    //Build virtual memory space for kernel ELF
     VirtualMemoryManager::GetInstance()->KernelSpace(new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace"));
     setupKernelMemRegions(&m, VirtualMemoryManager::GetInstance()->KernelSpace());
     
@@ -58,6 +61,11 @@ int main(MultibootHeader* multibootInfo)
     VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
     MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
     MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
+    
+    //Create region for placement allocation
+    VirtualMemoryRegion* placementRegion = new VirtualMemoryRegion((Address)&placement, PLACEMENT_SIZE, "Placement region");
+    VirtualMemoryManager::GetInstance()->KernelSpace()->SetFlags(placementRegion, ALLOCFLAG_WRITABLE);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(placementRegion);
     
     //Init symtab and strtab for stacktraces
     Debug::stringTable = m.elfInfo->GetSection(".strtab");

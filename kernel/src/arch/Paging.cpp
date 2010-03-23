@@ -13,7 +13,7 @@ Paging* Paging::GetInstance()
 {
     if(instance == NULL)
         instance = new Paging();
-
+        
     return instance;
 }
 
@@ -111,8 +111,11 @@ PageTable* PageDirectory::GetTable(unsigned int index, bool assign)
     //create new page table if we should and there is no table yet
     if(assign && tables[index] == NULL)
     {
+        ARCH_PAGING_DEBUG_MSG("PageTable with index " << index << " is not present and will be created.");
+        
         PageTable* t = new (true /*page align*/) PageTable();
         Address physicalPageTableAddress = Paging::GetInstance()->GetPhysicalAddress((Address) t);
+        ARCH_PAGING_DEBUG_MSG("Physical address of new PageTable: " << (unsigned)physicalPageTableAddress);
         SetTable(index, t, physicalPageTableAddress | 0x3);
     }
     

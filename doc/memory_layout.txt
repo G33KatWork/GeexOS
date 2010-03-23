@@ -1,27 +1,14 @@
 Kernel:
 
 4 GiB +-------------------------+ 0xFFFFFFFF
+      |                         |
       | Page Table Mapping      | Identity paging = 4MB
-      |_________________________| 0xFFC00000
       |                         |
-      | Free                    |
+      |_________________________| 0xFFC00000 = K_STACK_END
       |                         |
-      |_________________________|
-      |                         | K_STACK_END = 0xE0403FFF
-      | Kernel Stack            |   = 16KB
+      | Kernel Stack            | 64kb
       |                         |
-      |_________________________| K_STACK_START = 0xE0400000
-      |                         | K_HEAP_END = 0xE03FFFFF
-      |                         |
-      | Kernel heap             |   = 512MB
-      |                         |
-      |_________________________| K_HEAP_START = 0xC0400000
-      |                         | K_SPACE_END = 0xC03FFFFF
-      | Kernel itself           |   = 4MB
-      | and placement addr.stuff|
-3 GiB |_________________________| K_BEGINNING = 0xC0000000
-      |                         |
-      | Unused                  |
+      |_________________________| 0xFFBF0000 = K_STACK_START
       |                         |
       |                         |
       |                         |
@@ -31,6 +18,28 @@ Kernel:
       |                         |
       |                         |
       |                         |
-      |_________________________|
-      | Unmapped 4K page        |
-0 GiB +_________________________+ 0x00000000
+      |  Free                   |
+      |                         |
+      |                         |
+      |                         |
+      |                         |
+      |                         |
+      |                         |
+      |                         |
+      |                         |
+      |                         |
+      |_________________________| 0x00400000 = KERNEL_END
+      |                         |
+      |                         |
+      |                         |
+      |  Kernel itself          |
+      |                         |
+      |                         |
+      |_________________________| 0x00100000 = KERNEL_START
+      |                         |
+      |  Currently mapped but   |
+      |  not currently used     |
+      |                         |
+      |-------------------------| 0x00010000 = BIOS_END
+      | Unmapped 64K for BIOS   |
+0 GiB +_________________________+ 0x00000000 = BIOS_START
