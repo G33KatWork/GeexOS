@@ -24,6 +24,9 @@ extern      Address             bootStack;          //defined in start.S
 #define     STACK_ADDRESS       0xFFC00000          //Uppermost address we can use
 #define     STACK_SIZE          0x10000             //64KByte
 
+#define     BIOS_ADDRESS        0x0
+#define     BIOS_SIZE           0x10000
+
 using namespace Arch;
 using namespace Kernel;
 using namespace Memory;
@@ -53,19 +56,6 @@ int main(MultibootHeader* multibootInfo)
     //Build virtual memory space for kernel ELF
     VirtualMemoryManager::GetInstance()->KernelSpace(new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace"));
     setupKernelMemRegions(&m, VirtualMemoryManager::GetInstance()->KernelSpace());
-    
-    //Create defined Stack and move boot stack to new position
-    VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(STACK_ADDRESS - STACK_SIZE, STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
-    Stack *kernelStack = new Stack(STACK_ADDRESS - STACK_SIZE, STACK_SIZE);
-    kernelStack->MoveCurrentStackHere((Address)&bootStack);
-    VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
-    MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
-    MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
-    
-    //Create region for placement allocation
-    VirtualMemoryRegion* placementRegion = new VirtualMemoryRegion((Address)&placement, PLACEMENT_SIZE, "Placement region");
-    VirtualMemoryManager::GetInstance()->KernelSpace()->SetFlags(placementRegion, ALLOCFLAG_WRITABLE);
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(placementRegion);
     
     //Init symtab and strtab for stacktraces
     Debug::stringTable = m.elfInfo->GetSection(".strtab");
@@ -126,6 +116,23 @@ void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm)
     VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)bss->size, ".bss");
     vm->SetFlags(bssRegion, ALLOCFLAG_WRITABLE);
     vm->AddRegion(bssRegion);
+    
+    VirtualMemoryRegion* biosRegion = new VirtualMemoryRegion(BIOS_ADDRESS, BIOS_SIZE, "BIOS");
+    vm->SetFlags(biosRegion, ALLOCFLAG_WRITABLE);
+    vm->AddRegion(biosRegion);
+    
+    //Create region for placement allocation
+    VirtualMemoryRegion* placementRegion = new VirtualMemoryRegion((Address)&placement, PLACEMENT_SIZE, "Placement region");
+    vm->SetFlags(placementRegion, ALLOCFLAG_WRITABLE);
+    vm->AddRegion(placementRegion);
+    
+    //Create defined Stack and move boot stack to new position
+    vm->Allocate(STACK_ADDRESS - STACK_SIZE, STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
+    Stack *kernelStack = new Stack(STACK_ADDRESS - STACK_SIZE, STACK_SIZE);
+    kernelStack->MoveCurrentStackHere((Address)&bootStack);
+    VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
+    MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
+    MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
 }
 
 void attachExceptionHandlers(InterruptDispatcher* irqD)
