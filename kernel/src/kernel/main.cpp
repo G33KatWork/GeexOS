@@ -36,7 +36,7 @@ using namespace Time;
 void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm);
 void attachExceptionHandlers(InterruptDispatcher* irqD);
 
-int main(MultibootHeader* multibootInfo)
+int main(MultibootInfo* multibootInfo)
 {   
     //Prepare monitor output
     kdbg.Clear();
@@ -58,11 +58,13 @@ int main(MultibootHeader* multibootInfo)
     setupKernelMemRegions(&m, VirtualMemoryManager::GetInstance()->KernelSpace());
     
     //Init symtab and strtab for stacktraces
-    Debug::stringTable = m.elfInfo->GetSection(".strtab");
-    Debug::symbolTable = m.elfInfo->GetSection(".symtab");
+    //FIXME: Somehow get those strintables accessible again
+    //Debug::stringTable = m.elfInfo->GetSection(".strtab");
+    //Debug::symbolTable = m.elfInfo->GetSection(".symtab");
     
     //mm->KernelSpace()->DumpRegions(kdbg);
     
+    MAIN_DEBUG_MSG("Multiboot structure address: " << hex << (unsigned)m.GetAddress());
     MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
     InterruptDispatcher* irqD = InterruptDispatcher::GetInstance();
@@ -86,7 +88,7 @@ int main(MultibootHeader* multibootInfo)
     Arch::UnmaskIRQ(IRQ_KEYBOARD);
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
-    
+    PANIC("abc");
     for(;;) {
         //scheduler->Schedule();
         asm volatile("hlt"); //halt cpu until next irq (timer etc.) to switch to next time slice
@@ -126,6 +128,17 @@ void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm)
     vm->SetFlags(placementRegion, ALLOCFLAG_WRITABLE);
     vm->AddRegion(placementRegion);
     
+    //Create region for multiboot stuff
+    VirtualMemoryRegion* multibootRegion = new VirtualMemoryRegion(m->GetAddress() & IDENTITY_POSITION, 2*PAGE_SIZE, "Multiboot information");
+    vm->SetFlags(multibootRegion, ALLOCFLAG_NONE);
+    vm->AddRegion(multibootRegion);
+    
+    //Create region for video memory
+    //TODO: Implement proper framebuffer, configure VGA properly and throw this away
+    VirtualMemoryRegion* videoRegion = new VirtualMemoryRegion(0xB8000, 2*PAGE_SIZE, "Video memory");
+    vm->SetFlags(videoRegion, ALLOCFLAG_WRITABLE);
+    vm->AddRegion(videoRegion);
+    
     //Create defined Stack and move boot stack to new position
     vm->Allocate(STACK_ADDRESS - STACK_SIZE, STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
     Stack *kernelStack = new Stack(STACK_ADDRESS - STACK_SIZE, STACK_SIZE);
@@ -133,6 +146,24 @@ void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm)
     VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
     MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
     MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
+    
+    //Whilst initialization of the paging, we allocated the lowermost 4MB for our purposes.
+    //Now, that we arranged all our needs regarding to memory with the help of our marvellous
+    //virtual memory management, we don't need the whole 4MB.
+    //What we do now is a major cleanup. We need to synchronize the regions which are really allocated
+    //and needed within our virtual memory space with the paging.
+    //Sine we only have a kernel space at this time, we don't bother about other spaces. There are simply none.
+    for(Address i = 0x0; i < 4*1024*1024; i += PAGE_SIZE)
+    {
+        if(vm->FindRegionEnclosingAddress(i) == NULL)
+        {
+            Address physicalAddr = Paging::GetInstance()->GetPhysicalAddress(i);
+            //MAIN_DEBUG_MSG("Virtual address " << hex << (unsigned)i << " pointing to physical " << (unsigned)physicalAddr << " doesn't seem to contain a region.");
+            
+            Paging::GetInstance()->UnmapAddress(i);
+            VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(physicalAddr);
+        }
+    }
 }
 
 void attachExceptionHandlers(InterruptDispatcher* irqD)

@@ -35,6 +35,7 @@ namespace Memory
 		
 		VirtualMemoryRegion* FindRegionByName(const char* regionName);
 		VirtualMemoryRegion* FindRegionByStartAddress(Address start);
+		VirtualMemoryRegion* FindRegionEnclosingAddress(Address addr);
 		
 		AllocationFlags GetFlags(VirtualMemoryRegion* r) { return r->flags; }
         void SetFlags(VirtualMemoryRegion* r, AllocationFlags f);

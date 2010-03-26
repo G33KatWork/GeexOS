@@ -12,12 +12,12 @@ SECTIONS{
     .text : AT(ADDR(.text))
     {
         code = .; _code = .; __code = .;
-        *(.text)
+        *(.text*)
     }
 
     .rodata ALIGN (4096) : AT(ADDR(.rodata))
     {
-        *(.rodata)
+        *(.rodata*)
     }
 
     .data ALIGN (4096) : AT(ADDR(.data))

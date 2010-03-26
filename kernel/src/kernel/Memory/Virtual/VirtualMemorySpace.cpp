@@ -130,6 +130,17 @@ VirtualMemoryRegion* VirtualMemorySpace::FindRegionByStartAddress(Address start)
     }
     
     return NULL;
+}    
+
+VirtualMemoryRegion* VirtualMemorySpace::FindRegionEnclosingAddress(Address addr)
+{
+    for(VirtualMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
+    {
+        if(addr >= curRegion->startAddress && addr < (curRegion->startAddress + curRegion->size))
+            return curRegion;
+    }
+    
+    return NULL;
 }
 
 void VirtualMemorySpace::DumpRegions(CharacterOutputDevice& c)
