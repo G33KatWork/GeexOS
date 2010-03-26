@@ -92,6 +92,20 @@ void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
     }
 }
 
+void VirtualMemorySpace::AnnounceRegion(Address address, size_t size, const char* rname, AllocationFlags f)
+{
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Announcing region " << rname << " in VirtualMemorySpace " << this->name);
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << (unsigned)address <<
+                                   " Size: " << (unsigned)size <<
+                                   " Flags: " << (f & ALLOCFLAG_WRITABLE?"rw":"ro") <<
+                                          " " << (f & ALLOCFLAG_USERMODE?"umode":"kmode") << 
+                                          " " << (f & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
+                                          
+    VirtualMemoryRegion* region = new VirtualMemoryRegion(address, size, rname);
+    SetFlags(region, f);
+    AddRegion(region);
+}
+
 void Remap(VirtualMemoryRegion* r, Address NewAddress)
 {
     

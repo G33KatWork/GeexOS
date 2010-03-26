@@ -2,8 +2,11 @@
 #include <arch/gdt.h>
 #include <arch/idt.h>
 #include <arch/pit.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <arch/Paging.h>
 
 using namespace Arch;
+using namespace Memory;
 
 void Arch::InitializeCPU()
 {
@@ -25,6 +28,16 @@ void Arch::InitializeCPU()
 		"mov %cr0, %eax\n"
 		"orl $0x10000, %eax\n"
 		"mov %eax, %cr0\n");
+}
+
+void Arch::SetupArchMemRegions()
+{
+    //Announce BIOS region
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(BIOS_ADDRESS, BIOS_SIZE, "BIOS", ALLOCFLAG_WRITABLE);
+    
+    //Announce region for video memory
+    //TODO: Implement proper framebuffer, configure VGA properly and throw this away
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(0xB8000, 2*PAGE_SIZE, "Video memory", ALLOCFLAG_WRITABLE);
 }
 
 ClockSource_t Arch::ClockSource  = {

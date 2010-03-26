@@ -33,3 +33,8 @@ unsigned int PlacementAllocator::GetPointerPosition()
 {
     return placement_address;
 } 
+
+Address Memory::GetPlacementBeginning()
+{
+    return (Address)&placement;
+}

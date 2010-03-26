@@ -2,8 +2,6 @@
 #define _MULTIBOOT_H
 
 #include <lib/types.h>
-#include <kernel/elf32.h>
-#include <kernel/ElfInformation.h>
 
 #define MULTIBOOT_FLAG_MEM     0x001
 #define MULTIBOOT_FLAG_DEVICE  0x002
@@ -148,12 +146,15 @@ namespace Kernel
         //size_t GetSize();
         Address GetAddress() { return (Address)info; }
         
-        unsigned int GetLowerMemory() { return info->memoryLo; }
-        unsigned int GetUpperMemory() { return info->memoryHi; }
-        char* GetKernelCommandline() { return (char *)info->cmdLine; }
-        bool IsElf() { return info->flags & MULTIBOOT_FLAG_ELF; }
+        uint32_t GetLowerMemory() { return info->memoryLo; }
+        uint32_t GetUpperMemory() { return info->memoryHi; }
+        const char* GetKernelCommandline() { return (const char *)info->cmdLine; }
+        uint32_t GetELFNum() { return info->elf_num; }
+        uint32_t GetELFSize() { return info->elf_size; }
+        uint32_t GetELFAddress() { return info->elf_addr; }
+        uint32_t GetELFshndx() { return info->elf_shndx; }
         
-        ElfInformation *elfInfo;
+        bool IsElf() { return info->flags & MULTIBOOT_FLAG_ELF; }
         
     private:
         MultibootInfo *info;

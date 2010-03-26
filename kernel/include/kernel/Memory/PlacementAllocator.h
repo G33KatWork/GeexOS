@@ -5,6 +5,10 @@
 
 namespace Memory
 {
+    #define     PLACEMENT_SIZE      0x10000             //64KByte
+    
+    Address GetPlacementBeginning();
+    
     class PlacementAllocator
     {
     public:

@@ -11,7 +11,6 @@ Multiboot::Multiboot(MultibootInfo *i)
     info = i;
 	
     if(!IsElf()) PANIC("Kernel is not ELF-compatible!");
-    elfInfo = new ElfInformation(info->elf_addr, info->elf_shndx, info->elf_size, info->elf_num);
 }
 
 /*size_t Multiboot::GetSize()

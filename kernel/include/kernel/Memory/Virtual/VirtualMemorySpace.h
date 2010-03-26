@@ -39,6 +39,7 @@ namespace Memory
 		
 		AllocationFlags GetFlags(VirtualMemoryRegion* r) { return r->flags; }
         void SetFlags(VirtualMemoryRegion* r, AllocationFlags f);
+        void AnnounceRegion(Address address, size_t size, const char* rname, AllocationFlags f);
         
         void Remap(VirtualMemoryRegion* r, Address NewAddress);
         

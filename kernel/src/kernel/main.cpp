@@ -16,16 +16,12 @@
 #include <kernel/Time/TimerHandler.h>
 #include <arch/KeyboardHandler.h>
 #include <arch/scheduling.h>
-
-extern      Address             placement;          //defined in linker script
-#define     PLACEMENT_SIZE      0x10000             //64KByte
+#include <kernel/ElfInformation.h>
 
 extern      Address             bootStack;          //defined in start.S
 #define     STACK_ADDRESS       0xFFC00000          //Uppermost address we can use
 #define     STACK_SIZE          0x10000             //64KByte
 
-#define     BIOS_ADDRESS        0x0
-#define     BIOS_SIZE           0x10000
 
 using namespace Arch;
 using namespace Kernel;
@@ -33,7 +29,7 @@ using namespace Memory;
 using namespace Processes;
 using namespace Time;
 
-void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm);
+void syncMemregionsWithPaging(void);
 void attachExceptionHandlers(InterruptDispatcher* irqD);
 
 int main(MultibootInfo* multibootInfo)
@@ -55,14 +51,31 @@ int main(MultibootInfo* multibootInfo)
     
     //Build virtual memory space for kernel ELF
     VirtualMemoryManager::GetInstance()->KernelSpace(new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace"));
-    setupKernelMemRegions(&m, VirtualMemoryManager::GetInstance()->KernelSpace());
+    
+    //Parse ELF-Stuff delivered from GRUB and create .text, .data, .rodata, .bss and .placement sections in kernel space
+    ElfInformation* elfInfo = new ElfInformation(m.GetELFAddress(), m.GetELFshndx(), m.GetELFSize(), m.GetELFNum());
+    
+    //Announce region for multiboot structure
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(m.GetAddress() & IDENTITY_POSITION, 2*PAGE_SIZE, "Multiboot information", ALLOCFLAG_NONE);
+    
+    //Create Arch-specific memory regions in kernel space
+    //On x86: Framebuffer for textmode and lowest 64K for BIOS
+    SetupArchMemRegions();
+    
+    //Create defined Stack and move boot stack to new position
+    VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(STACK_ADDRESS - STACK_SIZE, STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
+    Stack *kernelStack = new Stack(STACK_ADDRESS - STACK_SIZE, STACK_SIZE);
+    kernelStack->MoveCurrentStackHere((Address)&bootStack);
+    VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
+    MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
+    MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
+    
+    syncMemregionsWithPaging();
     
     //Init symtab and strtab for stacktraces
     //FIXME: Somehow get those strintables accessible again
     //Debug::stringTable = m.elfInfo->GetSection(".strtab");
     //Debug::symbolTable = m.elfInfo->GetSection(".symtab");
-    
-    
     
     MAIN_DEBUG_MSG("Multiboot structure address: " << hex << (unsigned)m.GetAddress());
     MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
@@ -97,58 +110,8 @@ int main(MultibootInfo* multibootInfo)
     return 0; 
 }
 
-void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm)
+void syncMemregionsWithPaging(void)
 {
-    Elf32SectionHeader *text = m->elfInfo->GetSection(".text");
-    VirtualMemoryRegion* textRegion = new VirtualMemoryRegion(((Address)text->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(text->size), ".text");
-    vm->SetFlags(textRegion, ALLOCFLAG_EXECUTABLE);
-    vm->AddRegion(textRegion);
-    
-    Elf32SectionHeader *data = m->elfInfo->GetSection(".data");
-    VirtualMemoryRegion* dataRegion = new VirtualMemoryRegion((Address)data->addr, (size_t)PAGE_ALIGN(data->size), ".data");
-    vm->SetFlags(dataRegion, ALLOCFLAG_WRITABLE);
-    vm->AddRegion(dataRegion);
-    
-    Elf32SectionHeader *rodata = m->elfInfo->GetSection(".rodata");
-    VirtualMemoryRegion* rodataRegion = new VirtualMemoryRegion((Address)rodata->addr, (size_t)PAGE_ALIGN(rodata->size), ".rodata");
-    vm->SetFlags(rodataRegion, ALLOCFLAG_NONE);
-    vm->AddRegion(rodataRegion);
-    
-    Elf32SectionHeader *bss = m->elfInfo->GetSection(".bss");
-    VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)PAGE_ALIGN(bss->size), ".bss");
-    vm->SetFlags(bssRegion, ALLOCFLAG_WRITABLE);
-    vm->AddRegion(bssRegion);
-    
-    VirtualMemoryRegion* biosRegion = new VirtualMemoryRegion(BIOS_ADDRESS, BIOS_SIZE, "BIOS");
-    vm->SetFlags(biosRegion, ALLOCFLAG_WRITABLE);
-    vm->AddRegion(biosRegion);
-    
-    //Create region for placement allocation
-    VirtualMemoryRegion* placementRegion = new VirtualMemoryRegion((Address)&placement, PLACEMENT_SIZE, "Placement region");
-    vm->SetFlags(placementRegion, ALLOCFLAG_WRITABLE);
-    vm->AddRegion(placementRegion);
-    
-    //Create region for multiboot stuff
-    VirtualMemoryRegion* multibootRegion = new VirtualMemoryRegion(m->GetAddress() & IDENTITY_POSITION, 2*PAGE_SIZE, "Multiboot information");
-    vm->SetFlags(multibootRegion, ALLOCFLAG_NONE);
-    vm->AddRegion(multibootRegion);
-    
-    //Create region for video memory
-    //TODO: Implement proper framebuffer, configure VGA properly and throw this away
-    VirtualMemoryRegion* videoRegion = new VirtualMemoryRegion(0xB8000, 2*PAGE_SIZE, "Video memory");
-    vm->SetFlags(videoRegion, ALLOCFLAG_WRITABLE);
-    vm->AddRegion(videoRegion);
-    
-    //Create defined Stack and move boot stack to new position
-    vm->Allocate(STACK_ADDRESS - STACK_SIZE, STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
-    Stack *kernelStack = new Stack(STACK_ADDRESS - STACK_SIZE, STACK_SIZE);
-    kernelStack->MoveCurrentStackHere((Address)&bootStack);
-    VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
-    MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
-    MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
-    
-    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
-    
     //Whilst initialization of the paging, we allocated the lowermost 4MB for our purposes.
     //Now, that we arranged all our needs regarding to memory with the help of our marvellous
     //virtual memory management, we don't need the whole 4MB.
@@ -157,11 +120,10 @@ void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm)
     //Sine we only have a kernel space at this time, we don't bother about other spaces. There are simply none.
     for(Address i = 0x0; i < 4*1024*1024; i += PAGE_SIZE)
     {
-        if(vm->FindRegionEnclosingAddress(i) == NULL)
+        if(VirtualMemoryManager::GetInstance()->KernelSpace()->FindRegionEnclosingAddress(i) == NULL)
         {
-            MAIN_DEBUG_MSG("vaddr: " << hex << i);
             Address physicalAddr = Paging::GetInstance()->GetPhysicalAddress(i);
-            MAIN_DEBUG_MSG("Virtual address " << hex << (unsigned)i << " pointing to physical " << (unsigned)physicalAddr << " doesn't seem to contain a region.");
+            //MAIN_DEBUG_MSG("Virtual address " << hex << (unsigned)i << " pointing to physical " << (unsigned)physicalAddr << " doesn't seem to contain a region.");
             
             Paging::GetInstance()->UnmapAddress(i);
             VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(physicalAddr);
