@@ -18,6 +18,13 @@ void Arch::InitializeCPU()
     gdt_install();
     
     idt_install();
+    
+    //Set WP (Write Protect) bit in CR0
+    //This causes a page fault when writing to read-only pages even if we are in kernel mode
+    asm volatile (
+		"mov %cr0, %eax\n"
+		"orl $0x10000, %eax\n"
+		"mov %eax, %cr0\n");
 }
 
 ClockSource_t Arch::ClockSource  = {

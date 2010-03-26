@@ -18,13 +18,6 @@ namespace Arch
     inline void InitializeTimer()
     {
         PIT::GetInstance()->Initialize(1000); //1000Hz
-        
-        //Set WP (Write Protect) bit in CR0
-        //This causes a page fault when writing to read-only pages even if we are in kernel mode
-        asm volatile (
-    		"mov %cr0, %eax\n"
-    		"orl $0x10000, %eax\n"
-    		"mov %eax, %cr0\n");
     }
     
     extern ClockSource_t ClockSource;

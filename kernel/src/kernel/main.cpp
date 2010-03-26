@@ -62,7 +62,7 @@ int main(MultibootInfo* multibootInfo)
     //Debug::stringTable = m.elfInfo->GetSection(".strtab");
     //Debug::symbolTable = m.elfInfo->GetSection(".symtab");
     
-    //mm->KernelSpace()->DumpRegions(kdbg);
+    
     
     MAIN_DEBUG_MSG("Multiboot structure address: " << hex << (unsigned)m.GetAddress());
     MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
@@ -88,7 +88,7 @@ int main(MultibootInfo* multibootInfo)
     Arch::UnmaskIRQ(IRQ_KEYBOARD);
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
-    PANIC("abc");
+    
     for(;;) {
         //scheduler->Schedule();
         asm volatile("hlt"); //halt cpu until next irq (timer etc.) to switch to next time slice
@@ -100,22 +100,22 @@ int main(MultibootInfo* multibootInfo)
 void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm)
 {
     Elf32SectionHeader *text = m->elfInfo->GetSection(".text");
-    VirtualMemoryRegion* textRegion = new VirtualMemoryRegion(((Address)text->addr) & IDENTITY_POSITION, (size_t)text->size, ".text");
+    VirtualMemoryRegion* textRegion = new VirtualMemoryRegion(((Address)text->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(text->size), ".text");
     vm->SetFlags(textRegion, ALLOCFLAG_EXECUTABLE);
     vm->AddRegion(textRegion);
     
     Elf32SectionHeader *data = m->elfInfo->GetSection(".data");
-    VirtualMemoryRegion* dataRegion = new VirtualMemoryRegion((Address)data->addr, (size_t)data->size, ".data");
+    VirtualMemoryRegion* dataRegion = new VirtualMemoryRegion((Address)data->addr, (size_t)PAGE_ALIGN(data->size), ".data");
     vm->SetFlags(dataRegion, ALLOCFLAG_WRITABLE);
     vm->AddRegion(dataRegion);
     
     Elf32SectionHeader *rodata = m->elfInfo->GetSection(".rodata");
-    VirtualMemoryRegion* rodataRegion = new VirtualMemoryRegion((Address)rodata->addr, (size_t)rodata->size, ".rodata");
+    VirtualMemoryRegion* rodataRegion = new VirtualMemoryRegion((Address)rodata->addr, (size_t)PAGE_ALIGN(rodata->size), ".rodata");
     vm->SetFlags(rodataRegion, ALLOCFLAG_NONE);
     vm->AddRegion(rodataRegion);
     
     Elf32SectionHeader *bss = m->elfInfo->GetSection(".bss");
-    VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)bss->size, ".bss");
+    VirtualMemoryRegion* bssRegion = new VirtualMemoryRegion((Address)bss->addr, (size_t)PAGE_ALIGN(bss->size), ".bss");
     vm->SetFlags(bssRegion, ALLOCFLAG_WRITABLE);
     vm->AddRegion(bssRegion);
     
@@ -147,6 +147,8 @@ void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm)
     MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
     MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
     
+    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
+    
     //Whilst initialization of the paging, we allocated the lowermost 4MB for our purposes.
     //Now, that we arranged all our needs regarding to memory with the help of our marvellous
     //virtual memory management, we don't need the whole 4MB.
@@ -157,8 +159,9 @@ void setupKernelMemRegions(Multiboot* m, VirtualMemorySpace* vm)
     {
         if(vm->FindRegionEnclosingAddress(i) == NULL)
         {
+            MAIN_DEBUG_MSG("vaddr: " << hex << i);
             Address physicalAddr = Paging::GetInstance()->GetPhysicalAddress(i);
-            //MAIN_DEBUG_MSG("Virtual address " << hex << (unsigned)i << " pointing to physical " << (unsigned)physicalAddr << " doesn't seem to contain a region.");
+            MAIN_DEBUG_MSG("Virtual address " << hex << (unsigned)i << " pointing to physical " << (unsigned)physicalAddr << " doesn't seem to contain a region.");
             
             Paging::GetInstance()->UnmapAddress(i);
             VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(physicalAddr);

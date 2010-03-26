@@ -45,9 +45,6 @@ VirtualMemoryRegion* VirtualMemorySpace::Allocate(Address address, size_t size, 
                                           " " << (flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
                                           " " << (flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
     
-    ASSERT(IS_PAGE_ALIGNED(address), "Starting address of a region must be page aligned.");
-    ASSERT(size % PAGE_SIZE == 0, "Size of a region must be a multiple of the page size.");
-    
     VirtualMemoryRegion* r = new VirtualMemoryRegion(address, size, regionName);
     r->flags = flags;
     
@@ -83,7 +80,7 @@ void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
                                           " " << (f & ALLOCFLAG_USERMODE?"umode":"kmode") << 
                                           " " << (f & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
     
-    for(Address i = r->startAddress; i < PAGE_ALIGN(r->startAddress + r->size); i += PAGE_SIZE)
+    for(Address i = r->startAddress; i < r->startAddress + r->size; i += PAGE_SIZE)
     {
         VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Remapping page at virtual " << hex << (unsigned)i);
         Paging::GetInstance()->MapAddress(

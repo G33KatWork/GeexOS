@@ -48,6 +48,8 @@ void Paging::Init()
 
 Address Paging::GetPhysicalAddress(Address virtualaddr)
 {
+    ARCH_PAGING_DEBUG_MSG("Physical address of virtual " << hex << (unsigned)virtualaddr << " requested");
+    
     unsigned int pdindex = virtualaddr >> 22;
     unsigned int ptindex = (virtualaddr >> 12) & 0x03FF;
 
