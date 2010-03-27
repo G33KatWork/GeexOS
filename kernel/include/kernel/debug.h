@@ -18,6 +18,7 @@
 //Debugging of several submodules
 //undef, if not wanted
 #define EN_DEBUG_MSG_MAIN
+//#define EN_ELF_INFORMATION_DEBUG_MSG
 //#define EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG
 //#define EN_VIRTUAL_MEMORY_SPACE_DEBUG_MSG
 //#define EN_STACK_DEBUG_MSG
@@ -41,6 +42,12 @@
     #define     MAIN_DEBUG_MSG(x)               DEBUG_MSG("MAIN: "x)
 #else
     #define     MAIN_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_ELF_INFORMATION_DEBUG_MSG
+    #define ELF_INFORMATION_DEBUG_MSG(x)        DEBUG_MSG("ELF_INFO: "x)
+#else
+    #define ELF_INFORMATION_DEBUG_MSG(x)
 #endif
 
 #ifdef EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG

@@ -3,8 +3,10 @@
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <arch/Paging.h>
 #include <kernel/Memory/PlacementAllocator.h>
+#include <kernel/debug.h>
 
 using namespace Memory;
+using namespace IO;
 
 ElfInformation::ElfInformation(unsigned int elfAddr, unsigned int elfShndx, unsigned int elfSize, unsigned int elfNum)
 {
@@ -30,6 +32,8 @@ ElfInformation::ElfInformation(unsigned int elfAddr, unsigned int elfShndx, unsi
     
     //Announce region for placement allocation
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(GetPlacementBeginning(), PLACEMENT_SIZE, "Placement region", ALLOCFLAG_WRITABLE);
+
+    announceStringTables();
 }
 
 Elf32SectionHeader* ElfInformation::GetSection(const char* name)
@@ -49,4 +53,22 @@ Elf32SectionHeader* ElfInformation::GetSection(const char* name)
 char* ElfInformation::GetSectionName(Elf32SectionHeader* section)
 {
     return (char *)(shstrtab->addr + section->name);
+}
+
+void ElfInformation::announceStringTables()
+{
+    //These regions can possibly overlap each other
+    //So be careful, if you don't specify the same flags on these regions
+    //They could possibly be overwritten.
+    ELF_INFORMATION_DEBUG_MSG("Announcing section header string table. Address " << hex << (unsigned)shstrtab->addr << " Size: " << (unsigned)shstrtab->size);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)shstrtab->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(shstrtab->size), ".shstrtab", ALLOCFLAG_NONE);
+    
+    Elf32SectionHeader* symtab = GetSection(".symtab");
+    ELF_INFORMATION_DEBUG_MSG("Announcing symbol table. Address " << hex << (unsigned)symtab->addr << " Size: " << (unsigned)symtab->size);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)symtab->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(symtab->size), ".symtab", ALLOCFLAG_NONE);
+    
+    Elf32SectionHeader* strtab = GetSection(".strtab");
+    ELF_INFORMATION_DEBUG_MSG("Announcing string table. Address " << hex << (unsigned)strtab->addr << " Size: " << (unsigned)strtab->size);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)strtab->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(strtab->size), ".strtab", ALLOCFLAG_NONE);
+    
 }

@@ -13,6 +13,8 @@ public:
     char* GetSectionName(Elf32SectionHeader* section);
     
 private:
+    void announceStringTables(void);
+    
     Elf32SectionHeader *shstrtab;
     unsigned int addr;
     unsigned int shndx;

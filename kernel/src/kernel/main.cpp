@@ -74,8 +74,8 @@ int main(MultibootInfo* multibootInfo)
     
     //Init symtab and strtab for stacktraces
     //FIXME: Somehow get those strintables accessible again
-    //Debug::stringTable = m.elfInfo->GetSection(".strtab");
-    //Debug::symbolTable = m.elfInfo->GetSection(".symtab");
+    Debug::stringTable = elfInfo->GetSection(".strtab");
+    Debug::symbolTable = elfInfo->GetSection(".symtab");
     
     MAIN_DEBUG_MSG("Multiboot structure address: " << hex << (unsigned)m.GetAddress());
     MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
@@ -101,6 +101,8 @@ int main(MultibootInfo* multibootInfo)
     Arch::UnmaskIRQ(IRQ_KEYBOARD);
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
+    
+    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
     
     for(;;) {
         //scheduler->Schedule();
