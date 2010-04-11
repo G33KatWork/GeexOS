@@ -84,6 +84,10 @@ isr_common_stub:
 
 	mov ax, ds		; save old data segment decriptor
 	push eax
+	
+	push es
+	push fs
+	push gs
 
 	mov ax, 0x10	; set kernel data segment descriptor
 	mov ds, ax
@@ -92,6 +96,10 @@ isr_common_stub:
 	mov gs, ax
 
 	call fault_handler
+
+    pop gs
+    pop fs
+    pop es
 
 	pop eax			; reload original data segment descriptor
 	mov ds, ax
@@ -111,6 +119,10 @@ irq_common_stub:
 
 	mov ax, ds		; save old data segment decriptor
 	push eax
+	
+	push es
+	push fs
+	push gs
 
 	mov ax, 0x10	; set kernel data segment descriptor
 	mov ds, ax
@@ -119,6 +131,10 @@ irq_common_stub:
 	mov gs, ax
 
 	call interrupt_handler
+	
+	pop gs
+    pop fs
+    pop es
 
 	pop eax			; reload original data segment descriptor
 	mov ds, ax

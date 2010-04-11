@@ -4,6 +4,7 @@
 #include <lib/types.h>
 #include <arch/Paging.h>
 #include <arch/hal.h>
+#include <arch/scheduling.h>
 
 using namespace Arch;
 
@@ -11,35 +12,35 @@ namespace Processes
 {
     class Thread
     {
+        friend class Scheduler;
+        
     public:
-		Thread(unsigned int id, PageDirectory* pd);
+		Thread(unsigned int id, Address initialIP, Address initialSP, Address initialBP, const char* threadName);
         
         int GetId() { return tid; }
-        PageDirectory* GetPageDirectory() { return page_directory; }
+        const char* GetName() { return name; }
+        /*PageDirectory* GetPageDirectory() { return page_directory; }
         void SetPageDirectory(PageDirectory* p) { page_directory = p; }
         int GetPriority() { return priority; }
-        void SetPriority(unsigned char p) { priority = p; }
+        void SetPriority(unsigned char p) { priority = p; }*/
         unsigned long GetTimeslice() { return timeslice; }
         void SetTimeslice(unsigned long t) { timeslice = t; }
-        Address GetStackPointer() { return stackPointer; }
-        void SetStackPointer(Address s) { stackPointer = s; }
-         Address GetBasePointer() { return basePointer; }
-        void SetBasePointer(Address b) { basePointer = b; }
-        Address GetInstructionPointer() { return instructionPointer; }
-        void SetInstructionPointer(Address i) { instructionPointer = i; }
+        Address GetStackPointer() { return threadInfo.esp; }
+        void SetStackPointer(Address s) { threadInfo.esp = s; }
+         Address GetBasePointer() { return threadInfo.ebp; }
+        void SetBasePointer(Address b) { threadInfo.ebp = b; }
+        Address GetInstructionPointer() { return threadInfo.eip; }
+        void SetInstructionPointer(Address i) { threadInfo.eip = i; }
         
         void Sleep();
         void Wakeup();
-		void SwitchTo();
         
     private:
         int tid;
-        unsigned char priority;
+        //unsigned char priority;
+        ThreadInfo threadInfo;
         unsigned long timeslice;
-        PageDirectory* page_directory;
-		Address stackPointer;
-		Address basePointer;
-		Address instructionPointer;
+        const char* name;
     };
 }
 #endif

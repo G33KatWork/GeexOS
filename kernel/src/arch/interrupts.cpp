@@ -58,6 +58,25 @@ void InterruptDispatcher::UnregisterHandler(int i)
 void InterruptDispatcher::Execute(registers_t *regs)
 {
     NotifyPIC(regs->int_no);
+
+    /*ARCH_INTERRUPTS_DEBUG_MSG("Executing interrupt");
+    ARCH_INTERRUPTS_DEBUG_MSG("Register state:");
+    ARCH_INTERRUPTS_DEBUG_MSG("EIP: " << hex << regs->eip);
+    ARCH_INTERRUPTS_DEBUG_MSG("CS: " << regs->cs);
+    ARCH_INTERRUPTS_DEBUG_MSG("EFLAGS: " << regs->eflags);
+    ARCH_INTERRUPTS_DEBUG_MSG("USERESP: " << regs->useresp);
+    ARCH_INTERRUPTS_DEBUG_MSG("SS: " << regs->ss);
+    ARCH_INTERRUPTS_DEBUG_MSG("INTNO: " << regs->int_no);
+    ARCH_INTERRUPTS_DEBUG_MSG("ERRCODE: " << regs->err_code);
+    ARCH_INTERRUPTS_DEBUG_MSG("EAX: " << regs->eax);
+    ARCH_INTERRUPTS_DEBUG_MSG("ECX: " << regs->ecx);
+    ARCH_INTERRUPTS_DEBUG_MSG("EDX: " << regs->edx);
+    ARCH_INTERRUPTS_DEBUG_MSG("EBX: " << regs->ebx);
+    ARCH_INTERRUPTS_DEBUG_MSG("ESP: " << regs->esp);
+    ARCH_INTERRUPTS_DEBUG_MSG("EBP: " << regs->ebp);
+    ARCH_INTERRUPTS_DEBUG_MSG("ESI: " << regs->esi);
+    ARCH_INTERRUPTS_DEBUG_MSG("EDI: " << regs->edi);
+    ARCH_INTERRUPTS_DEBUG_MSG("DS: " << regs->ds);*/
     
     if(isrs[regs->int_no] != NULL)
     {

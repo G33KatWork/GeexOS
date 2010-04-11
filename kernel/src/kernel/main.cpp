@@ -17,6 +17,7 @@
 #include <arch/KeyboardHandler.h>
 #include <arch/scheduling.h>
 #include <kernel/ElfInformation.h>
+#include <kernel/Processes/Scheduler.h>
 
 extern      Address             bootStack;          //defined in start.S
 #define     STACK_ADDRESS       0xFFC00000          //Uppermost address we can use
@@ -31,6 +32,15 @@ using namespace Time;
 
 void syncMemregionsWithPaging(void);
 void attachExceptionHandlers(InterruptDispatcher* irqD);
+
+void foo(void)
+{   
+    while(1)
+    {
+        kdbg << "A";
+        for(int i = 0; i < 10000000; i++);
+    }
+}
 
 int main(MultibootInfo* multibootInfo)
 {   
@@ -87,7 +97,7 @@ int main(MultibootInfo* multibootInfo)
     //Init timer
     InitializeTimer();
     TimerManager *tm = new TimerManager(&Arch::ClockSource);
-    irqD->RegisterHandler(IRQ_TIMER, new TimerHandler(tm));
+    irqD->RegisterHandler(IRQ_TIMER, new TimerHandler(tm, Scheduler::GetInstance()));
     MAIN_DEBUG_MSG("Timer initialized...");
     
     Arch::EnableInterrupts();
@@ -102,11 +112,20 @@ int main(MultibootInfo* multibootInfo)
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
-    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
+    //VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
+    
+    //Initialize the scheduler
+    Scheduler::GetInstance()->SetTimerManager(tm);
+    
+    VirtualMemoryRegion* threadStack = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0xE000000, 0x4000, "ThreadStack", ALLOCFLAG_WRITABLE);
+    Thread* thread = new Thread(1, (Address)foo, threadStack->StartAddress() + 0x4000, threadStack->StartAddress() + 0x4000, "A thread");
+    Scheduler::GetInstance()->AddThread(thread);
+    
+    Scheduler::GetInstance()->DumpThreads(kdbg);
     
     for(;;) {
-        //scheduler->Schedule();
-        asm volatile("hlt"); //halt cpu until next irq (timer etc.) to switch to next time slice
+        kdbg << "B";
+        for(int i = 0; i < 10000000; i++);
     }
     
     return 0; 

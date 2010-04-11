@@ -4,25 +4,30 @@
 #include <lib/types.h>
 #include <kernel/IInterruptServiceRoutine.h>
 #include <kernel/Time/TimerManager.h>
+#include <kernel/Processes/Scheduler.h>
+
+#include <kernel/debug.h>
 
 using namespace Time;
+using namespace Processes;
 
 class TimerHandler : public IInterruptServiceRoutine
 {
 private:
     TimerManager *tm;
+    Scheduler *s;
     
 public:
-    TimerHandler(TimerManager* timerManager)
+    TimerHandler(TimerManager* timerManager, Scheduler* scheduler)
     {
         tm = timerManager;
+        s = scheduler;
     }
     
-    void Execute(registers_t* UNUSED(regs))
+    void Execute(registers_t* regs)
     {
-        this->tm->HandleTick(&Arch::ClockSource);
-        /*if(this->tm->HandleTick(&Arch::ClockSource))
-            Scheduler::GetInstance()->Schedule();*/
+        if(this->tm->HandleTick(&Arch::ClockSource))
+            s->Schedule(regs);
     }
 };
 
