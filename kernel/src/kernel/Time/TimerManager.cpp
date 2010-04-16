@@ -77,8 +77,10 @@ bool TimerManager::HandleTick(ClockSource_t *source)
     
     prepareClock(tickLen);
     
+    #ifdef EN_TIMER_MGR_DEBUG_MSG
     if(needScheduling)
         TIMER_MGR_DEBUG_MSG("At least one timer requested scheduling");
+    #endif
     
     return needScheduling;
 }
