@@ -56,25 +56,25 @@ namespace Arch
         /*info->ss = oldState->ss;*/
     }
     
-    static inline void printThreadInfo(ThreadInfo* UNUSED(info))
+    static inline void printThreadInfo(ThreadInfo* info)
     {
         SCHEDULER_DEBUG_MSG("ThreadInfo: ");
-        SCHEDULER_DEBUG_MSG("EIP: " << hex << info->eip);
-        SCHEDULER_DEBUG_MSG("CS: " << hex << info->cs);
-        SCHEDULER_DEBUG_MSG("EFLAGS: " << hex << info->eflags);
-        SCHEDULER_DEBUG_MSG("EAX: " << hex << info->eax);
-        SCHEDULER_DEBUG_MSG("ECX: " << hex << info->ecx);
-        SCHEDULER_DEBUG_MSG("EDX: " << hex << info->edx);
-        SCHEDULER_DEBUG_MSG("EBX: " << hex << info->ebx);
-        SCHEDULER_DEBUG_MSG("ESP: " << hex << info->esp);
-        SCHEDULER_DEBUG_MSG("EBP: " << hex << info->ebp);
-        SCHEDULER_DEBUG_MSG("ESI: " << hex << info->esi);
-        SCHEDULER_DEBUG_MSG("EDI: " << hex << info->edi);
-        SCHEDULER_DEBUG_MSG("DS: " << hex << info->ds);
-        SCHEDULER_DEBUG_MSG("ES: " << hex << info->es);
-        SCHEDULER_DEBUG_MSG("FS: " << hex << info->fs);
-        SCHEDULER_DEBUG_MSG("GS: " << hex << info->gs);
-        SCHEDULER_DEBUG_MSG("SS: " << hex << info->ss);
+        SCHEDULER_DEBUG_MSG("EIP: " << IO::hex << info->eip);
+        SCHEDULER_DEBUG_MSG("CS: " << IO::hex << info->cs);
+        SCHEDULER_DEBUG_MSG("EFLAGS: " << IO::hex << info->eflags);
+        SCHEDULER_DEBUG_MSG("EAX: " << IO::hex << info->eax);
+        SCHEDULER_DEBUG_MSG("ECX: " << IO::hex << info->ecx);
+        SCHEDULER_DEBUG_MSG("EDX: " << IO::hex << info->edx);
+        SCHEDULER_DEBUG_MSG("EBX: " << IO::hex << info->ebx);
+        SCHEDULER_DEBUG_MSG("ESP: " << IO::hex << info->esp);
+        SCHEDULER_DEBUG_MSG("EBP: " << IO::hex << info->ebp);
+        SCHEDULER_DEBUG_MSG("ESI: " << IO::hex << info->esi);
+        SCHEDULER_DEBUG_MSG("EDI: " << IO::hex << info->edi);
+        SCHEDULER_DEBUG_MSG("DS: " << IO::hex << info->ds);
+        SCHEDULER_DEBUG_MSG("ES: " << IO::hex << info->es);
+        SCHEDULER_DEBUG_MSG("FS: " << IO::hex << info->fs);
+        SCHEDULER_DEBUG_MSG("GS: " << IO::hex << info->gs);
+        SCHEDULER_DEBUG_MSG("SS: " << IO::hex << info->ss);
     }
 }
 

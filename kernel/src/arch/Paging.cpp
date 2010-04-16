@@ -100,6 +100,8 @@ void Paging::UnmapAddress(Address virt)
     p->Present(false);
     p->Frame(0);
     p->RW(false);
+    
+    asm volatile("invlpg %0"::"m" (*(char *)virt));
 }
 
 void Paging::SwitchCurrentPageDirectory(PageDirectory* dir)

@@ -26,6 +26,8 @@
 //#define EN_STACK_DEBUG_MSG
 //#define EN_ARCH_INTERRUPTS_DEBUG_MSG
 //#define EN_ARCH_PAGING_DEBUG_MSG
+//#define EN_PLACEMENT_DEBUG_MSG
+//#define EN_PHYS_BITFIELD_DEBUG_MSG
 
 #define DEBUG_MSG(msg) \
 { \
@@ -41,9 +43,9 @@
 
 
 #ifdef EN_DEBUG_MSG_MAIN
-    #define     MAIN_DEBUG_MSG(x)               DEBUG_MSG("MAIN: "x)
+    #define MAIN_DEBUG_MSG(x)                   DEBUG_MSG("MAIN: "x)
 #else
-    #define     MAIN_DEBUG_MSG(x)
+    #define MAIN_DEBUG_MSG(x)
 #endif
 
 #ifdef EN_SCHEDULER_DEBUG_MSG
@@ -92,6 +94,18 @@
     #define ARCH_PAGING_DEBUG_MSG(x)            DEBUG_MSG("ARCH_PAGING: "x)
 #else
     #define ARCH_PAGING_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_PLACEMENT_DEBUG_MSG
+    #define PLACEMENT_DEBUG_MSG(x)              DEBUG_MSG("MEM_PLACEMENT: "x)
+#else
+    #define PLACEMENT_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_PHYS_BITFIELD_DEBUG_MSG
+    #define PHYS_BITFIELD_DEBUG_MSG(x)          DEBUG_MSG("PHYS_BITFIELD: "x)
+#else
+    #define PHYS_BITFIELD_DEBUG_MSG(x)
 #endif
 
 #endif

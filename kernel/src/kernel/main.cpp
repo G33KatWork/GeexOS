@@ -19,6 +19,8 @@
 #include <kernel/ElfInformation.h>
 #include <kernel/Processes/Scheduler.h>
 
+#include <lib/string.h>
+
 extern      Address             bootStack;          //defined in start.S
 #define     STACK_ADDRESS       0xFFC00000          //Uppermost address we can use
 #define     STACK_SIZE          0x10000             //64KByte
@@ -38,6 +40,24 @@ void foo(void)
     while(1)
     {
         kdbg << "A";
+        for(int i = 0; i < 10000000; i++);
+    }
+}
+
+void bar(void)
+{   
+    while(1)
+    {
+        kdbg << "C";
+        for(int i = 0; i < 10000000; i++);
+    }
+}
+
+void baz(void)
+{   
+    while(1)
+    {
+        kdbg << "D";
         for(int i = 0; i < 10000000; i++);
     }
 }
@@ -114,18 +134,32 @@ int main(MultibootInfo* multibootInfo)
     
     //VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
     
-    //Initialize the scheduler
-    Scheduler::GetInstance()->SetTimerManager(tm);
+    MAIN_DEBUG_MSG("foo");
     
     VirtualMemoryRegion* threadStack = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0xE000000, 0x4000, "ThreadStack", ALLOCFLAG_WRITABLE);
     Thread* thread = new Thread(1, (Address)foo, threadStack->StartAddress() + 0x4000, threadStack->StartAddress() + 0x4000, "A thread");
+    memset((void*)threadStack->StartAddress(), 0, 0x4000);
     Scheduler::GetInstance()->AddThread(thread);
     
-    Scheduler::GetInstance()->DumpThreads(kdbg);
+    VirtualMemoryRegion* threadStack2 = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0xE100000, 0x4000, "ThreadStack2", ALLOCFLAG_WRITABLE);
+    Thread* thread2 = new Thread(2, (Address)bar, threadStack2->StartAddress() + 0x4000, threadStack2->StartAddress() + 0x4000, "C thread");
+    memset((void*)threadStack2->StartAddress(), 0, 0x4000);
+    Scheduler::GetInstance()->AddThread(thread2);
+    
+    VirtualMemoryRegion* threadStack3 = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0xE200000, 0x4000, "ThreadStack3", ALLOCFLAG_WRITABLE);
+    Thread* thread3 = new Thread(3, (Address)baz, threadStack3->StartAddress() + 0x4000, threadStack3->StartAddress() + 0x4000, "D thread");
+    memset((void*)threadStack3->StartAddress(), 0, 0x4000);
+    Scheduler::GetInstance()->AddThread(thread3);
+    
+    //Initialize the scheduler
+    Scheduler::GetInstance()->SetTimerManager(tm);
+    //Scheduler::GetInstance()->DumpThreads(kdbg);
     
     for(;;) {
         kdbg << "B";
         for(int i = 0; i < 10000000; i++);
+        
+        asm volatile("hlt");
     }
     
     return 0; 

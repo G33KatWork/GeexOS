@@ -41,6 +41,8 @@ namespace Processes
         ThreadInfo threadInfo;
         unsigned long timeslice;
         const char* name;
+        
+        Thread* next;
     };
 }
 #endif

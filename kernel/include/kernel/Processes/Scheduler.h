@@ -30,12 +30,11 @@ namespace Processes
     private:
         static Scheduler* instance;
         
-        //FIXME: Use dynamic array
-        OrderedArray<Thread*, 128> *threadQueue;
+        Thread* listHead;
         Thread* currentThread;
         Thread* kernelThread;
         
-        Timer* schedulingTimer;
+        //Timer* schedulingTimer;
         TimerManager* tm;
         
         unsigned int nextId;

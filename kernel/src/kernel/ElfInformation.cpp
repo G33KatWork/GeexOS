@@ -71,4 +71,6 @@ void ElfInformation::announceStringTables()
     ELF_INFORMATION_DEBUG_MSG("Announcing string table. Address " << hex << (unsigned)strtab->addr << " Size: " << (unsigned)strtab->size);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)strtab->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(strtab->size), ".strtab", ALLOCFLAG_NONE);
     
+    ELF_INFORMATION_DEBUG_MSG("Foo: " << (unsigned)(addr & IDENTITY_POSITION) << " Size: " << (unsigned)(PAGE_ALIGN(num * size)));
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(num * size), "ELF Foo", ALLOCFLAG_NONE);
 }

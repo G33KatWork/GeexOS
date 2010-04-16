@@ -2,7 +2,9 @@
 #include <arch/Paging.h>
 #include <lib/string.h>
 #include <kernel/global.h>
+#include <kernel/debug.h>
 
+using namespace IO;
 using namespace Memory;
 using namespace Arch;
 
@@ -63,10 +65,12 @@ Address BitfieldPhysicalMemoryManager::AllocateFrame()
 {
     Address page = (bitmap_get_first_free() * PAGE_SIZE);
 	bitmap_set_frame(page);
+	PHYS_BITFIELD_DEBUG_MSG("Page allocated: " << hex << (unsigned)page);
 	return page;
 }
 
 void BitfieldPhysicalMemoryManager::DeallocateFrame(Address physAddr)
-{
+{    
+	PHYS_BITFIELD_DEBUG_MSG("Page deallocated: " << hex << (unsigned)physAddr);
     bitmap_clear_frame(physAddr);
 }

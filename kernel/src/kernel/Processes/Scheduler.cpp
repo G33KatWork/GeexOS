@@ -11,7 +11,9 @@ using namespace IO;
 #define     SCHED_TIMER_FREQUENCY       10000000
 #define     SCHED_THREAD_TIMESLICE      10000000
 
-static bool scheduleTimerHandler(void)
+//FIXME: Make timer timers work again by fixing the List in TimerManager not being a memory eating monster
+
+/*static bool scheduleTimerHandler(void)
 {
     Thread* curThread = Scheduler::GetInstance()->GetCurrentThread();
     curThread->SetTimeslice(curThread->GetTimeslice() - SCHED_TIMER_FREQUENCY);
@@ -22,7 +24,7 @@ static bool scheduleTimerHandler(void)
         return true; //force scheduling
     else
         return false;
-}
+}*/
 
 Scheduler* Scheduler::instance = NULL;
 
@@ -34,25 +36,16 @@ Scheduler* Scheduler::GetInstance()
     return instance;
 }
 
-static bool threadLessThan(Thread* UNUSED(t1), Thread* UNUSED(t2))
-{
-    //just return true to get the old thread positioned
-    //at the end of the queue for now
-    return true;
-}
-
 Scheduler::Scheduler()
 {
     DisableInterrupts();
     
-    threadQueue = new OrderedArray<Thread*, 128>();
-    threadQueue->SetPredicate(threadLessThan);
-    
     kernelThread = new Thread(0, 0, 0, 0, "Kernel thread");
+    kernelThread->next = NULL;
+    listHead = kernelThread;
     currentThread = kernelThread;
-    threadQueue->Insert(currentThread);
     
-    schedulingTimer = new Timer(FUNCTION, scheduleTimerHandler, NULL);
+    //schedulingTimer = new Timer(FUNCTION, scheduleTimerHandler, NULL);
     
     tm = NULL;
     nextId = 1;
@@ -65,13 +58,14 @@ Scheduler::Scheduler()
 void Scheduler::SetTimerManager(TimerManager* t)
 {
     tm = t;
-    currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
-    tm->StartTimer(schedulingTimer, SCHED_TIMER_FREQUENCY);
+    //currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
+    //tm->StartTimer(schedulingTimer, SCHED_TIMER_FREQUENCY);
 }
 
 void Scheduler::AddThread(Thread* thread)
 {
-    threadQueue->Insert(thread);
+    thread->next = listHead;
+    listHead = thread;
 }
 
 void Scheduler::Schedule(registers_t* oldState)
@@ -81,37 +75,37 @@ void Scheduler::Schedule(registers_t* oldState)
     
     saveThreadInfo(&currentThread->threadInfo, oldState);
     
+    if(tm == NULL) return;
     //check if we have a timer manager
     ASSERT(tm != NULL, "TimerManager is NULL");
     
-    if (threadQueue->GetSize() == 0)
-        return;
-    
-    Thread *next = threadQueue->ItemAt(0);
-	threadQueue->RemoveAt(0);
-	threadQueue->Insert(next);
+    Thread *next;
+    if(currentThread->next == NULL)
+        next = listHead;
+    else
+        next = currentThread->next;
+
 	SCHEDULER_DEBUG_MSG("Picking thread " << next->GetName());
 	currentThread = next;
     
-    currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
-    tm->StartTimer(schedulingTimer, SCHED_TIMER_FREQUENCY);
+    //currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
+    //tm->StartTimer(schedulingTimer, SCHED_TIMER_FREQUENCY);
     
-    printThreadInfo(&currentThread->threadInfo);
+    //printThreadInfo(&currentThread->threadInfo);
     
     switchToThread(&currentThread->threadInfo);
 }
 
 void Scheduler::DumpThreads(CharacterOutputDevice& c)
 {
-    for(unsigned int i = 0; i < threadQueue->GetSize(); i++)
+    for(Thread* curThread = listHead; curThread != NULL; curThread = curThread->next)
     {
-        Thread *t = threadQueue->ItemAt(i);
-        c << "SCHEDULER: " << "\tThread ID: " << dec << t->GetId() << endl;
-        c << "SCHEDULER: " << "\tThread Name: " << t->GetName() << endl;
-        c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << (unsigned)t->GetInstructionPointer() << endl;
-        c << "SCHEDULER: " << "\tStack Pointer: " << (unsigned)t->GetStackPointer() << endl;
-        c << "SCHEDULER: " << "\tBase Pointer: " << (unsigned)t->GetBasePointer() << endl;
-        c << "SCHEDULER: " << "\tTimeslice: " << dec << (unsigned)t->GetTimeslice() << endl;
+        c << "SCHEDULER: " << "\tThread ID: " << dec << curThread->GetId() << endl;
+        c << "SCHEDULER: " << "\tThread Name: " << curThread->GetName() << endl;
+        c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << (unsigned)curThread->GetInstructionPointer() << endl;
+        c << "SCHEDULER: " << "\tStack Pointer: " << (unsigned)curThread->GetStackPointer() << endl;
+        c << "SCHEDULER: " << "\tBase Pointer: " << (unsigned)curThread->GetBasePointer() << endl;
+        c << "SCHEDULER: " << "\tTimeslice: " << dec << (unsigned)curThread->GetTimeslice() << endl;
         
         c << endl;
     }

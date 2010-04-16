@@ -78,6 +78,11 @@ qemudebug: bootfloppy
 	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
 	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
 
+# Start VMware Fusion
+vmware: bootfloppy
+	$(call cmd_msg,VMWARE,floppy.img)
+	$(Q)/Library/Application\ Support/VMware\ Fusion/vmrun -T fusion start resources/vmware.vmx $(QOUTPUT)
+
 # Cleaning
 clean:
 	$(call call_submake,kernel,clean)

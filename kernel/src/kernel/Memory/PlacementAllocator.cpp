@@ -1,8 +1,10 @@
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/global.h>
 #include <arch/Paging.h>
+#include <kernel/debug.h>
 
 using namespace Memory;
+using namespace IO;
 
 extern unsigned int placement;
 
@@ -14,6 +16,7 @@ PlacementAllocator::PlacementAllocator()
 
 void* PlacementAllocator::Allocate(size_t len, bool pageAlign)
 {
+    PLACEMENT_DEBUG_MSG("Allocating " << dec << (unsigned)len << " Bytes " << (pageAlign?" page-aligned":""));
     unsigned int tmp;
 
     if(pageAlign && (placement_address % PAGE_SIZE != 0))

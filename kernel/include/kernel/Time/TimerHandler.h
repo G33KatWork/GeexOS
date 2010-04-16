@@ -26,7 +26,7 @@ public:
     
     void Execute(registers_t* regs)
     {
-        if(this->tm->HandleTick(&Arch::ClockSource))
+        //if(this->tm->HandleTick(&Arch::ClockSource))
             s->Schedule(regs);
     }
 };
