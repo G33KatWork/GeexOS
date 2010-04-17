@@ -5,7 +5,7 @@
 
 namespace Memory
 {
-    #define     PLACEMENT_SIZE      0x10000             //64KByte
+    #define     PLACEMENT_SIZE      0x20000             //128KByte
     
     Address GetPlacementBeginning();
     

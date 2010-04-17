@@ -39,8 +39,25 @@ namespace Arch
     
     extern "C"  void    switchToThread(ThreadInfo* info);
     
-    static inline   void    saveThreadInfo(ThreadInfo* info, registers_t* oldState)
+    static inline bool comingFromUsermode(uint32_t cs)
     {
+        return (cs & 0x3) == 0x3;
+    }
+    
+    //extern "C" void saveThreadInfo(ThreadInfo* info, registers_t* oldState);
+    static inline void saveThreadInfo(ThreadInfo* info, registers_t* oldState)
+    {
+        if(comingFromUsermode(oldState->cs))
+        {
+            info->ss = oldState->ss;
+            info->esp = oldState->useresp;
+        }
+        else
+        {
+            info->ss = GDT_KERNEL_DATA;
+            info->esp = oldState->esp + 0x14;
+        }
+        
         info->eip = oldState->eip;
         info->cs = oldState->cs;
         info->eflags = oldState->eflags;
@@ -48,7 +65,7 @@ namespace Arch
         info->ecx = oldState->ecx;
         info->edx = oldState->edx;
         info->ebx = oldState->ebx;
-        info->esp = oldState->esp + 0x14;
+        
         info->ebp = oldState->ebp;
         info->esi = oldState->esi;
         info->edi = oldState->edi;
@@ -56,7 +73,6 @@ namespace Arch
         info->es = oldState->es;
         info->fs = oldState->fs;
         info->gs = oldState->gs;
-        /*info->ss = oldState->ss;*/    //FIXME: Check this for kernel mode
     }
     
     static inline void initializeThreadInfoForKernel(ThreadInfo* threadInfo, Address initialIP, Address initialSP, Address initialBP)
@@ -79,22 +95,22 @@ namespace Arch
     
     #define printThreadInfo(info) \
         SCHEDULER_DEBUG_MSG("ThreadInfo: "); \
-        SCHEDULER_DEBUG_MSG("EIP: " << IO::hex << info->eip); \
-        SCHEDULER_DEBUG_MSG("CS: " << IO::hex << info->cs); \
-        SCHEDULER_DEBUG_MSG("EFLAGS: " << IO::hex << info->eflags); \
-        SCHEDULER_DEBUG_MSG("EAX: " << IO::hex << info->eax); \
-        SCHEDULER_DEBUG_MSG("ECX: " << IO::hex << info->ecx); \
-        SCHEDULER_DEBUG_MSG("EDX: " << IO::hex << info->edx); \
-        SCHEDULER_DEBUG_MSG("EBX: " << IO::hex << info->ebx); \
-        SCHEDULER_DEBUG_MSG("ESP: " << IO::hex << info->esp); \
-        SCHEDULER_DEBUG_MSG("EBP: " << IO::hex << info->ebp); \
-        SCHEDULER_DEBUG_MSG("ESI: " << IO::hex << info->esi); \
-        SCHEDULER_DEBUG_MSG("EDI: " << IO::hex << info->edi); \
-        SCHEDULER_DEBUG_MSG("DS: " << IO::hex << info->ds); \
-        SCHEDULER_DEBUG_MSG("ES: " << IO::hex << info->es); \
-        SCHEDULER_DEBUG_MSG("FS: " << IO::hex << info->fs); \
-        SCHEDULER_DEBUG_MSG("GS: " << IO::hex << info->gs); \
-        SCHEDULER_DEBUG_MSG("SS: " << IO::hex << info->ss);
+        SCHEDULER_DEBUG_MSG("EIP: " << IO::hex << (info.eip)); \
+        SCHEDULER_DEBUG_MSG("CS: " << IO::hex << info.cs); \
+        SCHEDULER_DEBUG_MSG("EFLAGS: " << IO::hex << info.eflags); \
+        SCHEDULER_DEBUG_MSG("EAX: " << IO::hex << info.eax); \
+        SCHEDULER_DEBUG_MSG("ECX: " << IO::hex << info.ecx); \
+        SCHEDULER_DEBUG_MSG("EDX: " << IO::hex << info.edx); \
+        SCHEDULER_DEBUG_MSG("EBX: " << IO::hex << info.ebx); \
+        SCHEDULER_DEBUG_MSG("ESP: " << IO::hex << info.esp); \
+        SCHEDULER_DEBUG_MSG("EBP: " << IO::hex << info.ebp); \
+        SCHEDULER_DEBUG_MSG("ESI: " << IO::hex << info.esi); \
+        SCHEDULER_DEBUG_MSG("EDI: " << IO::hex << info.edi); \
+        SCHEDULER_DEBUG_MSG("DS: " << IO::hex << info.ds); \
+        SCHEDULER_DEBUG_MSG("ES: " << IO::hex << info.es); \
+        SCHEDULER_DEBUG_MSG("FS: " << IO::hex << info.fs); \
+        SCHEDULER_DEBUG_MSG("GS: " << IO::hex << info.gs); \
+        SCHEDULER_DEBUG_MSG("SS: " << IO::hex << (info.ss));
 }
 
 #endif

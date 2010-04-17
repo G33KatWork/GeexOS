@@ -10,6 +10,11 @@ using namespace Arch;
 
 namespace Processes
 {
+    enum ThreadState {
+        THREAD_SLEEPING,
+        THREAD_RUNNING
+    };
+    
     class Thread
     {
         friend class Scheduler;
@@ -31,13 +36,15 @@ namespace Processes
         void SetBasePointer(Address b) { threadInfo.ebp = b; }
         Address GetInstructionPointer() { return threadInfo.eip; }
         void SetInstructionPointer(Address i) { threadInfo.eip = i; }
+        ThreadState GetThreadState() { return state; }
         
-        void Sleep();
-        void Wakeup();
+        void Sleep() { state = THREAD_SLEEPING; }
+        void Wakeup() { state = THREAD_RUNNING; }
         
     private:
         int tid;
         //unsigned char priority;
+        ThreadState state;
         ThreadInfo threadInfo;
         unsigned long timeslice;
         const char* name;

@@ -91,7 +91,7 @@ void Scheduler::Schedule(registers_t* oldState)
     //currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
     //tm->StartTimer(schedulingTimer, SCHED_TIMER_FREQUENCY);
     
-    //printThreadInfo(&currentThread->threadInfo);
+    //printThreadInfo(currentThread->threadInfo);
     
     switchToThread(&currentThread->threadInfo);
 }

@@ -54,8 +54,8 @@ switchToThread:
     mov fs,  eax
     mov eax, dword[ebx + 56]
     mov gs,  eax
-    ;mov eax, dword[ebx + 60]
-    ;mov ss,  eax               ;FIXME: HÄ? INT13?
+    mov eax, dword[ebx + 60]
+    mov ss,  eax
     
     mov eax, dword[ebx + 12]    ; finally restore eax
     
@@ -67,5 +67,5 @@ switchToThread:
     pop ebx
     
     iretd                       ; return to thread
-    
+
     

@@ -10,19 +10,10 @@ Thread::Thread(unsigned int threadId, Address initialIP, Address initialSP, Addr
 {
     tid = threadId;
     name = threadName;
+    state = THREAD_RUNNING;
     
     initializeThreadInfoForKernel(&threadInfo, initialIP, initialSP, initialBP);
     
     /*page_directory = pd;
     priority = 1;*/
-}
-
-void Thread::Sleep()
-{
-    
-}
-
-void Thread::Wakeup()
-{
-    
 }
