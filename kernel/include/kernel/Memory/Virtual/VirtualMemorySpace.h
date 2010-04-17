@@ -31,6 +31,7 @@ namespace Memory
 		void RemoveRegion(VirtualMemoryRegion* region);
 		
 		VirtualMemoryRegion* Allocate(Address address, size_t size, const char* regionName, AllocationFlags flags);
+		VirtualMemoryRegion* AllocateInRange(Address startAddress, Address endAddress, size_t size, const char* regionName, AllocationFlags flags);
         void Deallocate(VirtualMemoryRegion* region);
 		
 		VirtualMemoryRegion* FindRegionByName(const char* regionName);

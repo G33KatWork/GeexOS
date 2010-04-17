@@ -18,12 +18,12 @@
 #include <arch/scheduling.h>
 #include <kernel/ElfInformation.h>
 #include <kernel/Processes/Scheduler.h>
+#include <kernel/Processes/KernelThread.h>
+#include <arch/AddressLayout.h>
 
 #include <lib/string.h>
 
 extern      Address             bootStack;          //defined in start.S
-#define     STACK_ADDRESS       0xFFC00000          //Uppermost address we can use
-#define     STACK_SIZE          0x10000             //64KByte
 
 
 using namespace Arch;
@@ -35,29 +35,11 @@ using namespace Time;
 void syncMemregionsWithPaging(void);
 void attachExceptionHandlers(InterruptDispatcher* irqD);
 
-void foo(void)
+void foo(int arg)
 {   
     while(1)
     {
-        kdbg << "A";
-        for(int i = 0; i < 10000000; i++);
-    }
-}
-
-void bar(void)
-{   
-    while(1)
-    {
-        kdbg << "C";
-        for(int i = 0; i < 10000000; i++);
-    }
-}
-
-void baz(void)
-{   
-    while(1)
-    {
-        kdbg << "D";
+        kdbg.PrintChar((char)arg);
         for(int i = 0; i < 10000000; i++);
     }
 }
@@ -93,11 +75,11 @@ int main(MultibootInfo* multibootInfo)
     SetupArchMemRegions();
     
     //Create defined Stack and move boot stack to new position
-    VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(STACK_ADDRESS - STACK_SIZE, STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
-    Stack *kernelStack = new Stack(STACK_ADDRESS - STACK_SIZE, STACK_SIZE);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
+    Stack *kernelStack = new Stack(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE);
     kernelStack->MoveCurrentStackHere((Address)&bootStack);
     VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
-    MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << STACK_ADDRESS << " with size: " << STACK_SIZE);
+    MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << KERNEL_STACK_ADDRESS << " with size: " << KERNEL_STACK_SIZE);
     MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
     
     syncMemregionsWithPaging();
@@ -134,21 +116,11 @@ int main(MultibootInfo* multibootInfo)
     
     //VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
     
-    MAIN_DEBUG_MSG("foo");
-    
-    VirtualMemoryRegion* threadStack = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0xE000000, 0x4000, "ThreadStack", ALLOCFLAG_WRITABLE);
-    Thread* thread = new Thread(1, (Address)foo, threadStack->StartAddress() + 0x4000, threadStack->StartAddress() + 0x4000, "A thread");
-    memset((void*)threadStack->StartAddress(), 0, 0x4000);
+    KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE, "A Thread");
     Scheduler::GetInstance()->AddThread(thread);
-    
-    VirtualMemoryRegion* threadStack2 = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0xE100000, 0x4000, "ThreadStack2", ALLOCFLAG_WRITABLE);
-    Thread* thread2 = new Thread(2, (Address)bar, threadStack2->StartAddress() + 0x4000, threadStack2->StartAddress() + 0x4000, "C thread");
-    memset((void*)threadStack2->StartAddress(), 0, 0x4000);
+    KernelThread* thread2 = new KernelThread(2, foo, (int)'C', PAGE_SIZE, "C Thread");
     Scheduler::GetInstance()->AddThread(thread2);
-    
-    VirtualMemoryRegion* threadStack3 = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0xE200000, 0x4000, "ThreadStack3", ALLOCFLAG_WRITABLE);
-    Thread* thread3 = new Thread(3, (Address)baz, threadStack3->StartAddress() + 0x4000, threadStack3->StartAddress() + 0x4000, "D thread");
-    memset((void*)threadStack3->StartAddress(), 0, 0x4000);
+    KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE, "D Thread");
     Scheduler::GetInstance()->AddThread(thread3);
     
     //Initialize the scheduler
@@ -158,8 +130,6 @@ int main(MultibootInfo* multibootInfo)
     for(;;) {
         kdbg << "B";
         for(int i = 0; i < 10000000; i++);
-        
-        asm volatile("hlt");
     }
     
     return 0; 

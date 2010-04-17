@@ -2,8 +2,10 @@
 #define _ARCH_SCHEDULING_H
 
 #include <lib/types.h>
+#include <lib/string.h>
 #include <kernel/global.h>
 #include <kernel/debug.h>
+#include <arch/gdt.h>
 
 namespace Arch
 {
@@ -31,6 +33,7 @@ namespace Arch
     extern "C"  Address readStackPointer();
     extern "C"  void    writeBasePointer(Address a);
     extern "C"  Address readBasePointer();
+    extern "C"  uint32_t readEflags();
 	
     extern "C"  Address readInstructionPointer();
     
@@ -53,7 +56,25 @@ namespace Arch
         info->es = oldState->es;
         info->fs = oldState->fs;
         info->gs = oldState->gs;
-        /*info->ss = oldState->ss;*/
+        /*info->ss = oldState->ss;*/    //FIXME: Check this for kernel mode
+    }
+    
+    static inline void initializeThreadInfoForKernel(ThreadInfo* threadInfo, Address initialIP, Address initialSP, Address initialBP)
+    {
+        memset(threadInfo, 0, sizeof(ThreadInfo));
+        
+        threadInfo->eip = initialIP;
+        threadInfo->esp = initialSP;
+        threadInfo->ebp = initialBP;
+        
+        threadInfo->cs = GDT_KERNEL_CODE;
+        threadInfo->ds = GDT_KERNEL_DATA;
+        threadInfo->es = GDT_KERNEL_DATA;
+        threadInfo->fs = GDT_KERNEL_DATA;
+        threadInfo->gs = GDT_KERNEL_DATA;
+        threadInfo->ss = GDT_KERNEL_DATA;
+        
+        threadInfo->eflags = readEflags();
     }
     
     #define printThreadInfo(info) \

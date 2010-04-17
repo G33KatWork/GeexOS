@@ -23,6 +23,12 @@ readBasePointer:
     mov eax, ebp
     ret
 
+[GLOBAL readEflags]
+readEflags:
+    pushf
+    pop eax
+    ret
+
 [GLOBAL readInstructionPointer]
 readInstructionPointer:
     pop eax     ; Get the return address

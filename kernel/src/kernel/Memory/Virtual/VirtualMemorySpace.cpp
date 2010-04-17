@@ -63,6 +63,35 @@ VirtualMemoryRegion* VirtualMemorySpace::Allocate(Address address, size_t size, 
     return r;
 }
 
+VirtualMemoryRegion* VirtualMemorySpace::AllocateInRange(Address startAddress, Address endAddress, size_t size, const char* regionName, AllocationFlags flags)
+{
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Allocating a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace " << name << " in a range");
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address of range: " << hex << (unsigned)startAddress <<
+                                   " End Address of range: " << hex << (unsigned)endAddress <<
+                                   " Size: " << (unsigned)size <<
+                                   " Flags: " << (flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
+                                          " " << (flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
+                                          " " << (flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
+    
+    size_t continousFreeSpace = 0;
+    
+    for(Address curAddr = startAddress; curAddr < endAddress; curAddr += PAGE_SIZE)
+    {
+        if(continousFreeSpace >= size)
+        {
+            VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Seems we found a hole large enough to fit our request at " << hex << (unsigned)(curAddr - size));
+            return Allocate(curAddr-size, size, regionName, flags);
+        }
+        
+        if(FindRegionEnclosingAddress(curAddr) == NULL)
+            continousFreeSpace += PAGE_SIZE;
+        else
+            continousFreeSpace = 0;
+    }
+    
+    return NULL;
+}
+
 void VirtualMemorySpace::Deallocate(VirtualMemoryRegion* region)
 {
     

@@ -39,7 +39,8 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp \
 			 kernel/ElfInformation.cpp \
 			 kernel/Processes/Scheduler.cpp \
-			 kernel/Processes/Thread.cpp
+			 kernel/Processes/Thread.cpp \
+			 kernel/Processes/KernelThread.cpp
 #			 kernel/Memory/Slab/SlabManager.cpp
 
 # List Assembler to be assembled with NASM here

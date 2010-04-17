@@ -15,7 +15,7 @@ namespace Processes
         friend class Scheduler;
         
     public:
-		Thread(unsigned int id, Address initialIP, Address initialSP, Address initialBP, const char* threadName);
+		Thread(unsigned int threadId, Address initialIP, Address initialSP, Address initialBP, const char* threadName);
         
         int GetId() { return tid; }
         const char* GetName() { return name; }
