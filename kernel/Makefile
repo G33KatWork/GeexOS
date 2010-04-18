@@ -46,7 +46,8 @@ CXXSOURCES = lib/string.cpp \
 # List Assembler to be assembled with NASM here
 ASOURCES = arch/start.S \
 		   arch/interrupts_stubs.S \
-		   arch/scheduling.S
+		   arch/scheduling.S \
+		   arch/gdt_flush.S
 
 # Additional include paths to consider
 INCLUDES =	include

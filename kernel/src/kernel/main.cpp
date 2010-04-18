@@ -35,6 +35,31 @@ using namespace Time;
 void syncMemregionsWithPaging(void);
 void attachExceptionHandlers(InterruptDispatcher* irqD);
 
+void umode(int arg)
+{
+    asm volatile("  \
+         cli; \
+         movw $0x23, %ax; \
+         movw %ax, %ds; \
+         movw %ax, %es; \
+         movw %ax, %fs; \
+         movw %ax, %gs; \
+                       \
+         movl %esp, %eax; \
+         pushl $0x23; \
+         pushl %eax; \
+         pushf; \
+         pop %eax; \
+         or $0x200, %eax; \
+         push %eax; \
+         pushl $0x1B; \
+         pushl $1f; \
+         iret; \
+       1: \
+         ");
+     while(1);
+}
+
 void foo(int arg)
 {   
     while(1)
@@ -122,6 +147,19 @@ int main(MultibootInfo* multibootInfo)
     Scheduler::GetInstance()->AddThread(thread2);
     KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE, "D Thread");
     Scheduler::GetInstance()->AddThread(thread3);
+    
+    //VirtualMemoryRegion* uModeCode = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x3000000, 0x1000, "Usercode", ALLOCFLAG_WRITABLE|ALLOCFLAG_EXECUTABLE|ALLOCFLAG_USERMODE);
+    //VirtualMemoryRegion* kstack = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x4000000, 0x1000, "kstack", ALLOCFLAG_WRITABLE);
+    //Arch::gdt_set_kernel_stack(0x4000000+0x1000);
+    /*void* codeStart = (void*)uModeCode->StartAddress();
+    memcpy(codeStart, (const void*)umode, 0x1000);
+    typedef void threadfunc(int);
+    threadfunc* func;
+    char addr[] = {0x00, 0x00, 0x00, 0x3}; 
+    memcpy((void*)&func, addr, 4);
+    DEBUG_MSG("func points to " << hex << (unsigned)func);*/
+    //KernelThread* thread4 = new KernelThread(4, umode, (int)'U', PAGE_SIZE, "Umode Thread");
+    //Scheduler::GetInstance()->AddThread(thread4);
     
     //Initialize the scheduler
     Scheduler::GetInstance()->SetTimerManager(tm);

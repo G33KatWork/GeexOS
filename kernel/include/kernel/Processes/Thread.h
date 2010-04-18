@@ -20,7 +20,7 @@ namespace Processes
         friend class Scheduler;
         
     public:
-		Thread(unsigned int threadId, Address initialIP, Address initialSP, Address initialBP, const char* threadName);
+		Thread(unsigned int threadId, Address initialIP, Address initialSP, Address initialBP, const char* threadName, bool umode);
         
         int GetId() { return tid; }
         const char* GetName() { return name; }
@@ -37,18 +37,21 @@ namespace Processes
         Address GetInstructionPointer() { return threadInfo.eip; }
         void SetInstructionPointer(Address i) { threadInfo.eip = i; }
         ThreadState GetThreadState() { return state; }
+        bool IsUsermode() { return usermode; }
         
         void Sleep() { state = THREAD_SLEEPING; }
         void Wakeup() { state = THREAD_RUNNING; }
         
-    private:
+    protected:
         int tid;
         //unsigned char priority;
         ThreadState state;
         ThreadInfo threadInfo;
         unsigned long timeslice;
         const char* name;
+        bool usermode;
         
+    private:
         Thread* next;
     };
 }

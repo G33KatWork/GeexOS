@@ -7,4 +7,5 @@ log: bochsout.txt
 mouse: enabled=0
 clock: sync=realtime
 cpu: ips=500000
+com1: enabled=1, mode=file, dev=serialOut
 display_library: x, options="gui_debug"
