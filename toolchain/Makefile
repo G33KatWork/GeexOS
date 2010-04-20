@@ -4,8 +4,11 @@ include $(SRC)/build/base.mak
 TOOLCHAIN_BUILDDIR  := $(TOOLCHAIN_ROOTDIR)/build-tmp
 
 include $(SRC)/toolchain/binutils.mak
+include $(SRC)/toolchain/nasm.mak
 include $(SRC)/toolchain/gcc.mak
 include $(SRC)/toolchain/gdb.mak
+include $(SRC)/toolchain/qemu.mak
+include $(SRC)/toolchain/bochs.mak
 
 clean:
 	$(Q)if [ -n "$(TOOLCHAIN_BUILDDIR)" -a -d "$(TOOLCHAIN_BUILDDIR)" ]; then \

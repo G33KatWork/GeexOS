@@ -4,45 +4,55 @@
 #include <lib/types.h>
 #include <arch/Paging.h>
 #include <arch/hal.h>
+#include <arch/scheduling.h>
 
 using namespace Arch;
 
-#include <kernel/global.h>
-using namespace IO;
-
 namespace Processes
 {
+    enum ThreadState {
+        THREAD_SLEEPING,
+        THREAD_RUNNING
+    };
+    
     class Thread
     {
+        friend class Scheduler;
+        
     public:
-		Thread(unsigned int id, PageDirectory* pd);
+		Thread(unsigned int threadId, Address initialIP, Address initialSP, Address initialBP, const char* threadName, bool umode);
         
         int GetId() { return tid; }
-        PageDirectory* GetPageDirectory() { return page_directory; }
+        const char* GetName() { return name; }
+        /*PageDirectory* GetPageDirectory() { return page_directory; }
         void SetPageDirectory(PageDirectory* p) { page_directory = p; }
         int GetPriority() { return priority; }
-        void SetPriority(unsigned char p) { priority = p; }
+        void SetPriority(unsigned char p) { priority = p; }*/
         unsigned long GetTimeslice() { return timeslice; }
         void SetTimeslice(unsigned long t) { timeslice = t; }
-        Address GetStackPointer() { return stackPointer; }
-        void SetStackPointer(Address s) { stackPointer = s; }
-         Address GetBasePointer() { return basePointer; }
-        void SetBasePointer(Address b) { basePointer = b; }
-        Address GetInstructionPointer() { return instructionPointer; }
-        void SetInstructionPointer(Address i) { instructionPointer = i; }
+        Address GetStackPointer() { return threadInfo.esp; }
+        void SetStackPointer(Address s) { threadInfo.esp = s; }
+         Address GetBasePointer() { return threadInfo.ebp; }
+        void SetBasePointer(Address b) { threadInfo.ebp = b; }
+        Address GetInstructionPointer() { return threadInfo.eip; }
+        void SetInstructionPointer(Address i) { threadInfo.eip = i; }
+        ThreadState GetThreadState() { return state; }
+        bool IsUsermode() { return usermode; }
         
-        void Sleep();
-        void Wakeup();
-		void SwitchTo();
+        void Sleep() { state = THREAD_SLEEPING; }
+        void Wakeup() { state = THREAD_RUNNING; }
+        
+    protected:
+        int tid;
+        //unsigned char priority;
+        ThreadState state;
+        ThreadInfo threadInfo;
+        unsigned long timeslice;
+        const char* name;
+        bool usermode;
         
     private:
-        int tid;
-        unsigned char priority;
-        unsigned long timeslice;
-        PageDirectory* page_directory;
-		Address stackPointer;
-		Address basePointer;
-		Address instructionPointer;
+        Thread* next;
     };
 }
 #endif

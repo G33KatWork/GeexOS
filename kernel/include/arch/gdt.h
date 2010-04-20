@@ -4,7 +4,7 @@
 #include <lib/types.h>
 
 // count of gdt entries
-#define I86_GDT_ENTRY_COUNT			3
+#define I86_GDT_ENTRY_COUNT			6
 
 // gdt descriptor access bit flags
 #define I86_GDT_DESC_ACCESS			0x0001			//00000001
@@ -24,6 +24,8 @@
 //gdt descriptor offsets
 #define GDT_KERNEL_CODE             0x08
 #define GDT_KERNEL_DATA             0x10
+#define GDT_USER_CODE               0x18
+#define GDT_USER_DATA               0x20
 
 namespace Arch
 {
@@ -45,9 +47,14 @@ namespace Arch
 
     //defined in start.S
     extern "C" void gdt_flush(void);
+    extern "C" void tss_flush(void);
 
+    void gdt_setup(void);
     void gdt_set_descriptor(uint16_t i, uint64_t base, uint64_t limit, uint8_t access, uint8_t grand);
+    void gdt_set_tss(uint16_t i, uint16_t ss0, uint32_t esp0);
     void gdt_install(void);
+    
+    void gdt_set_kernel_stack(uint32_t esp0);
 }
 
 #endif

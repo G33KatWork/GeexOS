@@ -1,20 +1,22 @@
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/global.h>
 #include <arch/Paging.h>
+#include <kernel/debug.h>
 
 using namespace Memory;
+using namespace IO;
 
-extern unsigned int end;
+extern unsigned int placement;
 
 PlacementAllocator::PlacementAllocator()
 {
-    //FIXME: Why +0x20000? if not, it would overwrite the ELF tables used by stacktraces
-    //FIXME: Just move this thing to somewhere else...
-    placement_address = (unsigned int)&end + 0x20000;
+    //See the linker script for an exact location of placement stuff
+    placement_address = (unsigned int)&placement;
 }
 
 void* PlacementAllocator::Allocate(size_t len, bool pageAlign)
 {
+    PLACEMENT_DEBUG_MSG("Allocating " << dec << (unsigned)len << " Bytes " << (pageAlign?" page-aligned":""));
     unsigned int tmp;
 
     if(pageAlign && (placement_address % PAGE_SIZE != 0))
@@ -30,7 +32,12 @@ void* PlacementAllocator::Allocate(size_t len, bool pageAlign)
     return (void*)tmp;
 }
 
-void PlacementAllocator::Deallocate(void* UNUSED(p))
+unsigned int PlacementAllocator::GetPointerPosition()
 {
-    
+    return placement_address;
+} 
+
+Address Memory::GetPlacementBeginning()
+{
+    return (Address)&placement;
 }

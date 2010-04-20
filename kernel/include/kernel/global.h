@@ -2,36 +2,9 @@
 #define _GLOBAL_H
 
 #include <lib/types.h>
-#include <kernel/IO/Monitor.h>
-#include <kernel/IO/SerialConsole.h>
-#include <kernel/Memory/MemoryManager.h>
-
-//Comment out for on screen debugging
-//#define     SERIAL_DEBUG
-
-extern class Memory::MemoryManager memoryManager;
-
-#ifdef SERIAL_DEBUG
-    extern class IO::SerialConsole kdbg;
-#else
-    extern class IO::Monitor kdbg;
-#endif
 
 #define ASSERT(b, msg)      ((b) ? (void)0 : panic_assert(__FILE__, __LINE__, #b, #msg))
 #define PANIC(msg)          panic(msg)
-
-#ifdef DEBUG
-#define DEBUG_MSG(msg) \
-{ \
-    Color foreground = kdbg.GetForeground(); \
-    kdbg.SetForeground(LightBlue); \
-    kdbg.PrintString("[DEBUG] "); \
-    kdbg << msg << endl; \
-    kdbg.SetForeground(foreground); \
-}
-#else
-#define DEBUG_MSG(msg)
-#endif
 
 #ifdef UNUSED 
 #elif defined(__GNUC__) 
@@ -58,5 +31,7 @@ void operator delete(void *p, bool pageAllocation);
 
 void* kmalloc(size_t size);
 void kfree(void* p);
+
+unsigned int getPlacementPointer();
 
 #endif

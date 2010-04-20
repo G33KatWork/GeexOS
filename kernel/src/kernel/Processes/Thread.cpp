@@ -1,27 +1,20 @@
 #include <kernel/Processes/Thread.h>
 #include <arch/scheduling.h>
+#include <kernel/debug.h>
+#include <lib/string.h>
 
 using namespace Arch;
 using namespace Processes;
 
-Thread::Thread(unsigned int id, PageDirectory* pd)
+Thread::Thread(unsigned int threadId, Address initialIP, Address initialSP, Address initialBP, const char* threadName, bool umode/*, PageDirectory* pd*/)
 {
-    tid = id;
-    page_directory = pd;
-    priority = 1;
-}
-
-void Thread::Sleep()
-{
+    tid = threadId;
+    name = threadName;
+    state = THREAD_RUNNING;
+    usermode = umode;
     
-}
-
-void Thread::Wakeup()
-{
+    initializeThreadInfoForKernel(&threadInfo, initialIP, initialSP, initialBP);
     
-}
-
-void Thread::SwitchTo()
-{
-	
+    /*page_directory = pd;
+    priority = 1;*/
 }

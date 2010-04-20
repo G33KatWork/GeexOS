@@ -3,13 +3,6 @@ include $(SRC)/build/base.mak
 
 STARTTIME := $(shell date +%s)
 
-#Programs
-BOCHSMACOS = resources/bochs.app/Contents/MacOS/bochs
-#BOCHSMACOS = /opt/local/share/bochs/bochs.app/Contents/MacOS/bochs
-#BOCHSMACOS = /usr/local/bochs/bin/bochs
-BOCHS = /usr/bin/bochs
-QEMU = qemu
-
 # Main targets
 all: kernel servers drivers applications
 	$(call cmd_msg,NOTICE,Build completed in $$(($$(date +%s)-$(STARTTIME))) seconds)
@@ -73,32 +66,22 @@ utils/geninitramfs:
 # Start bochs
 bochs: bootfloppy
 	$(call cmd_msg,BOCHS,floppy.img)
-ifeq ($(shell uname),Darwin)
-	$(Q)$(BOCHSMACOS) -f resources/bochsrc.macos.txt -q $(QOUTPUT)
-else
 	$(Q)$(BOCHS) -f resources/bochsrc.txt -q $(QOUTPUT)
-endif
-
-# Start bochs with debugging support
-bochsdebug: bootfloppy
-	$(call cmd_msg,BOCHSDBG,floppy.img)
-ifeq ($(shell uname),Darwin)
-	$(Q)$(BOCHSMACOS) -f resources/bochsrcgdb.macos.txt -q $(QOUTPUT)
-else
-	$(Q)$(BOCHS) -f resources/bochsrcgdb.txt -q $(QOUTPUT)
-endif
-	$(Q)sleep 2
-	$(call cmd_msg,GDB,Attaching debugger)
 
 # Start qemu
 qemu: bootfloppy
 	$(call cmd_msg,QEMU,floppy.img)
-	$(Q)$(QEMU) -fda floppy.img -serial file:serialOut $(QOUTPUT)
+	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut $(QOUTPUT)
 
 qemudebug: bootfloppy
 	$(call cmd_msg,QEMU,floppy.img)
 	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
-	$(Q)$(QEMU) -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
+	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
+
+# Start VMware Fusion
+vmware: bootfloppy
+	$(call cmd_msg,VMWARE,floppy.img)
+	$(Q)/Library/Application\ Support/VMware\ Fusion/vmrun -T fusion start resources/vmware.vmx $(QOUTPUT)
 
 # Cleaning
 clean:

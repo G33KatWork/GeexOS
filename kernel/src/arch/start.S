@@ -12,7 +12,7 @@ FLAGS              equ        MODULEALIGN | MEMINFO
 MAGIC              equ        0x1BADB002
 CHECKSUM           equ        -(MAGIC + FLAGS)
 
-STACKSIZE          equ        0x1000            ; 16k initial stack - will be moved later
+STACKSIZE          equ        0x400 ; 1k initial stack - will be moved later
 
 section .multibootHeader       ; Next is the Grub Multiboot Header
 align 4
@@ -70,25 +70,6 @@ static_ctors_loop:				; Call constructors
     
     pop ebx
     ret
-
-;---------------------------------------------------------------------------------------------
-
-global gdt_flush
-extern gp
-
-; load the real gdt
-gdt_flush:
-	lgdt [gp]
-	mov ax, 0x10
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-	jmp 0x08:flush2
-
-flush2:
-	ret
 
 ;---------------------------------------------------------------------------------------------
 

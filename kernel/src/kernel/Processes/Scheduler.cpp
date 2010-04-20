@@ -1,16 +1,30 @@
 #include <kernel/Processes/Scheduler.h>
 #include <kernel/Time/TimerManager.h>
 #include <arch/scheduling.h>
+#include <kernel/debug.h>
 
 using namespace Processes;
 using namespace Arch;
 using namespace Time;
+using namespace IO;
 
-static bool scheduleTimerHandler(void)
+#define     SCHED_TIMER_FREQUENCY       10000000
+#define     SCHED_THREAD_TIMESLICE      10000000
+
+//FIXME: Make timer timers work again by fixing the List in TimerManager not being a memory eating monster
+
+/*static bool scheduleTimerHandler(void)
 {
-    Scheduler::GetInstance()->GetCurrentThread()->SetTimeslice(0);
-    return true; //force scheduling
-}
+    Thread* curThread = Scheduler::GetInstance()->GetCurrentThread();
+    curThread->SetTimeslice(curThread->GetTimeslice() - SCHED_TIMER_FREQUENCY);
+    
+    SCHEDULER_DEBUG_MSG("Timeslice of current thread: " << dec << (unsigned)curThread->GetTimeslice());
+    
+    if(curThread->GetTimeslice() <= 0)
+        return true; //force scheduling
+    else
+        return false;
+}*/
 
 Scheduler* Scheduler::instance = NULL;
 
@@ -22,76 +36,77 @@ Scheduler* Scheduler::GetInstance()
     return instance;
 }
 
-static bool threadLessThan(Thread* UNUSED(t1), Thread* UNUSED(t2))
-{
-    //just return true to get the old thread positioned
-    //at the end of the queue for now
-    return true;
-}
-
 Scheduler::Scheduler()
 {
-    threadQueue = new OrderedArray<Thread*, 128>();
-    threadQueue->SetPredicate(threadLessThan);
-    
-    //TODO: Last argument is pagedirectory!!!
-    kernelThread = new Thread(1, NULL);
-    currentThread = kernelThread;
-    
-    schedulingTimer = new Timer(FUNCTION, scheduleTimerHandler, NULL);
-    
-    tm = NULL;
-    
-    //DEBUG_MSG("Scheduler initialized");
-}
-
-void Scheduler::Schedule()
-{   
     DisableInterrupts();
     
-    //check if we have a timer manager
-    ASSERT(tm != NULL, "TimerManager is NULL");
+    kernelThread = new Thread(0, 0, 0, 0, "Kernel thread", false);
+    kernelThread->next = NULL;
+    listHead = kernelThread;
+    currentThread = kernelThread;
     
-    if (threadQueue->GetSize())
-    {
-		currentThread->SetStackPointer(readStackPointer());
-		currentThread->SetBasePointer(readBasePointer());
-		Address instructionPointer = readInstructionPointer();
-		
-		//If IP is 0x20 we just returned from a context switch...
-		if(instructionPointer == 0x20)
-		{
-			return;
-		}
-	
-		currentThread->SetInstructionPointer(instructionPointer);
-		
-		//Enqueue current thread
-        threadQueue->Insert(currentThread);
-
-		//Get next thread
-		//TODO: Check status if zombie, blocked etc. and schedule only runnable tasks
-		Thread *next = threadQueue->ItemAt(0);
-		threadQueue->RemoveAt(0);
-		currentThread = next;
-	
-        //Calculate new timeslice (in nanoseconds)
-        //TODO: use real algorithm...
-        currentThread->SetTimeslice(10000000);
-        tm->StartTimer(schedulingTimer, 10000000);
-
-		currentThread->SwitchTo();
-    }
+    //schedulingTimer = new Timer(FUNCTION, scheduleTimerHandler, NULL);
     
-    //Add your code that should be executed after a wakeup here
-    //kout << "post";
+    tm = NULL;
+    nextId = 1;
+    
+    SCHEDULER_DEBUG_MSG("Scheduler initialized");
     
     EnableInterrupts();
 }
 
-int Scheduler::Fork()
+void Scheduler::SetTimerManager(TimerManager* t)
 {
-    //TODO: Implement fork()
-    return 0;
+    tm = t;
+    //currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
+    //tm->StartTimer(schedulingTimer, SCHED_TIMER_FREQUENCY);
 }
 
+void Scheduler::AddThread(Thread* thread)
+{
+    thread->next = listHead;
+    listHead = thread;
+}
+
+void Scheduler::Schedule(registers_t* oldState)
+{
+    SCHEDULER_DEBUG_MSG("Entering scheduler");
+    DisableInterrupts();
+    
+    saveThreadInfo(&currentThread->threadInfo, oldState);
+    
+    if(tm == NULL) return;
+    //check if we have a timer manager
+    ASSERT(tm != NULL, "TimerManager is NULL");
+    
+    Thread *next;
+    if(currentThread->next == NULL)
+        next = listHead;
+    else
+        next = currentThread->next;
+
+	SCHEDULER_DEBUG_MSG("Picking thread " << next->GetName());
+	currentThread = next;
+    
+    //currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
+    //tm->StartTimer(schedulingTimer, SCHED_TIMER_FREQUENCY);
+    
+    //printThreadInfo(currentThread->threadInfo);
+    
+    switchToThread(&currentThread->threadInfo);
+}
+
+void Scheduler::DumpThreads(CharacterOutputDevice& c)
+{
+    for(Thread* curThread = listHead; curThread != NULL; curThread = curThread->next)
+    {
+        c << "SCHEDULER: " << "\tThread ID: " << dec << curThread->GetId() << endl;
+        c << "SCHEDULER: " << "\tThread Name: " << curThread->GetName() << endl;
+        c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << (unsigned)curThread->GetInstructionPointer() << endl;
+        c << "SCHEDULER: " << "\tStack Pointer: " << (unsigned)curThread->GetStackPointer() << endl;
+        c << "SCHEDULER: " << "\tBase Pointer: " << (unsigned)curThread->GetBasePointer() << endl;
+        c << "SCHEDULER: " << "\tTimeslice: " << dec << (unsigned)curThread->GetTimeslice() << endl;
+        
+        c << endl;
+    }
+}

@@ -3,6 +3,7 @@
 #include <arch/Paging.h>
 #include <arch/scheduling.h>
 #include <lib/string.h>
+#include <kernel/utils/DebuggingSymbols.h>
 #include <kernel/debug.h>
 
 using namespace Memory;
@@ -11,6 +12,8 @@ using namespace IO;
 
 Stack::Stack(Address end, size_t s)
 {
+    STACK_DEBUG_MSG("Creating stack at " << hex << (unsigned)end << " with size " << (unsigned)s);
+    
     ASSERT(end % PAGE_SIZE == 0, "Stack end (lowermost address) must be page aligned");
     ASSERT((end + s) % PAGE_SIZE == 0, "Stack beginning (uppermost address) must be page aligned");
     
@@ -18,27 +21,25 @@ Stack::Stack(Address end, size_t s)
     this->size = s;
 }
 
-void Stack::AllocateSpace()
-{
-    //Assign space to our defined addresses
-    size_t i = 0;
-    while(i < size)
-    {
-        Address newFrame = memoryManager.AllocateFrame();
-        Paging::GetInstance()->MapAddress(endAddr + i, newFrame, true, false);
-        i += PAGE_SIZE;
-    }
-}
-
 void Stack::MoveCurrentStackHere(Address initialESP)
 {
+    STACK_DEBUG_MSG("Moving stack from " << (unsigned)initialESP);
+    
     Address oldStackPointer = readStackPointer();
     Address oldBasePointer = readBasePointer();
     
+    STACK_DEBUG_MSG("Old Stackpointer: " << (unsigned)oldStackPointer);
+    STACK_DEBUG_MSG("Old Basepointer: " << (unsigned)oldBasePointer);
+    
     Address offset = GetStartAddress() - initialESP;
+    
+    STACK_DEBUG_MSG("Offset between old and new Stack: " << (unsigned)offset);
     
     Address newStackPointer = oldStackPointer + offset;
     Address newBasePointer = oldBasePointer + offset;
+    
+    STACK_DEBUG_MSG("New Stackpointer: " << (unsigned)newStackPointer);
+    STACK_DEBUG_MSG("New Basepointer: " << (unsigned)newBasePointer);
     
     //Copy the stack
     memcpy((void*)newStackPointer, (const void*)oldStackPointer, initialESP - oldStackPointer);
@@ -58,6 +59,8 @@ void Stack::MoveCurrentStackHere(Address initialESP)
 
     writeStackPointer(newStackPointer);
     writeBasePointer(newBasePointer);
+    
+    STACK_DEBUG_MSG("Now living on new stack.");
 }
 
 void Stack::PrintStacktrace(unsigned int n)

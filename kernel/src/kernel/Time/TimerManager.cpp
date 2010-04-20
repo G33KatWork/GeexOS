@@ -6,7 +6,7 @@
 using namespace Time;
 using namespace DataStructures;
 
-#include <kernel/global.h>
+#include <kernel/debug.h>
 using namespace IO;
 
 void TimerManager::prepareClock(unsigned long ns)
@@ -45,17 +45,17 @@ bool TimerManager::HandleTick(ClockSource_t *source)
     
     if(source != clockSource)
         PANIC("Unexpected clock source!");
-    //kout << "TickTack" << endl;
+    //kdbg << "TickTack" << endl;
     int i = 0;
     Timer *t = currentTimers->getAt(i);
-    //kout << (t == NULL ? "t = NULL" : " t != NULL") << endl;
+    //kdbg << (t == NULL ? "t = NULL" : " t != NULL") << endl;
     
     while(t != NULL)
     {
         if(tickLen < t->GetLength())
         {
             t->SetLength(t->GetLength() - tickLen); //decrement time until timer expires
-            //kout << "drecemented lengt to " << dec << (unsigned int)t->GetLength() << endl;
+            TIMER_MGR_DEBUG_MSG("Drecemented remaining time of timer to " << dec << (unsigned int)t->GetLength());
             
             i++;
             t = currentTimers->getAt(i);
@@ -66,6 +66,7 @@ bool TimerManager::HandleTick(ClockSource_t *source)
         currentTimers->remove(t);
         t->SetLength(0);
         bool ret = t->timerExpired();
+        TIMER_MGR_DEBUG_MSG("A timer expired");
         
         if(!needScheduling)
             needScheduling = ret;
@@ -75,11 +76,18 @@ bool TimerManager::HandleTick(ClockSource_t *source)
     }
     
     prepareClock(tickLen);
+    
+    #ifdef EN_TIMER_MGR_DEBUG_MSG
+    if(needScheduling)
+        TIMER_MGR_DEBUG_MSG("At least one timer requested scheduling");
+    #endif
+    
     return needScheduling;
 }
 
 void TimerManager::StartTimer(Timer* t, unsigned long length)
 {
+    TIMER_MGR_DEBUG_MSG("A new timer with length of " << (unsigned)length << " was started");
     t->SetLength(length);
     currentTimers->append(t);
 }

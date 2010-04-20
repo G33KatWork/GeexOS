@@ -6,6 +6,7 @@
 #include <kernel/DataStructures/OrderedArray.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/Time/TimerManager.h>
+#include <kernel/IO/CharacterOutputDevice.h>
 
 using namespace DataStructures;
 using namespace Time;
@@ -17,23 +18,26 @@ namespace Processes
     public:
         static Scheduler* GetInstance();
         
-        void Schedule();
-        int Fork();
-        
-        void SetTimerManager(TimerManager* t) { tm = t; }
+        void Schedule(registers_t* oldState);
+        void SetTimerManager(TimerManager* t);
         
         Thread* GetCurrentThread() { return currentThread; }
+        
+        void DumpThreads(IO::CharacterOutputDevice& c);
+        
+        void AddThread(Thread* thread);
         
     private:
         static Scheduler* instance;
         
-        //FIXME: Use dynamic array
-        OrderedArray<Thread*, 128> *threadQueue;
+        Thread* listHead;
         Thread* currentThread;
         Thread* kernelThread;
         
-        Timer* schedulingTimer;
+        //Timer* schedulingTimer;
         TimerManager* tm;
+        
+        unsigned int nextId;
         
         Scheduler();
     };

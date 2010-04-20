@@ -2,14 +2,13 @@
 #define PHYSICAL_MEMORY_MANAGER_H_
 
 #include <lib/types.h>
-#include <kernel/Memory/IPhysicalMemoryManager.h>
 
 namespace Memory
 {
-    class BitfieldPhysicalMemoryManager : public IPhysicalMemoryManager
+    class BitfieldPhysicalMemoryManager
     {
     public:
-        BitfieldPhysicalMemoryManager(unsigned int memorySize);
+        BitfieldPhysicalMemoryManager(size_t memorySize);
         Address AllocateFrame();
         void DeallocateFrame(Address physAddr);
         

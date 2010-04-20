@@ -1,33 +1,61 @@
 #include <kernel/global.h>
 #include <kernel/multiboot.h>
-#include <lib/string.h>
-#include <kernel/elf32.h>
 
 using namespace Kernel;
 
-Multiboot::Multiboot(MultibootHeader *h)
+#define ALIGN_UP(addr, align) \
+	((addr + (typeof (addr)) align - 1) & ~((typeof (addr)) align - 1))
+
+Multiboot::Multiboot(MultibootInfo *i)
 {
-    header = h;
-    symtab = NULL;
-    strtab = NULL;
+    info = i;
 	
     if(!IsElf()) PANIC("Kernel is not ELF-compatible!");
-    
-    //Find symtab/strtab sections
-    Elf32SectionHeader *shstrtab = (Elf32SectionHeader *)(header->elf_addr + header->elf_shndx * header->elf_size);
-    
-    for(unsigned int i = 0; i < header->elf_num; i++)
-    {
-        Elf32SectionHeader *sh = (Elf32SectionHeader *)(header->elf_addr + i * header->elf_size);
-        
-        if(sh->type == SHT_SYMTAB)
-            symtab = sh;
-        else if(sh->type == SHT_STRTAB)
-        {
-            char *c = (char *)(shstrtab->addr + sh->name);
-
-            if(!strcmp(c, ".strtab"))
-                strtab = sh;
-        }
-    }
 }
+
+/*size_t Multiboot::GetSize()
+{
+    //struct itself
+    size_t size = sizeof(struct multiboot_info);
+    
+    //commandline
+    if(info->flags & MULTIBOOT_FLAG_CMDLINE)
+        size += ALIGN_UP(strlen((char*)info->cmdLine), 4);
+    
+    //modules + commandline each
+    if(info->flags & MULTIBOOT_FLAG_MODS)
+    {
+        size += info->modsCount * sizeof(multiboot_module_region_t);
+        size_t mod_cmdLine_size = 0;
+        for(size_t i = 0; i < info->modsCount; ++i)
+            mod_cmdLine_size += ALIGN_UP(strlen((char*)info->modsAddr[i].cmdLine), 4);
+        size += mod_cmdLine_size;
+    }
+    
+    //memory regions
+    if(info->flags & MULTIBOOT_FLAG_MMAP)
+        size += info->mmap_length * sizeof(multiboot_memory_region_t);
+    
+    //drives
+    if(info->flags & MULTIBOOT_FLAG_DRIVES)
+    {
+        size_t drives_length = 0;
+        for(size_t i = 0; i < info->drives_length; ++i)
+            drives_length += info->drives_addr[i].size;    //TODO: ALIGN_UP by 4?
+        size += drives_length;
+    }
+    
+    //TODO: config_table??
+    
+    //bootloader name
+    if(info->flags & MULTIBOOT_FLAG_LOADER)
+        size += ALIGN_UP(strlen((char*)info->bootloader_name), 4);
+        
+    //apm table
+    if(info->flags & MULTIBOOT_FLAG_APM)
+        size += sizeof(multiboot_apm_region_t);
+        
+    //TODO: VBE table???
+    
+    return size;
+}*/

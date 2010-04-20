@@ -5,6 +5,9 @@
 #include <arch/pit.h>
 #include <arch/clock_source.h>
 
+#define     BIOS_ADDRESS        0x0
+#define     BIOS_SIZE           0x10000
+
 namespace Arch
 {
     void InitializeCPU();
@@ -19,6 +22,8 @@ namespace Arch
     {
         PIT::GetInstance()->Initialize(1000); //1000Hz
     }
+    
+    void SetupArchMemRegions(void);
     
     extern ClockSource_t ClockSource;
 }

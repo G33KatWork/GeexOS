@@ -2,172 +2,200 @@
 #include <kernel/IO/Monitor.h>
 #include <kernel/global.h>
 #include <kernel/multiboot.h>
-#include <kernel/debug.h>
-#include <arch/Paging.h>
+#include <kernel/utils/DebuggingSymbols.h>
 #include <arch/PageFaultHandler.h>
 #include <kernel/Memory/PlacementAllocator.h>
-#include <kernel/Memory/BitfieldPhysicalMemoryManager.h>
-#include <kernel/Memory/Heap.h>
 #include <arch/interrupts.h>
-#include <kernel/Processes/Scheduler.h>
-#include <kernel/Processes/Thread.h>
 #include <kernel/IInterruptServiceRoutine.h>
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/Memory/Stack.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <kernel/Memory/Virtual/VirtualMemorySpace.h>
+#include <arch/ExceptionHandler.h>
+#include <kernel/Time/TimerHandler.h>
+#include <arch/KeyboardHandler.h>
+#include <arch/scheduling.h>
+#include <kernel/ElfInformation.h>
+#include <kernel/Processes/Scheduler.h>
+#include <kernel/Processes/KernelThread.h>
+#include <arch/AddressLayout.h>
 
-//see doc/memory_layout.txt
-#define     KHEAP_LOCATION      0xC0400000
-#define     KHEAP_MAX_SIZE      512 * 1024 * 1024
-#define     KHEAP_INITIAL_SIZE  1 * 1024
+#include <lib/string.h>
 
-#define     KSTACK_LOCATION     0xE0400000
-#define     KSTACK_SIZE         16 * 1024
+extern      Address             bootStack;          //defined in start.S
 
-extern      Address             bootStack;
-#define     BOOTSTACK_SIZE      0x1000              //change this in start.S, too!
 
 using namespace Arch;
 using namespace Kernel;
-using namespace IO;
 using namespace Memory;
 using namespace Processes;
 using namespace Time;
 
-class InvalidOpcodeHandler : public IInterruptServiceRoutine
-{
-public:
-    void Execute(registers_t *regs)
-    {
-        DEBUG_MSG("Invalid Opcode: EIP: " << hex << (unsigned) regs->eip);
-        PANIC("Invalid opcode!");
-        for(;;);
-    }
-};
+void syncMemregionsWithPaging(void);
+void attachExceptionHandlers(InterruptDispatcher* irqD);
 
-class ExceptionHandler : public IInterruptServiceRoutine
+void umode(int arg)
 {
-public:
-    void Execute(registers_t *regs)
-    {
-        DEBUG_MSG("Exception " << dec << regs->int_no << ": EIP: " << hex << (unsigned) regs->eip);
-        PANIC("Unhandled exception!");
-        for(;;);
-    }
-};
-
-class TimerHandler : public IInterruptServiceRoutine
-{
-private:
-    TimerManager *tm;
-    
-public:
-    TimerHandler(TimerManager* timerManager)
-    {
-        tm = timerManager;
-    }
-    
-    void Execute(registers_t* UNUSED(regs))
-    {
-        if(this->tm->HandleTick(&Arch::ClockSource))
-            Scheduler::GetInstance()->Schedule();
-    }
-};
-
-bool timerExpired(void)
-{
-    DEBUG_MSG("The timer has expired");
-    return false; //should the scheduler pick a new process?
+    asm volatile("  \
+         cli; \
+         movw $0x23, %ax; \
+         movw %ax, %ds; \
+         movw %ax, %es; \
+         movw %ax, %fs; \
+         movw %ax, %gs; \
+                       \
+         movl %esp, %eax; \
+         pushl $0x23; \
+         pushl %eax; \
+         pushf; \
+         pop %eax; \
+         or $0x200, %eax; \
+         push %eax; \
+         pushl $0x1B; \
+         pushl $1f; \
+         iret; \
+       1: \
+         ");
+     while(1);
 }
 
-class KeyboardHandler : public IInterruptServiceRoutine
-{
-private:
-    TimerManager *tm;
-    
-public:
-    KeyboardHandler(TimerManager* timerManager)
+void foo(int arg)
+{   
+    while(1)
     {
-        tm = timerManager;
-    }
-    
-    void Execute(registers_t* UNUSED(regs))
-    {
-        Timer *t = new Timer(FUNCTION, timerExpired, NULL);
-        tm->StartTimer(t, 1000000000);
-        DEBUG_MSG("Timer started");
-    }
-};
-
-void thread(void* arg)
-{
-    kdbg << "Thread 1 start... Arg: " << (char *)arg << endl;
-    
-    for(;;)
-    {
-        kdbg << "b";
+        kdbg.PrintChar((char)arg);
+        for(int i = 0; i < 10000000; i++);
     }
 }
 
-void thread2(void* arg)
-{
-    kdbg << "Thread 2 start... Arg: " << (char *)arg << endl;
-    
-    for(;;)
-    {
-        kdbg << "a";
-    }
-}
-
-int main(MultibootHeader* multibootInfo)
-{
-    PlacementAllocator placementAllocator = PlacementAllocator();
-    memoryManager.SetAllocator(&placementAllocator);
-    
+int main(MultibootInfo* multibootInfo)
+{   
     //Prepare monitor output
     kdbg.Clear();
-    
-    //Setup temporary bootstack - will be moved later when we have full blown paging
-    DEBUG_MSG("Initial boot stackpointer is: " << hex << (unsigned)&bootStack);
-    Stack bStack = Stack((Address)&bootStack, BOOTSTACK_SIZE);
-    memoryManager.SetKernelStack(&bStack);
-    
-    //Initialize paging
-    Paging::GetInstance()->Init();
-    DEBUG_MSG("Paging initialized...");
+    MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
     //Flush GDT and initialize IDT (Interrupts)
     InitializeCPU();
-    DEBUG_MSG("CPU and Interrupts initialized...");
+    MAIN_DEBUG_MSG("CPU and Interrupt tables initialized...");
     
     //Get information about environment from GRUB
-    DEBUG_MSG("Multiboot structure is at " << hex << (unsigned)multibootInfo);
+    MAIN_DEBUG_MSG("Multiboot structure is at " << hex << (unsigned)multibootInfo);
     Multiboot m = Multiboot(multibootInfo);
     
-    //Give our memory manager some information about the installed RAM
-    //The allocator is needed by the Paging class to get space for its page
-    //directory and page table objects
-    //TODO: use memory map
-    DEBUG_MSG("Installed amount of memory seems to be " << dec << m.GetLowerMemory() + m.GetUpperMemory() << "KB");
-    BitfieldPhysicalMemoryManager *pm = new BitfieldPhysicalMemoryManager(m.GetLowerMemory() + m.GetUpperMemory());
-    memoryManager.SetPhysicalMemoryManager(pm);
-    DEBUG_MSG("Frame allocator initialized...");
+    //Initialize Memory
+    VirtualMemoryManager::GetInstance()->Init(m.GetLowerMemory() + m.GetUpperMemory());
     
-    DEBUG_MSG("Setting up new stack at " << hex << KSTACK_LOCATION << " with size of " << dec << KSTACK_SIZE/1024 << " KB");
-    Stack *stack = new Stack(KSTACK_LOCATION, KSTACK_SIZE);
-    stack->AllocateSpace();
-    stack->MoveCurrentStackHere((Address)&bootStack);
-    memoryManager.SetKernelStack(stack);
-    DEBUG_MSG("Stack seems to be successfully moved...");
+    //Build virtual memory space for kernel ELF
+    VirtualMemoryManager::GetInstance()->KernelSpace(new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace"));
+    
+    //Parse ELF-Stuff delivered from GRUB and create .text, .data, .rodata, .bss and .placement sections in kernel space
+    ElfInformation* elfInfo = new ElfInformation(m.GetELFAddress(), m.GetELFshndx(), m.GetELFSize(), m.GetELFNum());
+    
+    //Announce region for multiboot structure
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(m.GetAddress() & IDENTITY_POSITION, 2*PAGE_SIZE, "Multiboot information", ALLOCFLAG_NONE);
+    
+    //Create Arch-specific memory regions in kernel space
+    //On x86: Framebuffer for textmode and lowest 64K for BIOS
+    SetupArchMemRegions();
+    
+    //Create defined Stack and move boot stack to new position
+    VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
+    Stack *kernelStack = new Stack(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE);
+    kernelStack->MoveCurrentStackHere((Address)&bootStack);
+    VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
+    MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << KERNEL_STACK_ADDRESS << " with size: " << KERNEL_STACK_SIZE);
+    MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
+    MAIN_DEBUG_MSG("Phys addr: " << hex << (unsigned)Paging::GetInstance()->GetPhysicalAddress(0xC0000000));
+    syncMemregionsWithPaging();
     
     //Init symtab and strtab for stacktraces
-    Debug::stringTable = m.StrtabStart();
-    Debug::symbolTable = m.SymtabStart();
+    //FIXME: Somehow get those strintables accessible again
+    Debug::stringTable = elfInfo->GetSection(".strtab");
+    Debug::symbolTable = elfInfo->GetSection(".symtab");
     
-    DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
+    MAIN_DEBUG_MSG("Multiboot structure address: " << hex << (unsigned)m.GetAddress());
+    MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
-    //Configure interrupt dispatcher
     InterruptDispatcher* irqD = InterruptDispatcher::GetInstance();
+    attachExceptionHandlers(irqD);
+    MAIN_DEBUG_MSG("Interrupt dispatcher initialized...");
+    
+    //Init timer
+    InitializeTimer();
+    TimerManager *tm = new TimerManager(&Arch::ClockSource);
+    irqD->RegisterHandler(IRQ_TIMER, new TimerHandler(tm, Scheduler::GetInstance()));
+    MAIN_DEBUG_MSG("Timer initialized...");
+    
+    Arch::EnableInterrupts();
+    MAIN_DEBUG_MSG("Interrupts enabled...");
+    
+    //Make it crash
+    //int* a = (int*)0x100000;
+    //*a = 0x41414141;
+    
+    irqD->RegisterHandler(IRQ_KEYBOARD, new KeyboardHandler());
+    Arch::UnmaskIRQ(IRQ_KEYBOARD);
+    
+    MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
+    
+    //VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
+    
+    KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE, "A Thread");
+    Scheduler::GetInstance()->AddThread(thread);
+    KernelThread* thread2 = new KernelThread(2, foo, (int)'C', PAGE_SIZE, "C Thread");
+    Scheduler::GetInstance()->AddThread(thread2);
+    KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE, "D Thread");
+    Scheduler::GetInstance()->AddThread(thread3);
+    
+    //VirtualMemoryRegion* uModeCode = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x3000000, 0x1000, "Usercode", ALLOCFLAG_WRITABLE|ALLOCFLAG_EXECUTABLE|ALLOCFLAG_USERMODE);
+    //VirtualMemoryRegion* kstack = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x4000000, 0x1000, "kstack", ALLOCFLAG_WRITABLE);
+    //Arch::gdt_set_kernel_stack(0x4000000+0x1000);
+    /*void* codeStart = (void*)uModeCode->StartAddress();
+    memcpy(codeStart, (const void*)umode, 0x1000);
+    typedef void threadfunc(int);
+    threadfunc* func;
+    char addr[] = {0x00, 0x00, 0x00, 0x3}; 
+    memcpy((void*)&func, addr, 4);
+    DEBUG_MSG("func points to " << hex << (unsigned)func);*/
+    //KernelThread* thread4 = new KernelThread(4, umode, (int)'U', PAGE_SIZE, "Umode Thread");
+    //Scheduler::GetInstance()->AddThread(thread4);
+    
+    //Initialize the scheduler
+    Scheduler::GetInstance()->SetTimerManager(tm);
+    //Scheduler::GetInstance()->DumpThreads(kdbg);
+    
+    for(;;) {
+        kdbg << "B";
+        for(int i = 0; i < 10000000; i++);
+    }
+    
+    return 0; 
+}
+
+void syncMemregionsWithPaging(void)
+{
+    //Whilst initialization of the paging, we allocated the lowermost 4MB for our purposes.
+    //Now, that we arranged all our needs regarding to memory with the help of our marvellous
+    //virtual memory management, we don't need the whole 4MB.
+    //What we do now is a major cleanup. We need to synchronize the regions which are really allocated
+    //and needed within our virtual memory space with the paging.
+    //Sine we only have a kernel space at this time, we don't bother about other spaces. There are simply none.
+    /*for(Address i = 0xC0000000; i < 4*1024*1024+0xC0000000; i += PAGE_SIZE)
+    {
+        if(VirtualMemoryManager::GetInstance()->KernelSpace()->FindRegionEnclosingAddress(i) == NULL)
+        {
+            Address physicalAddr = Paging::GetInstance()->GetPhysicalAddress(i);
+            MAIN_DEBUG_MSG("Virtual address " << hex << (unsigned)i << " pointing to physical " << (unsigned)physicalAddr << " doesn't seem to contain a region.");
+            
+            Paging::GetInstance()->UnmapAddress(i);
+            VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(physicalAddr);
+        }
+    }*/
+}
+
+void attachExceptionHandlers(InterruptDispatcher* irqD)
+{
     irqD->RegisterHandler(14, new PageFaultHandler());
     irqD->RegisterHandler(6, new InvalidOpcodeHandler());
     ExceptionHandler *ex = new ExceptionHandler();
@@ -186,54 +214,4 @@ int main(MultibootHeader* multibootInfo)
     irqD->RegisterHandler(13, ex);
     irqD->RegisterHandler(15, ex);
     irqD->RegisterHandler(16, ex);
-    DEBUG_MSG("Interrupt dispatcher initialized...");
-
-    DEBUG_MSG("Setting up heap, starting at " << hex << KHEAP_LOCATION << " with maximum size of " << dec << KHEAP_MAX_SIZE/1024 << "KB and an initial size of " << KHEAP_INITIAL_SIZE/1024 << "KB");
-    Heap *h = new Heap(KHEAP_LOCATION, KHEAP_MAX_SIZE, KHEAP_INITIAL_SIZE);
-    
-    int *a = (int*)h->Allocate(sizeof(int), false);
-    int *b = (int*)h->Allocate(sizeof(int), false);
-    DEBUG_MSG("Allocated 2 integer on heap: A: " << hex << (unsigned)a << " B: " << (unsigned)b);
-
-    int *c = (int*)h->Allocate(sizeof(int), true);
-    DEBUG_MSG("Allocated page aligned integer on heap: " << hex << (unsigned)c);
-    
-    void *d = h->Allocate(1024*1024, false);
-    DEBUG_MSG("Allocated 1MB not page aligned on heap: " << hex << (unsigned)d);
-    
-    void *e = h->Allocate(2*1024*1024, false);
-    DEBUG_MSG("Allocated 2MB not page aligned on heap: " << hex << (unsigned)e);
-    
-    DEBUG_MSG("Dumping current heap state to COM1...");
-    SerialConsole ser = SerialConsole(SERIAL_COM1);
-    h->DumpCurrentStructure(ser);
-    
-    //Init timer
-    InitializeTimer();
-    TimerManager *tm = new TimerManager(&Arch::ClockSource);
-    irqD->RegisterHandler(IRQ_TIMER, new TimerHandler(tm));
-    DEBUG_MSG("Timer initialized...");
-    
-    Arch::EnableInterrupts();
-    DEBUG_MSG("Interrupts enabled...");
-    
-    irqD->RegisterHandler(IRQ_KEYBOARD, new KeyboardHandler(tm));
-    Arch::UnmaskIRQ(IRQ_KEYBOARD);
-    
-    /*Scheduler* scheduler = Scheduler::GetInstance();
-    scheduler->SetTimerManager(tm);
-    DEBUG_MSG("Scheduler initialized");*/
-    
-    //Thread *t = new Thread(thread, NULL, 10, NULL);
-    //scheduler->AddThread(t);
-    
-    //Thread *t2 = new Thread(thread2, NULL, 10, NULL);
-    //scheduler->AddThread(t2);
-    
-    for(;;) {
-        //scheduler->Schedule();
-        asm volatile("hlt"); //halt cpu until next irq (timer etc.) to switch to next time slice
-    }
-    
-    return 0; 
 }

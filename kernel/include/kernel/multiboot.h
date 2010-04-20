@@ -2,7 +2,6 @@
 #define _MULTIBOOT_H
 
 #include <lib/types.h>
-#include <kernel/elf32.h>
 
 #define MULTIBOOT_FLAG_MEM     0x001
 #define MULTIBOOT_FLAG_DEVICE  0x002
@@ -11,10 +10,11 @@
 #define MULTIBOOT_FLAG_AOUT    0x010
 #define MULTIBOOT_FLAG_ELF     0x020
 #define MULTIBOOT_FLAG_MMAP    0x040
-#define MULTIBOOT_FLAG_CONFIG  0x080
-#define MULTIBOOT_FLAG_LOADER  0x100
-#define MULTIBOOT_FLAG_APM     0x200
-#define MULTIBOOT_FLAG_VBE     0x400
+#define MULTIBOOT_FLAG_DRIVES  0x080
+#define MULTIBOOT_FLAG_CONFIG  0x100
+#define MULTIBOOT_FLAG_LOADER  0x200
+#define MULTIBOOT_FLAG_APM     0x400
+#define MULTIBOOT_FLAG_VBE     0x800
 
 // multiboot info structure passed from boot loader
 /*The format of the Multiboot information structure (as defined so far) follows:
@@ -57,92 +57,107 @@
 
 namespace Kernel
 {
+    // format of a module
+    struct multiboot_module
+    {
+      uint32_t          modStart;
+      uint32_t          modRnd;
+      uint32_t          cmdLine;
+      uint32_t          pad;
+    }  __attribute__((packed));
+    typedef struct multiboot_module multiboot_module_region_t;
 
     // format of a memory region
-    struct memory_region {
-    	unsigned int    	size;
-    	unsigned int    	startLo;
-    	unsigned int    	startHi;
-    	unsigned int    	sizeLo;
-    	unsigned int    	sizeHi;
-    	unsigned int    	type;
+    struct multiboot_memory_region {
+    	uint32_t    	size;
+    	uint64_t    	addr;
+    	uint64_t    	len;
+    	uint32_t    	type;
     }  __attribute__((packed));
-    typedef struct memory_region memory_region_t;
+    typedef struct multiboot_memory_region multiboot_memory_region_t;
+    
+    // format of a drive
+    struct multiboot_drive_region {
+    	uint32_t    	size;
+    /*	        +-------------------+
+        0       | size              |
+                +-------------------+
+        4       | drive_number      |
+                +-------------------+
+        5       | drive_mode        |
+                +-------------------+
+        6       | drive_cylinders   |
+        8       | drive_heads       |
+        9       | drive_sectors     |
+                +-------------------+
+        10 - xx | drive_ports       |
+                +-------------------+*/
+    }  __attribute__((packed));
+    typedef struct multiboot_drive_region multiboot_drive_region_t;
+    
+    // format for apm table
+    struct multiboot_apm_region {
+        uint16_t        version;
+        uint16_t        cseg;
+        uint32_t        offset;
+        uint16_t        cseg_16;
+        uint16_t        dseg;
+        uint16_t        flags;
+        uint16_t        cseg_len;
+        uint16_t        cseg_16_len;
+        uint16_t        dseg_len;
+    }  __attribute__((packed));
+    typedef struct multiboot_apm_region multiboot_apm_region_t;
 
-    struct multiboot_header {
-    	unsigned int    	flags;
-    	unsigned int	    memoryLo;
-    	unsigned int    	memoryHi;
-    	unsigned int	    bootDevice;
-    	unsigned int    	cmdLine;
-    	unsigned int    	modsCount;
-    	unsigned int    	modsAddr;
-    	unsigned int    	elf_num;
-    	unsigned int    	elf_size;
-    	unsigned int    	elf_addr;
-    	unsigned int    	elf_shndx;
-    	unsigned int    	mmap_length;
-    	memory_region_t*	mmap_addr;
-    	unsigned int    	drives_length;
-    	unsigned int    	drives_addr;
-    	unsigned int    	config_table;
-    	unsigned int    	bootloader_name;
-    	unsigned int    	apm_table;
-    	unsigned int    	vbe_control_info;
-    	unsigned int    	vbe_mode_info;
-    	unsigned short	    vbe_mode;
-    	unsigned int    	vbe_interface_addr;
-    	unsigned short  	vbe_interface_len;
+    struct multiboot_info {
+    	uint32_t    	            flags;
+    	uint32_t	                memoryLo;
+    	uint32_t    	            memoryHi;
+    	uint32_t	                bootDevice;
+    	uint32_t                	cmdLine;
+    	uint32_t    	            modsCount;
+    	multiboot_module_region_t*  modsAddr;
+    	uint32_t    	            elf_num;
+    	uint32_t    	            elf_size;
+    	uint32_t    	            elf_addr;
+    	uint32_t    	            elf_shndx;
+    	uint32_t    	            mmap_length;
+    	multiboot_memory_region_t*	mmap_addr;
+    	uint32_t    	            drives_length;
+    	multiboot_drive_region_t* 	drives_addr;
+    	uint32_t    	            config_table;
+    	uint32_t    	            bootloader_name;
+    	multiboot_apm_region_t*    	apm_table;
+    	uint32_t    	            vbe_control_info;
+    	uint32_t    	            vbe_mode_info;
+    	uint16_t	                vbe_mode;
+        uint16_t                    vbe_interface_seg;
+    	uint16_t    	            vbe_interface_off;
+    	uint16_t      	            vbe_interface_len;
     }  __attribute__((packed));
 
-    typedef struct multiboot_header MultibootHeader;
+    typedef struct multiboot_info MultibootInfo;
 
     class Multiboot
     {
     public:
-        Multiboot(MultibootHeader *h);
+        Multiboot(MultibootInfo *i);
         
-        unsigned int GetLowerMemory() { return header->memoryLo; }
-        unsigned int GetUpperMemory() { return header->memoryHi; }
-        char* GetKernelCommandline() { return (char *)header->cmdLine; }
-        bool IsElf() { return header->flags & MULTIBOOT_FLAG_ELF; }
+        //size_t GetSize();
+        Address GetAddress() { return (Address)info; }
         
-        Address StrtabEnd()
-        {
-            if (strtab)
-                return (Address) strtab->addr+strtab->size;
-            else
-                return 0;
-        }
-
-        Address SymtabEnd()
-        {
-            if (symtab)
-                return (Address) symtab->addr+symtab->size;
-            else
-                return 0;
-        }
-
-        Elf32SectionHeader *SymtabStart()
-        {
-            if (symtab)
-                return (Elf32SectionHeader *)symtab;
-            else
-                return 0;
-        }
-
-        Elf32SectionHeader *StrtabStart()
-        {
-            if (strtab)
-                return (Elf32SectionHeader *)strtab;
-            else
-                return 0;
-        }
+        uint32_t GetLowerMemory() { return info->memoryLo; }
+        uint32_t GetUpperMemory() { return info->memoryHi; }
+        const char* GetKernelCommandline() { return (const char *)info->cmdLine; }
+        uint32_t GetELFNum() { return info->elf_num; }
+        uint32_t GetELFSize() { return info->elf_size; }
+        uint32_t GetELFAddress() { return info->elf_addr; }
+        uint32_t GetELFshndx() { return info->elf_shndx; }
+        
+        bool IsElf() { return info->flags & MULTIBOOT_FLAG_ELF; }
         
     private:
-        MultibootHeader *header;
-        Elf32SectionHeader *symtab;
-        Elf32SectionHeader *strtab;
+        MultibootInfo *info;
     };
 
 }

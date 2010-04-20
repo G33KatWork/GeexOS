@@ -2,17 +2,20 @@
 #define PLACEMENT_ALLOCATOR_H_
 
 #include <lib/types.h>
-#include <kernel/Memory/IMemoryAllocator.h>
 
 namespace Memory
 {
-    class PlacementAllocator : public IMemoryAllocator
+    #define     PLACEMENT_SIZE      0x20000             //128KByte
+    
+    Address GetPlacementBeginning();
+    
+    class PlacementAllocator
     {
     public:
         PlacementAllocator();
         
         void* Allocate(size_t len, bool pageAlign);
-        void Deallocate(void* p);
+        unsigned int GetPointerPosition();
 
     private:
         unsigned int placement_address;
