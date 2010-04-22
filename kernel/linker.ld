@@ -19,7 +19,7 @@ SECTIONS{
     .text : AT(ADDR(.text) - 0xC0000000)
     {
         code = .; _code = .; __code = .;
-        *(.text)
+        *(.text*)
     }
 
     .rodata ALIGN (4096) : AT(ADDR(.rodata) - 0xC0000000)

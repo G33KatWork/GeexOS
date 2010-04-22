@@ -5,7 +5,7 @@
 #include <kernel/IO/SerialConsole.h>
 
 //Comment out for on screen debugging
-#define     SERIAL_DEBUG
+//#define     SERIAL_DEBUG
 
 #ifdef SERIAL_DEBUG
     extern class IO::SerialConsole kdbg;
@@ -18,14 +18,15 @@
 //Debugging of several submodules
 //undef, if not wanted
 #define EN_DEBUG_MSG_MAIN
+//#define EN_HAL_DEBUG_MSG
 //#define EN_SCHEDULER_DEBUG_MSG
 //#define EN_TIMER_MGR_DEBUG_MSG
 //#define EN_ELF_INFORMATION_DEBUG_MSG
-#define EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG
-#define EN_VIRTUAL_MEMORY_SPACE_DEBUG_MSG
-#define EN_STACK_DEBUG_MSG
+//#define EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG
+//#define EN_VIRTUAL_MEMORY_SPACE_DEBUG_MSG
+//#define EN_STACK_DEBUG_MSG
 //#define EN_ARCH_INTERRUPTS_DEBUG_MSG
-#define EN_ARCH_PAGING_DEBUG_MSG
+//#define EN_ARCH_PAGING_DEBUG_MSG
 //#define EN_PLACEMENT_DEBUG_MSG
 //#define EN_PHYS_BITFIELD_DEBUG_MSG
 
@@ -46,6 +47,12 @@
     #define MAIN_DEBUG_MSG(x)                   DEBUG_MSG("MAIN: "x)
 #else
     #define MAIN_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_HAL_DEBUG_MSG
+    #define HAL_DEBUG_MSG(x)                    DEBUG_MSG("HAL: "x)
+#else
+    #define HAL_DEBUG_MSG(x)
 #endif
 
 #ifdef EN_SCHEDULER_DEBUG_MSG

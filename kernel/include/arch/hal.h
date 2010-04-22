@@ -5,12 +5,10 @@
 #include <arch/pit.h>
 #include <arch/clock_source.h>
 
-#define     BIOS_ADDRESS        0x0
-#define     BIOS_SIZE           0x10000
-
 namespace Arch
 {
     void InitializeCPU();
+    void InitDone();
     
     inline void HaltMachine()
     {

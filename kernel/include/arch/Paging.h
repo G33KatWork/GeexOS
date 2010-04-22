@@ -2,6 +2,7 @@
 #define _ARCH_PAGING_H
 
 #include <lib/types.h>
+#include <kernel/global.h>
 
 #define IDENTITY_POSITION   0xFFFFF000
 #define PAGE_SIZE           0x1000
@@ -22,6 +23,7 @@ namespace Arch
         static Paging* GetInstance();
         
         void Init(void);
+        void InitDone(void);
         
         Address GetPhysicalAddress(Address virtualaddr);
         void MapAddress(Address virt, Address phys, bool readwrite, bool usermode);
@@ -115,6 +117,8 @@ namespace Arch
     
         void SetPage(unsigned int index, Page* page)
         {
+            ASSERT(index < 1024, "Index out of range");
+            
             if(page == NULL)
                 pages[index] = Page();
             else
@@ -148,15 +152,17 @@ namespace Arch
         
         void SetTable(unsigned int index, PageTable* table, Address tablePhysical)
         {
+            ASSERT(index < 1024, "Index out of range");
+            
             tablesPhysical[index] = tablePhysical;
             tables[index] = table;
         }
         
-        void SetIdentityTable(Address table)
+        /*void SetIdentityTable(Address table)
         {
             tablesPhysical[1023] = table;
-        }
-        
+        }*/
+    public:
         Address GetIdentityTable()
         {
             return tablesPhysical[1023];

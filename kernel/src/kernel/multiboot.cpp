@@ -1,5 +1,6 @@
 #include <kernel/global.h>
 #include <kernel/multiboot.h>
+#include <lib/string.h>
 
 using namespace Kernel;
 
@@ -8,8 +9,14 @@ using namespace Kernel;
 
 Multiboot::Multiboot(MultibootInfo *i)
 {
-    info = i;
-	
+    //Copy main multiboot struct
+    memcpy(&info, i, sizeof(MultibootInfo));
+    
+    //Copy cmdline
+    cmdLine = (char*)kmalloc(strlen(i->cmdLine) + 1);
+    memcpy(cmdLine, i->cmdLine, strlen(i->cmdLine) + 1);
+    info.cmdLine = cmdLine;
+    
     if(!IsElf()) PANIC("Kernel is not ELF-compatible!");
 }
 

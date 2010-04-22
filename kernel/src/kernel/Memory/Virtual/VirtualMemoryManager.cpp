@@ -20,9 +20,6 @@ VirtualMemoryManager* VirtualMemoryManager::GetInstance()
 void VirtualMemoryManager::Init(size_t MemorySize)
 {
     VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Initializing virtual kernel memory subsystem. Memory size: " << dec << (unsigned int)MemorySize << "KB");
-
-    //Paging::GetInstance()->Init();
-    VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Paging initialized...");
     
     phys = new BitfieldPhysicalMemoryManager(MemorySize);
     VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Physical memory manager initialized...");

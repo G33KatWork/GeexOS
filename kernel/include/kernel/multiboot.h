@@ -114,7 +114,7 @@ namespace Kernel
     	uint32_t	                memoryLo;
     	uint32_t    	            memoryHi;
     	uint32_t	                bootDevice;
-    	uint32_t                	cmdLine;
+    	char*                   	cmdLine;
     	uint32_t    	            modsCount;
     	multiboot_module_region_t*  modsAddr;
     	uint32_t    	            elf_num;
@@ -143,21 +143,20 @@ namespace Kernel
     public:
         Multiboot(MultibootInfo *i);
         
-        //size_t GetSize();
-        Address GetAddress() { return (Address)info; }
+        Address GetAddress() { return (Address)&info; }
+        uint32_t GetLowerMemory() { return info.memoryLo; }
+        uint32_t GetUpperMemory() { return info.memoryHi; }
+        const char* GetKernelCommandline() { return cmdLine; }
+        uint32_t GetELFNum() { return info.elf_num; }
+        uint32_t GetELFSize() { return info.elf_size; }
+        uint32_t GetELFAddress() { return info.elf_addr; }
+        uint32_t GetELFshndx() { return info.elf_shndx; }
         
-        uint32_t GetLowerMemory() { return info->memoryLo; }
-        uint32_t GetUpperMemory() { return info->memoryHi; }
-        const char* GetKernelCommandline() { return (const char *)info->cmdLine; }
-        uint32_t GetELFNum() { return info->elf_num; }
-        uint32_t GetELFSize() { return info->elf_size; }
-        uint32_t GetELFAddress() { return info->elf_addr; }
-        uint32_t GetELFshndx() { return info->elf_shndx; }
-        
-        bool IsElf() { return info->flags & MULTIBOOT_FLAG_ELF; }
+        bool IsElf() { return info.flags & MULTIBOOT_FLAG_ELF; }
         
     private:
-        MultibootInfo *info;
+        MultibootInfo info;
+        char* cmdLine;
     };
 
 }

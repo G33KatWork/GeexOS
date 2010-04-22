@@ -80,8 +80,13 @@ int main(MultibootInfo* multibootInfo)
     MAIN_DEBUG_MSG("CPU and Interrupt tables initialized...");
     
     //Get information about environment from GRUB
-    MAIN_DEBUG_MSG("Multiboot structure is at " << hex << (unsigned)multibootInfo);
     Multiboot m = Multiboot(multibootInfo);
+    MAIN_DEBUG_MSG("phys " << hex << (unsigned)Paging::GetInstance()->GetPhysicalAddress(0xC0000000));
+    MAIN_DEBUG_MSG("a: " << hex << (unsigned)Paging::GetInstance()->GetKernelDirectory()->GetIdentityTable());
+    InitDone();
+    
+    MAIN_DEBUG_MSG("a: " << hex << (unsigned)Paging::GetInstance()->GetKernelDirectory()->GetIdentityTable());
+    MAIN_DEBUG_MSG("phys " << hex << (unsigned)Paging::GetInstance()->GetPhysicalAddress(0xC0000000));
     
     //Initialize Memory
     VirtualMemoryManager::GetInstance()->Init(m.GetLowerMemory() + m.GetUpperMemory());
@@ -91,9 +96,6 @@ int main(MultibootInfo* multibootInfo)
     
     //Parse ELF-Stuff delivered from GRUB and create .text, .data, .rodata, .bss and .placement sections in kernel space
     ElfInformation* elfInfo = new ElfInformation(m.GetELFAddress(), m.GetELFshndx(), m.GetELFSize(), m.GetELFNum());
-    
-    //Announce region for multiboot structure
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(m.GetAddress() & IDENTITY_POSITION, 2*PAGE_SIZE, "Multiboot information", ALLOCFLAG_NONE);
     
     //Create Arch-specific memory regions in kernel space
     //On x86: Framebuffer for textmode and lowest 64K for BIOS
@@ -106,11 +108,10 @@ int main(MultibootInfo* multibootInfo)
     VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
     MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << KERNEL_STACK_ADDRESS << " with size: " << KERNEL_STACK_SIZE);
     MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
-    MAIN_DEBUG_MSG("Phys addr: " << hex << (unsigned)Paging::GetInstance()->GetPhysicalAddress(0xC0000000));
+    
     syncMemregionsWithPaging();
     
     //Init symtab and strtab for stacktraces
-    //FIXME: Somehow get those strintables accessible again
     Debug::stringTable = elfInfo->GetSection(".strtab");
     Debug::symbolTable = elfInfo->GetSection(".symtab");
     
@@ -139,7 +140,7 @@ int main(MultibootInfo* multibootInfo)
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
-    //VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
     
     KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE, "A Thread");
     Scheduler::GetInstance()->AddThread(thread);
@@ -181,17 +182,17 @@ void syncMemregionsWithPaging(void)
     //What we do now is a major cleanup. We need to synchronize the regions which are really allocated
     //and needed within our virtual memory space with the paging.
     //Sine we only have a kernel space at this time, we don't bother about other spaces. There are simply none.
-    /*for(Address i = 0xC0000000; i < 4*1024*1024+0xC0000000; i += PAGE_SIZE)
+    for(Address i = 0xC0000000; i < 4*1024*1024+0xC0000000; i += PAGE_SIZE)
     {
         if(VirtualMemoryManager::GetInstance()->KernelSpace()->FindRegionEnclosingAddress(i) == NULL)
         {
             Address physicalAddr = Paging::GetInstance()->GetPhysicalAddress(i);
-            MAIN_DEBUG_MSG("Virtual address " << hex << (unsigned)i << " pointing to physical " << (unsigned)physicalAddr << " doesn't seem to contain a region.");
+            //MAIN_DEBUG_MSG("Virtual address " << hex << (unsigned)i << " pointing to physical " << (unsigned)physicalAddr << " doesn't seem to contain a region.");
             
             Paging::GetInstance()->UnmapAddress(i);
             VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(physicalAddr);
         }
-    }*/
+    }
 }
 
 void attachExceptionHandlers(InterruptDispatcher* irqD)

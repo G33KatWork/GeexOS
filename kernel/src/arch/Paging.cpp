@@ -36,7 +36,7 @@ void Paging::Init()
         lowpagetable->GetPage(k)->RW(true);
 	}
 	
-    kernel_directory->SetIdentityTable((Address)(kernelpagedirPtr | 0x3));
+    //kernel_directory->SetIdentityTable((Address)(kernelpagedirPtr | 0x3));
     
     kernel_directory->SetTable(0, lowpagetable, (Address)(lowpagetablePtr | 0x3));
 	kernel_directory->SetTable(768, lowpagetable, (Address)(lowpagetablePtr | 0x3));
@@ -46,6 +46,14 @@ void Paging::Init()
     SwitchPageDirectory(kernelpagedirPtr);
 }
 
+void Paging::InitDone()
+{
+    kernel_directory->SetTable(0, NULL, NULL);
+    
+    for(Address i = 0; i < 4*1024*1024; i+=PAGE_SIZE)
+        asm volatile("invlpg %0"::"m" (*(char *)i));
+}
+
 Address Paging::GetPhysicalAddress(Address virtualaddr)
 {
     ARCH_PAGING_DEBUG_MSG("Physical address of virtual " << hex << (unsigned)virtualaddr << " requested");
@@ -53,13 +61,18 @@ Address Paging::GetPhysicalAddress(Address virtualaddr)
     unsigned int pdindex = virtualaddr >> 22;
     unsigned int ptindex = (virtualaddr >> 12) & 0x03FF;
 
-    unsigned int *pd = (unsigned int*)0xFFFFF000;
-    ASSERT(*pd & 0x01, "Page for identity paging is not present");
-
-    unsigned int * pt = ((unsigned int *)0xFFC00000) + (0x400 * pdindex);
-    ASSERT(*pt & 0x01, "Pagetable for identity paging is not present");
-
-    return ((pt[ptindex] & ~0xFFF) + ((unsigned int)virtualaddr & 0xFFF));
+    PageTable* pt = current_directory->GetTable(pdindex, false);
+    if(pt == NULL)
+        return NULL;
+    
+    Page* p = pt->GetPage(ptindex);
+    if(!p->Present())
+        return NULL;
+    
+    return p->Frame();
+    
+    //unsigned int * pt2 = ((unsigned int *)0xFFC00000) + (0x400 * pdindex);
+    //return ((pt2[ptindex] & ~0xFFF) + ((unsigned int)virtualaddr & 0xFFF));
 }
 
 void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermode)

@@ -4,19 +4,20 @@
 #include <arch/Paging.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/debug.h>
+#include <arch/AddressLayout.h>
 
 using namespace Memory;
 using namespace IO;
 
 ElfInformation::ElfInformation(unsigned int elfAddr, unsigned int elfShndx, unsigned int elfSize, unsigned int elfNum)
 {
-    //Set section header string table
-    shstrtab = (Elf32SectionHeader *)(elfAddr + elfShndx * elfSize);
-    
-    addr = elfAddr;
-    shndx = elfShndx;
+    addr = elfAddr + KERNEL_BASE;
+    shndx = elfShndx + KERNEL_BASE;
     size = elfSize;
     num = elfNum;
+    
+    //Set section header string table
+    shstrtab = (Elf32SectionHeader *)(addr + shndx * size);
     
     Elf32SectionHeader *text = GetSection(".text");
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)text->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(text->size), ".text", ALLOCFLAG_EXECUTABLE);
@@ -38,13 +39,20 @@ ElfInformation::ElfInformation(unsigned int elfAddr, unsigned int elfShndx, unsi
 
 Elf32SectionHeader* ElfInformation::GetSection(const char* name)
 {
+    ELF_INFORMATION_DEBUG_MSG("Request for ELF-Section with name " << name);
+    
     for(unsigned int i = 0; i < num; i++)
     {
         Elf32SectionHeader *sh = (Elf32SectionHeader *)(addr + i * size);
-        char *c = (char *)(shstrtab->addr + sh->name);
+        ELF_INFORMATION_DEBUG_MSG("sh: " << hex << (unsigned)sh);
+        char *c = (char *)(shstrtab->addr + KERNEL_BASE + sh->name);
+        ELF_INFORMATION_DEBUG_MSG("c: " << hex << (unsigned)c);
         
         if(!strcmp(c, name))
+        {
+            ELF_INFORMATION_DEBUG_MSG("ELF-Section found at " << hex << (unsigned)sh);
             return sh;
+        }
     }
     
     return NULL;
@@ -52,7 +60,7 @@ Elf32SectionHeader* ElfInformation::GetSection(const char* name)
 
 char* ElfInformation::GetSectionName(Elf32SectionHeader* section)
 {
-    return (char *)(shstrtab->addr + section->name);
+    return (char *)(shstrtab->addr + KERNEL_BASE + section->name);
 }
 
 void ElfInformation::announceStringTables()
@@ -60,17 +68,17 @@ void ElfInformation::announceStringTables()
     //These regions can possibly overlap each other
     //So be careful, if you don't specify the same flags on these regions
     //They could possibly be overwritten.
-    ELF_INFORMATION_DEBUG_MSG("Announcing section header string table. Address " << hex << (unsigned)shstrtab->addr << " Size: " << (unsigned)shstrtab->size);
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)shstrtab->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(shstrtab->size), ".shstrtab", ALLOCFLAG_NONE);
+    ELF_INFORMATION_DEBUG_MSG("Announcing section header string table. Address " << hex << (unsigned)shstrtab->addr + KERNEL_BASE << " Size: " << (unsigned)shstrtab->size);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion((((Address)shstrtab->addr) & IDENTITY_POSITION) + KERNEL_BASE, (size_t)PAGE_ALIGN(shstrtab->size), ".shstrtab", ALLOCFLAG_NONE);
     
     Elf32SectionHeader* symtab = GetSection(".symtab");
-    ELF_INFORMATION_DEBUG_MSG("Announcing symbol table. Address " << hex << (unsigned)symtab->addr << " Size: " << (unsigned)symtab->size);
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)symtab->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(symtab->size), ".symtab", ALLOCFLAG_NONE);
+    ELF_INFORMATION_DEBUG_MSG("Announcing symbol table. Address " << hex << (unsigned)symtab->addr + KERNEL_BASE << " Size: " << (unsigned)symtab->size);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion((((Address)symtab->addr) & IDENTITY_POSITION) + KERNEL_BASE, (size_t)PAGE_ALIGN(symtab->size), ".symtab", ALLOCFLAG_NONE);
     
     Elf32SectionHeader* strtab = GetSection(".strtab");
-    ELF_INFORMATION_DEBUG_MSG("Announcing string table. Address " << hex << (unsigned)strtab->addr << " Size: " << (unsigned)strtab->size);
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)strtab->addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(strtab->size), ".strtab", ALLOCFLAG_NONE);
+    ELF_INFORMATION_DEBUG_MSG("Announcing string table. Address " << hex << (unsigned)strtab->addr + KERNEL_BASE << " Size: " << (unsigned)strtab->size);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion((((Address)strtab->addr) & IDENTITY_POSITION) + KERNEL_BASE, (size_t)PAGE_ALIGN(strtab->size), ".strtab", ALLOCFLAG_NONE);
     
     ELF_INFORMATION_DEBUG_MSG("Foo: " << (unsigned)(addr & IDENTITY_POSITION) << " Size: " << (unsigned)(PAGE_ALIGN(num * size)));
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(num * size), "ELF Foo", ALLOCFLAG_NONE);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(num * size), "ELF Header", ALLOCFLAG_NONE);
 }
