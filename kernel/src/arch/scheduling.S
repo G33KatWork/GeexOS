@@ -39,6 +39,14 @@ readInstructionPointer:
 switchToThread:
     mov ebx, dword[esp + 4]     ; Get thread info
     
+    mov eax, dword[ebx + 64]    ; Get new pagedir pointer
+    mov ecx, cr3                ; Get current pagedir pointer
+    cmp eax, ecx                ; Compare
+    je .noPagedirChange
+    mov cr3, eax                ; and set new if it differs from old
+    
+.noPagedirChange:
+    
     mov ecx, dword[ebx + 16]    ; restore registers
     mov edx, dword[ebx + 20]
     mov esp, dword[ebx + 28]

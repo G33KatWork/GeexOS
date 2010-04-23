@@ -6,7 +6,7 @@ using namespace Processes;
 using namespace Memory;
 
 KernelThread::KernelThread(unsigned int threadId, void(*entryFunction)(int), int arg, size_t stackSize, const char* threadName)
-    : Thread(threadId, (Address)entryFunction, 0, 0, threadName, false)
+    : Thread(threadId, (Address)entryFunction, 0, 0, threadName, false, Paging::GetInstance()->GetKernelDirectory())
 {
     threadStack = VirtualMemoryManager::GetInstance()->KernelSpace()->AllocateInRange(KERNEL_THREAD_STACK_REGION_START, KERNEL_THREAD_STACK_REGION_END, stackSize, threadName, ALLOCFLAG_WRITABLE);
     ASSERT(threadStack != NULL, "Returned Stack MemoryRegion for a KernelThread was NULL");

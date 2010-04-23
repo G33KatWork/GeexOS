@@ -52,6 +52,11 @@ void Paging::InitDone()
     
     for(Address i = 0; i < 4*1024*1024; i+=PAGE_SIZE)
         asm volatile("invlpg %0"::"m" (*(char *)i));
+        
+    //Allocate remaining page tables in kernel land, for easy cloning of address spaces for userspace later
+    //TODO: Find a better way to do this. This are 2MB of RAM! :-/
+    for(int i = 769; i < 1024; i++)
+        kernel_directory->GetTable(i, true);
 }
 
 Address Paging::GetPhysicalAddress(Address virtualaddr)
@@ -60,6 +65,7 @@ Address Paging::GetPhysicalAddress(Address virtualaddr)
     
     unsigned int pdindex = virtualaddr >> 22;
     unsigned int ptindex = (virtualaddr >> 12) & 0x03FF;
+    Address offset = virtualaddr & 0xFFF;
 
     PageTable* pt = current_directory->GetTable(pdindex, false);
     if(pt == NULL)
@@ -69,7 +75,7 @@ Address Paging::GetPhysicalAddress(Address virtualaddr)
     if(!p->Present())
         return NULL;
     
-    return p->Frame();
+    return p->Frame() + offset;
     
     //unsigned int * pt2 = ((unsigned int *)0xFFC00000) + (0x400 * pdindex);
     //return ((pt2[ptindex] & ~0xFFF) + ((unsigned int)virtualaddr & 0xFFF));
@@ -121,6 +127,19 @@ void Paging::SwitchCurrentPageDirectory(PageDirectory* dir)
 {
     current_directory = dir;
     SwitchPageDirectory(GetPhysicalAddress((Address)(current_directory->tablesPhysical)));
+}
+
+PageDirectory* Paging::DeriveUserspaceDirectory()
+{
+    PageDirectory* pd = new(true /*page allocation*/) PageDirectory();
+    
+    for(Address i = 0xC0000000; i < 0xFFFFFFFF; i+= 4*1024*1024)
+    {
+        unsigned int pdindex = i / 4*1024*1024;
+        pd->SetTable(pdindex, kernel_directory->GetTable(pdindex), kernel_directory->GetTablePhysical(pdindex) | 0x3);
+    }
+    
+    return pd;
 }
 
 PageTable* PageDirectory::GetTable(unsigned int index, bool assign)

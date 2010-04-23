@@ -31,6 +31,8 @@ namespace Arch
         
         void SwitchCurrentPageDirectory(PageDirectory* dir);
         
+        PageDirectory* DeriveUserspaceDirectory();
+        
         PageDirectory* GetKernelDirectory() { return kernel_directory; }
         
     private:
@@ -158,16 +160,16 @@ namespace Arch
             tables[index] = table;
         }
         
-        /*void SetIdentityTable(Address table)
-        {
-            tablesPhysical[1023] = table;
-        }*/
-    public:
-        Address GetIdentityTable()
+        /*Address GetIdentityTable()
         {
             return tablesPhysical[1023];
         }
         
+        void SetIdentityTable(Address table)
+        {
+            tablesPhysical[1023] = table;
+        }*/
+    public:
         
         Address tablesPhysical[1024];
         PageTable* tables[1024];

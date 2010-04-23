@@ -27,6 +27,7 @@ namespace Arch
         uint32_t  fs;        // 52
         uint32_t  gs;        // 56
         uint32_t  ss;        // 60
+        uint32_t  cr3;       // 64
     };
     
     extern "C"  void    writeStackPointer(Address a);
@@ -73,9 +74,11 @@ namespace Arch
         info->es = oldState->es;
         info->fs = oldState->fs;
         info->gs = oldState->gs;
+        
+        //CR3 should not change during execution, we are not going to save this register
     }
     
-    static inline void initializeThreadInfoForKernel(ThreadInfo* threadInfo, Address initialIP, Address initialSP, Address initialBP)
+    static inline void initializeThreadInfoForKernel(ThreadInfo* threadInfo, Address initialIP, Address initialSP, Address initialBP, PageDirectory* pd)
     {
         memset(threadInfo, 0, sizeof(ThreadInfo));
         
@@ -91,6 +94,13 @@ namespace Arch
         threadInfo->ss = GDT_KERNEL_DATA;
         
         threadInfo->eflags = readEflags();
+        
+        threadInfo->cr3 = Paging::GetInstance()->GetPhysicalAddress((Address)pd);
+    }
+    
+    static inline void setPageDirectory(ThreadInfo* threadInfo, PageDirectory* pd)
+    {
+        threadInfo->cr3 = Paging::GetInstance()->GetPhysicalAddress((Address)pd);
     }
     
     #define printThreadInfo(info) \
@@ -110,7 +120,8 @@ namespace Arch
         SCHEDULER_DEBUG_MSG("ES: " << IO::hex << info.es); \
         SCHEDULER_DEBUG_MSG("FS: " << IO::hex << info.fs); \
         SCHEDULER_DEBUG_MSG("GS: " << IO::hex << info.gs); \
-        SCHEDULER_DEBUG_MSG("SS: " << IO::hex << (info.ss));
+        SCHEDULER_DEBUG_MSG("SS: " << IO::hex << info.ss); \
+        SCHEDULER_DEBUG_MSG("CR3: " << IO::hex << (info.cr3));
 }
 
 #endif

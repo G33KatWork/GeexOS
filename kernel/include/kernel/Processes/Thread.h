@@ -20,13 +20,13 @@ namespace Processes
         friend class Scheduler;
         
     public:
-		Thread(unsigned int threadId, Address initialIP, Address initialSP, Address initialBP, const char* threadName, bool umode);
+		Thread(unsigned int threadId, Address initialIP, Address initialSP, Address initialBP, const char* threadName, bool umode, PageDirectory* pd);
         
         int GetId() { return tid; }
         const char* GetName() { return name; }
-        /*PageDirectory* GetPageDirectory() { return page_directory; }
-        void SetPageDirectory(PageDirectory* p) { page_directory = p; }
-        int GetPriority() { return priority; }
+        PageDirectory* GetPageDirectory() { return page_directory; }
+        void SetPageDirectory(PageDirectory* p) { page_directory = p; setPageDirectory(&threadInfo, p); }
+        /*int GetPriority() { return priority; }
         void SetPriority(unsigned char p) { priority = p; }*/
         unsigned long GetTimeslice() { return timeslice; }
         void SetTimeslice(unsigned long t) { timeslice = t; }
@@ -45,6 +45,7 @@ namespace Processes
     protected:
         int tid;
         //unsigned char priority;
+        PageDirectory* page_directory;
         ThreadState state;
         ThreadInfo threadInfo;
         unsigned long timeslice;

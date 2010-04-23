@@ -81,12 +81,8 @@ int main(MultibootInfo* multibootInfo)
     
     //Get information about environment from GRUB
     Multiboot m = Multiboot(multibootInfo);
-    MAIN_DEBUG_MSG("phys " << hex << (unsigned)Paging::GetInstance()->GetPhysicalAddress(0xC0000000));
-    MAIN_DEBUG_MSG("a: " << hex << (unsigned)Paging::GetInstance()->GetKernelDirectory()->GetIdentityTable());
-    InitDone();
     
-    MAIN_DEBUG_MSG("a: " << hex << (unsigned)Paging::GetInstance()->GetKernelDirectory()->GetIdentityTable());
-    MAIN_DEBUG_MSG("phys " << hex << (unsigned)Paging::GetInstance()->GetPhysicalAddress(0xC0000000));
+    InitDone();
     
     //Initialize Memory
     VirtualMemoryManager::GetInstance()->Init(m.GetLowerMemory() + m.GetUpperMemory());

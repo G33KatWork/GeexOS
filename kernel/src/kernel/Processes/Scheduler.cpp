@@ -40,7 +40,7 @@ Scheduler::Scheduler()
 {
     DisableInterrupts();
     
-    kernelThread = new Thread(0, 0, 0, 0, "Kernel thread", false);
+    kernelThread = new Thread(0, 0, 0, 0, "Kernel thread", false, Paging::GetInstance()->GetKernelDirectory());
     kernelThread->next = NULL;
     listHead = kernelThread;
     currentThread = kernelThread;
