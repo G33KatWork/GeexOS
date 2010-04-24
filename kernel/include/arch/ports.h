@@ -16,6 +16,11 @@ namespace Arch
         asm volatile ("inb %1, %0" : "=a" (ret) : "dN" (port));
         return ret;
     }
+    
+    inline void outw(unsigned short port, unsigned short value)
+    {
+        asm volatile ("outw %1, %0" : : "dN" (port), "a" (value));
+    }
 
     inline unsigned short inw(unsigned short port)
     {

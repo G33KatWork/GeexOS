@@ -9,6 +9,7 @@ namespace Arch
 {
     void InitializeCPU();
     void InitDone();
+    void GetCPUVendor(char* buf);
     
     inline void HaltMachine()
     {

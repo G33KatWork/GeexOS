@@ -6,23 +6,28 @@
 #include <arch/Paging.h>
 #include <arch/AddressLayout.h>
 #include <kernel/debug.h>
+#include <arch/cpuid.h>
+#include <arch/msr.h>
 
 using namespace Arch;
 using namespace Memory;
 
 void Arch::InitializeCPU()
 {
+    ASSERT(CPUhasMSR(), "CPU doesn't seem to support MSRs. It also looks a bit rusty. What do you think about getting a slightly newer one?");
+    
     Paging::GetInstance()->Init();
     HAL_DEBUG_MSG("Paging initialized...");
     
     gdt_setup();
     gdt_install();
-    
     HAL_DEBUG_MSG("GDT installed...");
     
+    idt_setup();
     idt_install();
-    
     HAL_DEBUG_MSG("IDT installed...");
+    
+    InitializePIC();
     
     //Set WP (Write Protect) bit in CR0
     //This causes a page fault when writing to read-only pages even if we are in kernel mode
@@ -38,6 +43,11 @@ void Arch::InitDone()
     Paging::GetInstance()->InitDone();
     
     HAL_DEBUG_MSG("Arch initialization done...");
+}
+
+void Arch::GetCPUVendor(char* buf)
+{
+    cpuid_string(CPUID_GETVENDORSTRING, (uint32_t*)buf);
 }
 
 void Arch::SetupArchMemRegions()

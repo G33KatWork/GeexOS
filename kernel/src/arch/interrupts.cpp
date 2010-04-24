@@ -39,7 +39,6 @@ InterruptDispatcher* InterruptDispatcher::GetInstance()
 InterruptDispatcher::InterruptDispatcher()
 {
     for(int i = 0; i < I86_IDT_MAX_ENTRY_COUNT; i++) isrs[i] = NULL;
-    InitializePIC();
 }
 
 

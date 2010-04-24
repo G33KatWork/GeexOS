@@ -75,6 +75,10 @@ int main(MultibootInfo* multibootInfo)
     kdbg.Clear();
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
+    char cpuVendor[17] = {0};
+    GetCPUVendor(cpuVendor);
+    MAIN_DEBUG_MSG("CPU Vendor: " << cpuVendor);
+    
     //Flush GDT and initialize IDT (Interrupts)
     InitializeCPU();
     MAIN_DEBUG_MSG("CPU and Interrupt tables initialized...");
@@ -136,7 +140,7 @@ int main(MultibootInfo* multibootInfo)
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
-    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
+    //VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
     
     KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE, "A Thread");
     Scheduler::GetInstance()->AddThread(thread);

@@ -41,6 +41,7 @@ namespace Arch
 
     void idt_flush(void);
     void idt_set_gate(uint8_t i, uint32_t base, uint16_t sel, uint8_t flags);
+    void idt_setup(void);
     void idt_install(void);
     
     
