@@ -18,7 +18,8 @@
 //Debugging of several submodules
 //undef, if not wanted
 #define EN_DEBUG_MSG_MAIN
-//#define EN_HAL_DEBUG_MSG
+#define EN_HAL_DEBUG_MSG
+#define EN_HAL_ACPI_DEBUG_MSG
 //#define EN_SCHEDULER_DEBUG_MSG
 //#define EN_TIMER_MGR_DEBUG_MSG
 //#define EN_ELF_INFORMATION_DEBUG_MSG
@@ -53,6 +54,12 @@
     #define HAL_DEBUG_MSG(x)                    DEBUG_MSG("HAL: "x)
 #else
     #define HAL_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_HAL_ACPI_DEBUG_MSG
+    #define HAL_ACPI_DEBUG_MSG(x)               DEBUG_MSG("HAL ACPI: "x)
+#else
+    #define HAL_ACPI_DEBUG_MSG(x)
 #endif
 
 #ifdef EN_SCHEDULER_DEBUG_MSG

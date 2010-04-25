@@ -65,12 +65,28 @@ Address BitfieldPhysicalMemoryManager::AllocateFrame()
 {
     Address page = (bitmap_get_first_free() * PAGE_SIZE);
 	bitmap_set_frame(page);
-	PHYS_BITFIELD_DEBUG_MSG("Page allocated: " << hex << (unsigned)page);
+	PHYS_BITFIELD_DEBUG_MSG("Page allocated: " << hex << page);
 	return page;
 }
 
 void BitfieldPhysicalMemoryManager::DeallocateFrame(Address physAddr)
 {    
-	PHYS_BITFIELD_DEBUG_MSG("Page deallocated: " << hex << (unsigned)physAddr);
+	PHYS_BITFIELD_DEBUG_MSG("Page deallocated: " << hex << physAddr);
     bitmap_clear_frame(physAddr);
+}
+
+void BitfieldPhysicalMemoryManager::MarkAsUsed(Address physAddr)
+{
+    PHYS_BITFIELD_DEBUG_MSG("Marking frame as used: " << hex << physAddr);
+    bitmap_set_frame(physAddr);
+}
+
+
+bool BitfieldPhysicalMemoryManager::IsFree(Address physAddr)
+{
+    PHYS_BITFIELD_DEBUG_MSG("Checking if frame is allocated: " << hex << physAddr);
+    Address frame = physAddr / PAGE_SIZE;
+	unsigned int idx = INDEX_FROM_BIT(frame);
+	unsigned int off = OFFSET_FROM_BIT(frame);
+	return !(frames[idx] & (0x1 << off));
 }

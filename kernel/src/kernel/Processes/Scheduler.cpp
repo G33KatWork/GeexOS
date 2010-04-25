@@ -18,7 +18,7 @@ using namespace IO;
     Thread* curThread = Scheduler::GetInstance()->GetCurrentThread();
     curThread->SetTimeslice(curThread->GetTimeslice() - SCHED_TIMER_FREQUENCY);
     
-    SCHEDULER_DEBUG_MSG("Timeslice of current thread: " << dec << (unsigned)curThread->GetTimeslice());
+    SCHEDULER_DEBUG_MSG("Timeslice of current thread: " << dec << curThread->GetTimeslice());
     
     if(curThread->GetTimeslice() <= 0)
         return true; //force scheduling
@@ -102,10 +102,10 @@ void Scheduler::DumpThreads(CharacterOutputDevice& c)
     {
         c << "SCHEDULER: " << "\tThread ID: " << dec << curThread->GetId() << endl;
         c << "SCHEDULER: " << "\tThread Name: " << curThread->GetName() << endl;
-        c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << (unsigned)curThread->GetInstructionPointer() << endl;
-        c << "SCHEDULER: " << "\tStack Pointer: " << (unsigned)curThread->GetStackPointer() << endl;
-        c << "SCHEDULER: " << "\tBase Pointer: " << (unsigned)curThread->GetBasePointer() << endl;
-        c << "SCHEDULER: " << "\tTimeslice: " << dec << (unsigned)curThread->GetTimeslice() << endl;
+        c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << curThread->GetInstructionPointer() << endl;
+        c << "SCHEDULER: " << "\tStack Pointer: " << curThread->GetStackPointer() << endl;
+        c << "SCHEDULER: " << "\tBase Pointer: " << curThread->GetBasePointer() << endl;
+        c << "SCHEDULER: " << "\tTimeslice: " << dec << curThread->GetTimeslice() << endl;
         
         c << endl;
     }

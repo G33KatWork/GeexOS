@@ -48,6 +48,17 @@ void */*Lib::*/memmove(void *dest, const void *src, size_t count)
 	return dest;
 }
 
+int /*Lib::*/memcmp(const void *_a, const void *_b, size_t count)
+{
+    char *a = (char*)_a;
+    char *b = (char*)_b;
+
+    while(count-- > 0) {
+        if(*a++ != *b++) return 1;
+    }
+    return 0;
+}
+
 size_t /*Lib::*/strlen(const char *str)
 {
 	size_t retval;

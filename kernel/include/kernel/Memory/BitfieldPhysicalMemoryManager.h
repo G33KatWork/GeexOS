@@ -11,6 +11,8 @@ namespace Memory
         BitfieldPhysicalMemoryManager(size_t memorySize);
         Address AllocateFrame();
         void DeallocateFrame(Address physAddr);
+        void MarkAsUsed(Address physAddr);
+        bool IsFree(Address physAddr);
         
     private:
         uint32_t *frames;

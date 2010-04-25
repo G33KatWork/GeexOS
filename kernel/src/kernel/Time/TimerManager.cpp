@@ -87,7 +87,7 @@ bool TimerManager::HandleTick(ClockSource_t *source)
 
 void TimerManager::StartTimer(Timer* t, unsigned long length)
 {
-    TIMER_MGR_DEBUG_MSG("A new timer with length of " << (unsigned)length << " was started");
+    TIMER_MGR_DEBUG_MSG("A new timer with length of " << length << " was started");
     t->SetLength(length);
     currentTimers->append(t);
 }

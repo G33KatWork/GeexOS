@@ -122,6 +122,16 @@ CharacterOutputDevice &CharacterOutputDevice::operator<<(int i)
     return *this;
 }
 
+CharacterOutputDevice &CharacterOutputDevice::operator<<(size_t i)
+{
+    if (printMode == dec)
+        PrintDec((unsigned)i);
+    else
+        PrintHex((unsigned)i);
+    
+    return *this;
+}
+
 CharacterOutputDevice &CharacterOutputDevice::operator<<(Special s)
 {
     switch(s)

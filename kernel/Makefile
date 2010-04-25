@@ -24,6 +24,9 @@ CXXSOURCES = lib/string.cpp \
 			 arch/pit.cpp  \
 			 arch/hal.cpp  \
 			 arch/APIC.cpp \
+			 arch/ACPI/RSDP.cpp \
+			 arch/ACPI/RSDT.cpp \
+			 arch/ACPI/ACPITable.cpp \
 			 arch/interrupts.cpp \
 			 kernel/Processes/Scheduler.cpp \
 			 kernel/Processes/Thread.cpp \

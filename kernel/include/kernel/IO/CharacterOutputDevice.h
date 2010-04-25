@@ -72,6 +72,8 @@ namespace IO
         CharacterOutputDevice &operator<<(const char *c);
         CharacterOutputDevice &operator<<(unsigned int i);
         CharacterOutputDevice &operator<<(int i);
+        //CharacterOutputDevice &operator<<(Address i);
+        CharacterOutputDevice &operator<<(size_t i);
         CharacterOutputDevice &operator<<(Special s);
 		
 		//Low level functions that need to be implemented by the child class

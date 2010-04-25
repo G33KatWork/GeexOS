@@ -14,6 +14,7 @@ typedef signed int int32_t;		/**< Signed 32-bit. */
 typedef signed long long int64_t;	/**< Signed 64-bit. */
 
 typedef unsigned int Address;
+typedef unsigned long long Address64;
 
 #include <arch/registers.h>
 

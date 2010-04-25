@@ -8,9 +8,13 @@
 #include <kernel/debug.h>
 #include <arch/cpuid.h>
 #include <arch/msr.h>
+#include <arch/ACPI/RSDP.h>
+#include <arch/ACPI/RSDT.h>
 
 using namespace Arch;
 using namespace Memory;
+using namespace ACPI;
+using namespace IO;
 
 void Arch::InitializeCPU()
 {
@@ -60,6 +64,37 @@ void Arch::SetupArchMemRegions()
     //Announce region for video memory
     //TODO: Implement proper framebuffer, configure VGA properly and throw this away
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(KERNEL_VIDEO_MEMORY, 2*PAGE_SIZE, "Video memory", ALLOCFLAG_WRITABLE);
+    
+    HAL_DEBUG_MSG("Setting up ACPI...");
+    
+    RSDP* p = new RSDP();
+    
+    if(p->Found())
+    {
+        HAL_DEBUG_MSG("ACPI seems to be available...");
+        ASSERT(p->IsValid(), "RSDP is invalid");
+    }
+    
+    HAL_DEBUG_MSG("ACPI OEM ID: " << p->GetOEMID());
+    
+    Address rsdtAddr = p->GetRSDTAddress();
+    HAL_DEBUG_MSG("RSDT Address: " << rsdtAddr);
+    
+    //TODO: Map to another address? Perhaps a fixed one in kernel space. Or just parse everything and throw this away
+    VirtualMemoryManager::GetInstance()->KernelSpace()->MapPhysical(rsdtAddr, rsdtAddr, PAGE_SIZE, "ACPI Tables", ALLOCFLAG_NONE);
+    
+    RSDT* rsdt = RSDT::FromAddress(rsdtAddr);
+    ASSERT(rsdt->IsValid(), "Checksum of RSDT is invalid");
+    
+    HAL_DEBUG_MSG("RSDT contains " << dec << rsdt->GetSubtableCount() << " Subtables");
+    for(unsigned int i = 0; i < rsdt->GetSubtableCount(); i++)
+    {
+        Address a = (Address)rsdt->GetTable(i);
+        ACPITableHeader* table = (ACPITableHeader*)a;
+        HAL_DEBUG_MSG("Address of RSDT Subtable " << dec << i << ": " << hex << a);
+        //Signatures are not null-terminated, anyway we just print this here 
+        HAL_DEBUG_MSG("Subtable Signature: " << table->Signature);
+    }
 }
 
 ClockSource_t Arch::ClockSource  = {

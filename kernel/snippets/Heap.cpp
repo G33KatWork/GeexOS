@@ -16,7 +16,7 @@ Heap::Heap(Address location, unsigned int size, unsigned int initialSize)
 	while(endAssigned - begin < initialSize)
         Expand();
         
-    kout << "Heap created at: " << hex << (unsigned)location << " with max size of " << size << "B and initial size of" << initialSize << "B" << endl;
+    kout << "Heap created at: " << hex << location << " with max size of " << size << "B and initial size of" << initialSize << "B" << endl;
 }
 
 void Heap::Expand() {

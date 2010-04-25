@@ -12,7 +12,7 @@ using namespace IO;
 
 Stack::Stack(Address end, size_t s)
 {
-    STACK_DEBUG_MSG("Creating stack at " << hex << (unsigned)end << " with size " << (unsigned)s);
+    STACK_DEBUG_MSG("Creating stack at " << hex << end << " with size " << s);
     
     ASSERT(end % PAGE_SIZE == 0, "Stack end (lowermost address) must be page aligned");
     ASSERT((end + s) % PAGE_SIZE == 0, "Stack beginning (uppermost address) must be page aligned");
@@ -23,23 +23,23 @@ Stack::Stack(Address end, size_t s)
 
 void Stack::MoveCurrentStackHere(Address initialESP)
 {
-    STACK_DEBUG_MSG("Moving stack from " << (unsigned)initialESP);
+    STACK_DEBUG_MSG("Moving stack from " << initialESP);
     
     Address oldStackPointer = readStackPointer();
     Address oldBasePointer = readBasePointer();
     
-    STACK_DEBUG_MSG("Old Stackpointer: " << (unsigned)oldStackPointer);
-    STACK_DEBUG_MSG("Old Basepointer: " << (unsigned)oldBasePointer);
+    STACK_DEBUG_MSG("Old Stackpointer: " << oldStackPointer);
+    STACK_DEBUG_MSG("Old Basepointer: " << oldBasePointer);
     
     Address offset = GetStartAddress() - initialESP;
     
-    STACK_DEBUG_MSG("Offset between old and new Stack: " << (unsigned)offset);
+    STACK_DEBUG_MSG("Offset between old and new Stack: " << offset);
     
     Address newStackPointer = oldStackPointer + offset;
     Address newBasePointer = oldBasePointer + offset;
     
-    STACK_DEBUG_MSG("New Stackpointer: " << (unsigned)newStackPointer);
-    STACK_DEBUG_MSG("New Basepointer: " << (unsigned)newBasePointer);
+    STACK_DEBUG_MSG("New Stackpointer: " << newStackPointer);
+    STACK_DEBUG_MSG("New Basepointer: " << newBasePointer);
     
     //Copy the stack
     memcpy((void*)newStackPointer, (const void*)oldStackPointer, initialESP - oldStackPointer);

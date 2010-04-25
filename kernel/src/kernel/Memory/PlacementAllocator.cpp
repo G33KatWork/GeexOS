@@ -16,7 +16,7 @@ PlacementAllocator::PlacementAllocator()
 
 void* PlacementAllocator::Allocate(size_t len, bool pageAlign)
 {
-    PLACEMENT_DEBUG_MSG("Allocating " << dec << (unsigned)len << " Bytes " << (pageAlign?" page-aligned":""));
+    PLACEMENT_DEBUG_MSG("Allocating " << dec << len << " Bytes " << (pageAlign?" page-aligned":""));
     unsigned int tmp;
 
     if(pageAlign && (placement_address % PAGE_SIZE != 0))

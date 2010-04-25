@@ -68,17 +68,17 @@ void ElfInformation::announceStringTables()
     //These regions can possibly overlap each other
     //So be careful, if you don't specify the same flags on these regions
     //They could possibly be overwritten.
-    ELF_INFORMATION_DEBUG_MSG("Announcing section header string table. Address " << hex << (unsigned)shstrtab->addr + KERNEL_BASE << " Size: " << (unsigned)shstrtab->size);
+    ELF_INFORMATION_DEBUG_MSG("Announcing section header string table. Address " << hex << shstrtab->addr + KERNEL_BASE << " Size: " << shstrtab->size);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion((((Address)shstrtab->addr) & IDENTITY_POSITION) + KERNEL_BASE, (size_t)PAGE_ALIGN(shstrtab->size), ".shstrtab", ALLOCFLAG_NONE);
     
     Elf32SectionHeader* symtab = GetSection(".symtab");
-    ELF_INFORMATION_DEBUG_MSG("Announcing symbol table. Address " << hex << (unsigned)symtab->addr + KERNEL_BASE << " Size: " << (unsigned)symtab->size);
+    ELF_INFORMATION_DEBUG_MSG("Announcing symbol table. Address " << hex << symtab->addr + KERNEL_BASE << " Size: " << symtab->size);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion((((Address)symtab->addr) & IDENTITY_POSITION) + KERNEL_BASE, (size_t)PAGE_ALIGN(symtab->size), ".symtab", ALLOCFLAG_NONE);
     
     Elf32SectionHeader* strtab = GetSection(".strtab");
-    ELF_INFORMATION_DEBUG_MSG("Announcing string table. Address " << hex << (unsigned)strtab->addr + KERNEL_BASE << " Size: " << (unsigned)strtab->size);
+    ELF_INFORMATION_DEBUG_MSG("Announcing string table. Address " << hex << strtab->addr + KERNEL_BASE << " Size: " << strtab->size);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion((((Address)strtab->addr) & IDENTITY_POSITION) + KERNEL_BASE, (size_t)PAGE_ALIGN(strtab->size), ".strtab", ALLOCFLAG_NONE);
     
-    ELF_INFORMATION_DEBUG_MSG("Foo: " << (unsigned)(addr & IDENTITY_POSITION) << " Size: " << (unsigned)(PAGE_ALIGN(num * size)));
+    ELF_INFORMATION_DEBUG_MSG("Foo: " << (addr & IDENTITY_POSITION) << " Size: " << (PAGE_ALIGN(num * size)));
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(((Address)addr) & IDENTITY_POSITION, (size_t)PAGE_ALIGN(num * size), "ELF Header", ALLOCFLAG_NONE);
 }

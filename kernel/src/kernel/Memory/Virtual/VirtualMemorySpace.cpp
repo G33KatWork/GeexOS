@@ -39,8 +39,8 @@ void VirtualMemorySpace::RemoveRegion(VirtualMemoryRegion* region)
 VirtualMemoryRegion* VirtualMemorySpace::Allocate(Address address, size_t size, const char* regionName, AllocationFlags flags)
 {
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Allocating a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace " << name);
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << (unsigned)address <<
-                                   " Size: " << (unsigned)size <<
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << address <<
+                                   " Size: " << size <<
                                    " Flags: " << (flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
                                           " " << (flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
                                           " " << (flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
@@ -66,9 +66,9 @@ VirtualMemoryRegion* VirtualMemorySpace::Allocate(Address address, size_t size, 
 VirtualMemoryRegion* VirtualMemorySpace::AllocateInRange(Address startAddress, Address endAddress, size_t size, const char* regionName, AllocationFlags flags)
 {
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Allocating a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace " << name << " in a range");
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address of range: " << hex << (unsigned)startAddress <<
-                                   " End Address of range: " << hex << (unsigned)endAddress <<
-                                   " Size: " << (unsigned)size <<
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address of range: " << hex << startAddress <<
+                                   " End Address of range: " << hex << endAddress <<
+                                   " Size: " << size <<
                                    " Flags: " << (flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
                                           " " << (flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
                                           " " << (flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
@@ -79,7 +79,7 @@ VirtualMemoryRegion* VirtualMemorySpace::AllocateInRange(Address startAddress, A
     {
         if(continousFreeSpace >= size)
         {
-            VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Seems we found a hole large enough to fit our request at " << hex << (unsigned)(curAddr - size));
+            VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Seems we found a hole large enough to fit our request at " << hex << (curAddr - size));
             return Allocate(curAddr-size, size, regionName, flags);
         }
         
@@ -97,21 +97,53 @@ void VirtualMemorySpace::Deallocate(VirtualMemoryRegion* region)
     
 }
 
+VirtualMemoryRegion* VirtualMemorySpace::MapPhysical(Address physAddr, Address virtAddr, size_t size, const char* regionName, AllocationFlags flags)
+{
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Mapping a physical address to a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace " << name);
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Physical Address " << hex << physAddr <<
+                                   " Virtual Address " << hex << virtAddr <<
+                                   " Size: " << size <<
+                                   " Flags: " << (flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
+                                          " " << (flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
+                                          " " << (flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
+    
+    VirtualMemoryRegion* region = new VirtualMemoryRegion(virtAddr, size, regionName);
+    
+    for(Address i = region->startAddress; i < region->startAddress + region->size; i += PAGE_SIZE)
+    {
+        ASSERT(this->manager->PhysicalAllocator()->IsFree(physAddr), "Physical frame to be mapped manually into a virtual memory address is marked as used");
+        ASSERT(!Paging::GetInstance()->IsPresent(i), "Virtual address which should be mapped manually to a physical frame is already present");
+        
+        Paging::GetInstance()->MapAddress(
+            i,
+            physAddr,
+            flags & ALLOCFLAG_WRITABLE,
+            flags & ALLOCFLAG_USERMODE
+        );
+        this->manager->PhysicalAllocator()->MarkAsUsed(physAddr);
+        
+        physAddr += PAGE_SIZE;
+    }
+    
+    AddRegion(region);
+    return region;
+}
+
 void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
 {
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Correcting alloc flags for VirtualMemoryRegion " << r->Name() << " in VirtualMemorySpace " << this->name);
     
     r->flags = f;
     
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << (unsigned)r->startAddress <<
-                                   " Size: " << (unsigned)r->size <<
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << r->startAddress <<
+                                   " Size: " << r->size <<
                                    " Flags: " << (f & ALLOCFLAG_WRITABLE?"rw":"ro") <<
                                           " " << (f & ALLOCFLAG_USERMODE?"umode":"kmode") << 
                                           " " << (f & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
     
     for(Address i = r->startAddress; i < r->startAddress + r->size; i += PAGE_SIZE)
     {
-        VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Remapping page at virtual " << hex << (unsigned)i);
+        VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Remapping page at virtual " << hex << i);
         Paging::GetInstance()->MapAddress(
             i,
             Paging::GetInstance()->GetPhysicalAddress(i),
@@ -124,8 +156,8 @@ void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
 void VirtualMemorySpace::AnnounceRegion(Address address, size_t size, const char* rname, AllocationFlags f)
 {
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Announcing region " << rname << " in VirtualMemorySpace " << this->name);
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << (unsigned)address <<
-                                   " Size: " << (unsigned)size <<
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << address <<
+                                   " Size: " << size <<
                                    " Flags: " << (f & ALLOCFLAG_WRITABLE?"rw":"ro") <<
                                           " " << (f & ALLOCFLAG_USERMODE?"umode":"kmode") << 
                                           " " << (f & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));

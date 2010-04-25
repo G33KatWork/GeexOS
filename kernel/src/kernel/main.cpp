@@ -107,7 +107,7 @@ int main(MultibootInfo* multibootInfo)
     kernelStack->MoveCurrentStackHere((Address)&bootStack);
     VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
     MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << KERNEL_STACK_ADDRESS << " with size: " << KERNEL_STACK_SIZE);
-    MAIN_DEBUG_MSG("New Stackpointer: " << (unsigned)readStackPointer());
+    MAIN_DEBUG_MSG("New Stackpointer: " << readStackPointer());
     
     syncMemregionsWithPaging();
     
@@ -115,7 +115,7 @@ int main(MultibootInfo* multibootInfo)
     Debug::stringTable = elfInfo->GetSection(".strtab");
     Debug::symbolTable = elfInfo->GetSection(".symtab");
     
-    MAIN_DEBUG_MSG("Multiboot structure address: " << hex << (unsigned)m.GetAddress());
+    MAIN_DEBUG_MSG("Multiboot structure address: " << hex << m.GetAddress());
     MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
     InterruptDispatcher* irqD = InterruptDispatcher::GetInstance();
@@ -187,7 +187,7 @@ void syncMemregionsWithPaging(void)
         if(VirtualMemoryManager::GetInstance()->KernelSpace()->FindRegionEnclosingAddress(i) == NULL)
         {
             Address physicalAddr = Paging::GetInstance()->GetPhysicalAddress(i);
-            //MAIN_DEBUG_MSG("Virtual address " << hex << (unsigned)i << " pointing to physical " << (unsigned)physicalAddr << " doesn't seem to contain a region.");
+            //MAIN_DEBUG_MSG("Virtual address " << hex << i << " pointing to physical " << physicalAddr << " doesn't seem to contain a region.");
             
             Paging::GetInstance()->UnmapAddress(i);
             VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(physicalAddr);

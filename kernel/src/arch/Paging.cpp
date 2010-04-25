@@ -61,7 +61,7 @@ void Paging::InitDone()
 
 Address Paging::GetPhysicalAddress(Address virtualaddr)
 {
-    ARCH_PAGING_DEBUG_MSG("Physical address of virtual " << hex << (unsigned)virtualaddr << " requested");
+    ARCH_PAGING_DEBUG_MSG("Physical address of virtual " << hex << virtualaddr << " requested");
     
     unsigned int pdindex = virtualaddr >> 22;
     unsigned int ptindex = (virtualaddr >> 12) & 0x03FF;
@@ -83,7 +83,7 @@ Address Paging::GetPhysicalAddress(Address virtualaddr)
 
 void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermode)
 {   
-    ARCH_PAGING_DEBUG_MSG("Mappging physical " << hex << (unsigned)phys << " to virtual " << (unsigned)virt);
+    ARCH_PAGING_DEBUG_MSG("Mappging physical " << hex << phys << " to virtual " << virt);
     ARCH_PAGING_DEBUG_MSG("Flags: " << (readwrite?"rw":"ro") << " " << (usermode?"umode":"kmode"));
     
     unsigned int pdindex = virt >> 22;
@@ -106,7 +106,7 @@ void Paging::MapAddress(Address virt, Address phys, bool readwrite, bool usermod
 
 void Paging::UnmapAddress(Address virt)
 {
-    ARCH_PAGING_DEBUG_MSG("Unmappging virtual " << hex << (unsigned)virt);
+    ARCH_PAGING_DEBUG_MSG("Unmappging virtual " << hex << virt);
     
     unsigned int pdindex = virt >> 22;
     unsigned int ptindex = (virt >> 12) & 0x03FF;
@@ -121,6 +121,21 @@ void Paging::UnmapAddress(Address virt)
     p->RW(false);
     
     asm volatile("invlpg %0"::"m" (*(char *)virt));
+}    
+
+bool Paging::IsPresent(Address virt)
+{
+    ARCH_PAGING_DEBUG_MSG("Checking if virtual " << hex << virt << " is mapped");
+    
+    unsigned int pdindex = virt >> 22;
+    unsigned int ptindex = (virt >> 12) & 0x03FF;
+    
+    PageTable *t = kernel_directory->GetTable(pdindex, true);
+    ARCH_PAGING_DEBUG_MSG("Address of PageTable: " << (unsigned)t);
+    Page *p = t->GetPage(ptindex);
+    ARCH_PAGING_DEBUG_MSG("Address of Page: " << (unsigned)p);
+    
+    return p->Present();
 }
 
 void Paging::SwitchCurrentPageDirectory(PageDirectory* dir)
@@ -151,7 +166,7 @@ PageTable* PageDirectory::GetTable(unsigned int index, bool assign)
         
         PageTable* t = new (true /*page align*/) PageTable();
         Address physicalPageTableAddress = Paging::GetInstance()->GetPhysicalAddress((Address) t);
-        ARCH_PAGING_DEBUG_MSG("Physical address of new PageTable: " << (unsigned)physicalPageTableAddress);
+        ARCH_PAGING_DEBUG_MSG("Physical address of new PageTable: " << physicalPageTableAddress);
         SetTable(index, t, physicalPageTableAddress | 0x3);
     }
     
