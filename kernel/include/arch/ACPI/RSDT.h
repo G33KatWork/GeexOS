@@ -27,7 +27,7 @@ namespace Arch
                 return (descriptor->h.Length - sizeof(struct ACPITableHeader)) / 4;
             }
             
-            ACPITableHeader* GetTable(const char* Signature);
+            Address GetTable(const char* Signature);
             Address GetTable(unsigned int index);
             
             bool IsValid()
