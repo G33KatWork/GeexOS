@@ -99,7 +99,7 @@ int main(MultibootInfo* multibootInfo)
     
     //Create Arch-specific memory regions in kernel space
     //On x86: Framebuffer for textmode and lowest 64K for BIOS
-    SetupArchMemRegions();
+    SetupArchMemRegions(&m);
     
     //Create defined Stack and move boot stack to new position
     VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);

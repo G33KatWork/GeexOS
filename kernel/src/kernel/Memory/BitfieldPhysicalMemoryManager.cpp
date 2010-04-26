@@ -16,6 +16,7 @@ BitfieldPhysicalMemoryManager::BitfieldPhysicalMemoryManager(size_t memorySize)
     //setup bitmap
 	nFrames = memorySize * 1024 / PAGE_SIZE;
 	frames = (unsigned int*)kmalloc(INDEX_FROM_BIT(nFrames) * sizeof(uint32_t));
+	PHYS_BITFIELD_DEBUG_MSG("Initialization allocator with memsize of " << dec << memorySize << "KB which results in " << nFrames << " possible frames");
 	memset(frames, 0, INDEX_FROM_BIT(nFrames) * sizeof(uint32_t));
 	
 	//mark 0 to 4MB for kernel as used
@@ -78,7 +79,8 @@ void BitfieldPhysicalMemoryManager::DeallocateFrame(Address physAddr)
 void BitfieldPhysicalMemoryManager::MarkAsUsed(Address physAddr)
 {
     PHYS_BITFIELD_DEBUG_MSG("Marking frame as used: " << hex << physAddr);
-    bitmap_set_frame(physAddr);
+    if((physAddr / PAGE_SIZE) <= nFrames)
+        bitmap_set_frame(physAddr);
 }
 
 
@@ -88,5 +90,8 @@ bool BitfieldPhysicalMemoryManager::IsFree(Address physAddr)
     Address frame = physAddr / PAGE_SIZE;
 	unsigned int idx = INDEX_FROM_BIT(frame);
 	unsigned int off = OFFSET_FROM_BIT(frame);
-	return !(frames[idx] & (0x1 << off));
+	if((physAddr / PAGE_SIZE) <= nFrames)
+	    return !(frames[idx] & (0x1 << off));
+	else
+        return false;
 }

@@ -111,7 +111,7 @@ VirtualMemoryRegion* VirtualMemorySpace::MapPhysical(Address physAddr, Address v
     
     for(Address i = region->startAddress; i < region->startAddress + region->size; i += PAGE_SIZE)
     {
-        ASSERT(this->manager->PhysicalAllocator()->IsFree(physAddr), "Physical frame to be mapped manually into a virtual memory address is marked as used");
+        ASSERT(!this->manager->PhysicalAllocator()->IsFree(physAddr), "Physical frame to be mapped manually into a virtual memory address is not marked as used");
         ASSERT(!Paging::GetInstance()->IsPresent(i), "Virtual address which should be mapped manually to a physical frame is already present");
         
         Paging::GetInstance()->MapAddress(
@@ -120,7 +120,7 @@ VirtualMemoryRegion* VirtualMemorySpace::MapPhysical(Address physAddr, Address v
             flags & ALLOCFLAG_WRITABLE,
             flags & ALLOCFLAG_USERMODE
         );
-        this->manager->PhysicalAllocator()->MarkAsUsed(physAddr);
+        //this->manager->PhysicalAllocator()->MarkAsUsed(physAddr);
         
         physAddr += PAGE_SIZE;
     }

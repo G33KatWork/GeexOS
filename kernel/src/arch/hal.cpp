@@ -54,7 +54,7 @@ void Arch::GetCPUVendor(char* buf)
     cpuid_string(CPUID_GETVENDORSTRING, (uint32_t*)buf);
 }
 
-void Arch::SetupArchMemRegions()
+void Arch::SetupArchMemRegions(Multiboot* m)
 {
     HAL_DEBUG_MSG("Announcing architecture specific memory regions...");
     
@@ -64,6 +64,31 @@ void Arch::SetupArchMemRegions()
     //Announce region for video memory
     //TODO: Implement proper framebuffer, configure VGA properly and throw this away
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(KERNEL_VIDEO_MEMORY, 2*PAGE_SIZE, "Video memory", ALLOCFLAG_WRITABLE);
+    
+    //Reserve memory regions
+    HAL_DEBUG_MSG("The following " << dec << m->GetMemregionCount() << " memory regions were given from the bootloader:");
+    HAL_DEBUG_MSG("Address\t\tLength\t\tType");
+    for(unsigned int i = 0; i < m->GetMemregionCount(); i++)
+    {
+        multiboot_memory_region_t region = m->GetMemregions()[i];
+        HAL_DEBUG_MSG("" << hex << (Address)region.addr << "\t\t" << (Address)region.len << "\t\t" << region.type);
+
+        //check if we need to reserve this region
+        //that's the case if the type is not 0x1 and it's not the bios region which we resevered above
+        if(region.type != 0x1 && region.addr > ((BIOS_ADDRESS + BIOS_SIZE) - KERNEL_BASE))
+        {
+            Address curAddress = (Address)region.addr;
+            Address curLength = (Address)region.len;
+            HAL_DEBUG_MSG("Reserving area at " << hex << curAddress);
+            while(curLength != 0)
+            {
+                VirtualMemoryManager::GetInstance()->PhysicalAllocator()->MarkAsUsed(curAddress);
+                curAddress += PAGE_SIZE;
+                curLength -= PAGE_SIZE;
+            }
+        }
+    }
+    
     
     HAL_DEBUG_MSG("Setting up ACPI...");
     

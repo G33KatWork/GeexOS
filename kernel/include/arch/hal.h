@@ -4,6 +4,7 @@
 #include <lib/types.h>
 #include <arch/pit.h>
 #include <arch/clock_source.h>
+#include <kernel/Multiboot.h>
 
 namespace Arch
 {
@@ -22,7 +23,7 @@ namespace Arch
         PIT::GetInstance()->Initialize(1000); //1000Hz
     }
     
-    void SetupArchMemRegions(void);
+    void SetupArchMemRegions(Multiboot* m);
     
     extern ClockSource_t ClockSource;
 }
