@@ -112,25 +112,26 @@ void Arch::SetupArchMemRegions(Multiboot* m)
     HAL_DEBUG_MSG("ACPI OEM ID: " << p->GetOEMID());
     
     Address rsdtAddr = p->GetRSDTAddress();
-    HAL_DEBUG_MSG("RSDT Address: " << rsdtAddr);
+    HAL_DEBUG_MSG("Physical RSDT Address: " << rsdtAddr);
     
     //TODO: Map to another address? Perhaps a fixed one in kernel space. Or just parse everything and throw this away
     //VirtualMemoryManager::GetInstance()->KernelSpace()->MapPhysical(rsdtAddr, rsdtAddr, PAGE_SIZE, "ACPI Tables", ALLOCFLAG_NONE);
     
-    /*RSDT* rsdt = RSDT::FromAddress(rsdtAddr);
+    RSDT* rsdt = RSDT::FromAddress(VirtualMemoryManager::GetInstance()->IOMemory()->TranslatePhysicalAddress(rsdtAddr));
     ASSERT(rsdt->IsValid(), "Checksum of RSDT is invalid");
     
     HAL_DEBUG_MSG("RSDT contains " << dec << rsdt->GetSubtableCount() << " Subtables");
     for(unsigned int i = 0; i < rsdt->GetSubtableCount(); i++)
     {
         Address a = (Address)rsdt->GetTable(i);
+        a = VirtualMemoryManager::GetInstance()->IOMemory()->TranslatePhysicalAddress(a);
         ACPITableHeader* table = (ACPITableHeader*)a;
         HAL_DEBUG_MSG("Address of RSDT Subtable " << dec << i << ": " << hex << a);
         //Signatures are not null-terminated, anyway we just print this here 
         HAL_DEBUG_MSG("Subtable Signature: " << table->Signature);
     }
     
-    FADT* fadt = FADT::FromAddress(rsdt->GetTable("FACP"));
+    /*FADT* fadt = FADT::FromAddress(rsdt->GetTable("FACP"));
     if(fadt != NULL)
     {
         HAL_DEBUG_MSG("Found FADT");

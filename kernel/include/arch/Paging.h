@@ -5,6 +5,7 @@
 #include <kernel/global.h>
 
 #define IDENTITY_POSITION   0xFFFFF000
+#define OFFSET_MASK         0xFFF
 #define PAGE_SIZE           0x1000
 
 #define PAGE_ALIGN(x)       ((x & IDENTITY_POSITION) + PAGE_SIZE)

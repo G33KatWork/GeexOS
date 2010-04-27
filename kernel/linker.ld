@@ -24,7 +24,7 @@ SECTIONS{
 
     .rodata ALIGN (4096) : AT(ADDR(.rodata) - 0xC0000000)
     {
-        *(.rodata)
+        *(.rodata*)
     }
 
     .data ALIGN (4096) : AT(ADDR(.data) - 0xC0000000)

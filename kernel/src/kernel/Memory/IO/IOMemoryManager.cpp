@@ -102,6 +102,27 @@ IOMemoryRegion* IOMemoryManager::MapPhysical(Address physicalAddress, size_t siz
     return NULL;
 }
 
+Address IOMemoryManager::TranslatePhysicalAddress(Address physicalAddress)
+{
+    IO_MEMORY_MANAGER_DEBUG_MSG("Trying to translate physical address" << hex << physicalAddress << " to appropriate virtual address in I/O Memory");
+    
+    IOMemoryRegion* iomemregion = VirtualMemoryManager::GetInstance()->IOMemory()->FindRegionEnclosingPhysicalAddress(physicalAddress);
+    if(iomemregion == NULL)
+    {
+        IO_MEMORY_MANAGER_DEBUG_MSG("There is no known I/O Memory region which spans over the given physical address " << hex << physicalAddress);
+        return NULL;
+    }
+    
+    Address offsetInPage = physicalAddress & OFFSET_MASK;
+    physicalAddress = physicalAddress & IDENTITY_POSITION;
+    
+    Address offset = iomemregion->StartAddress() - physicalAddress;
+    IO_MEMORY_MANAGER_DEBUG_MSG("Offset between virtual and physical address is " << hex << offset);
+    IO_MEMORY_MANAGER_DEBUG_MSG("Resulting virtual address is " << hex << physicalAddress + offset);
+    
+    return physicalAddress + offset + offsetInPage;
+}
+
 IOMemoryRegion* IOMemoryManager::Allocate(Address virtualAddress, Address physicalAddress, size_t size, const char* regionName)
 {
     IOMemoryRegion* region = new IOMemoryRegion(virtualAddress, physicalAddress, size, regionName);

@@ -21,6 +21,8 @@ namespace Memory
     
         IOMemoryRegion* MapPhysical(Address physicalAddress, size_t size, const char* regionName);
         
+        Address TranslatePhysicalAddress(Address physicalAddress);
+        
         void DumpRegions(IO::CharacterOutputDevice& c);
         
     private:

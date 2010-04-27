@@ -5,7 +5,7 @@
 #include <kernel/IO/SerialConsole.h>
 
 //Comment out for on screen debugging
-#define     SERIAL_DEBUG
+//#define     SERIAL_DEBUG
 
 #ifdef SERIAL_DEBUG
     extern class IO::SerialConsole kdbg;
