@@ -3,6 +3,7 @@
 #include <arch/idt.h>
 #include <arch/pit.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <kernel/Memory/IO/IOMemoryManager.h>
 #include <arch/Paging.h>
 #include <arch/AddressLayout.h>
 #include <kernel/debug.h>
@@ -89,8 +90,13 @@ void Arch::SetupArchMemRegions(Multiboot* m)
                 curAddress += PAGE_SIZE;
                 curLength -= PAGE_SIZE;
             }
+            
+            IOMemoryRegion* iomemregion = VirtualMemoryManager::GetInstance()->IOMemory()->MapPhysical(region.addr, region.len, "MMAP Reserved");
+            HAL_DEBUG_MSG("Reserved region mapped to virtual " << hex << iomemregion->StartAddress());
         }
     }
+    
+    VirtualMemoryManager::GetInstance()->IOMemory()->DumpRegions(kdbg);
     
     
     HAL_DEBUG_MSG("Setting up ACPI...");
@@ -109,9 +115,9 @@ void Arch::SetupArchMemRegions(Multiboot* m)
     HAL_DEBUG_MSG("RSDT Address: " << rsdtAddr);
     
     //TODO: Map to another address? Perhaps a fixed one in kernel space. Or just parse everything and throw this away
-    VirtualMemoryManager::GetInstance()->KernelSpace()->MapPhysical(rsdtAddr, rsdtAddr, PAGE_SIZE, "ACPI Tables", ALLOCFLAG_NONE);
+    //VirtualMemoryManager::GetInstance()->KernelSpace()->MapPhysical(rsdtAddr, rsdtAddr, PAGE_SIZE, "ACPI Tables", ALLOCFLAG_NONE);
     
-    RSDT* rsdt = RSDT::FromAddress(rsdtAddr);
+    /*RSDT* rsdt = RSDT::FromAddress(rsdtAddr);
     ASSERT(rsdt->IsValid(), "Checksum of RSDT is invalid");
     
     HAL_DEBUG_MSG("RSDT contains " << dec << rsdt->GetSubtableCount() << " Subtables");
@@ -156,7 +162,7 @@ void Arch::SetupArchMemRegions(Multiboot* m)
     {
         HAL_DEBUG_MSG("Found HPET");
         ASSERT(hpet->IsValid(), "HPET is invalid");
-    }
+    }*/
 }
 
 ClockSource_t Arch::ClockSource  = {

@@ -97,7 +97,7 @@ void VirtualMemorySpace::Deallocate(VirtualMemoryRegion* region)
     
 }
 
-VirtualMemoryRegion* VirtualMemorySpace::MapPhysical(Address physAddr, Address virtAddr, size_t size, const char* regionName, AllocationFlags flags)
+/*VirtualMemoryRegion* VirtualMemorySpace::MapPhysical(Address physAddr, Address virtAddr, size_t size, const char* regionName, AllocationFlags flags)
 {
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Mapping a physical address to a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace " << name);
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Physical Address " << hex << physAddr <<
@@ -127,7 +127,7 @@ VirtualMemoryRegion* VirtualMemorySpace::MapPhysical(Address physAddr, Address v
     
     AddRegion(region);
     return region;
-}
+}*/
 
 void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
 {
@@ -167,7 +167,7 @@ void VirtualMemorySpace::AnnounceRegion(Address address, size_t size, const char
     AddRegion(region);
 }
 
-void Remap(VirtualMemoryRegion* r, Address NewAddress)
+void VirtualMemorySpace::Remap(VirtualMemoryRegion* r, Address NewAddress)
 {
     
 }

@@ -41,6 +41,7 @@ CXXSOURCES = lib/string.cpp \
              kernel/Memory/Virtual/VirtualMemorySpace.cpp \
              kernel/Memory/Virtual/VirtualMemoryRegion.cpp \
 			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp \
+			 kernel/Memory/IO/IOMemoryManager.cpp \
 			 kernel/ElfInformation.cpp \
 			 kernel/Processes/Scheduler.cpp \
 			 kernel/Processes/Thread.cpp \

@@ -5,7 +5,7 @@
 #include <kernel/IO/SerialConsole.h>
 
 //Comment out for on screen debugging
-//#define     SERIAL_DEBUG
+#define     SERIAL_DEBUG
 
 #ifdef SERIAL_DEBUG
     extern class IO::SerialConsole kdbg;
@@ -20,6 +20,7 @@
 #define EN_DEBUG_MSG_MAIN
 #define EN_HAL_DEBUG_MSG
 #define EN_HAL_ACPI_DEBUG_MSG
+#define EN_IO_MEMORY_MANAGER_DEBUG_MSG
 //#define EN_SCHEDULER_DEBUG_MSG
 //#define EN_TIMER_MGR_DEBUG_MSG
 //#define EN_ELF_INFORMATION_DEBUG_MSG
@@ -60,6 +61,12 @@
     #define HAL_ACPI_DEBUG_MSG(x)               DEBUG_MSG("HAL ACPI: "x)
 #else
     #define HAL_ACPI_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_IO_MEMORY_MANAGER_DEBUG_MSG
+    #define IO_MEMORY_MANAGER_DEBUG_MSG(x)      DEBUG_MSG("IOMEM_MANAGER: "x)
+#else
+    #define IO_MEMORY_MANAGER_DEBUG_MSG(x)
 #endif
 
 #ifdef EN_SCHEDULER_DEBUG_MSG

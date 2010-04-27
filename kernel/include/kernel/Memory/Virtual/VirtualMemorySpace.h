@@ -34,7 +34,7 @@ namespace Memory
 		VirtualMemoryRegion* AllocateInRange(Address startAddress, Address endAddress, size_t size, const char* regionName, AllocationFlags flags);
         void Deallocate(VirtualMemoryRegion* region);
         
-        VirtualMemoryRegion* MapPhysical(Address physAddr, Address virtAddress, size_t size, const char* regionName, AllocationFlags flags);
+        //VirtualMemoryRegion* MapPhysical(Address physAddr, Address virtAddress, size_t size, const char* regionName, AllocationFlags flags);
 		
 		VirtualMemoryRegion* FindRegionByName(const char* regionName);
 		VirtualMemoryRegion* FindRegionByStartAddress(Address start);

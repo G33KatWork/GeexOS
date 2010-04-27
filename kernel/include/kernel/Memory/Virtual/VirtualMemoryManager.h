@@ -8,6 +8,8 @@
 
 namespace Memory
 {
+    class IOMemoryManager;      //Avoid ciruclar header inclusion
+    
     class VirtualMemoryManager
     {
     public:
@@ -26,11 +28,13 @@ namespace Memory
         void KernelStack(Stack* NewKernelStack) { kernelStack = NewKernelStack; }
         
         BitfieldPhysicalMemoryManager* PhysicalAllocator() { return phys; }
+        IOMemoryManager* IOMemory() { return iomanager; }
         
     private:
         static VirtualMemoryManager* instance;
         
         BitfieldPhysicalMemoryManager* phys;
+        IOMemoryManager* iomanager;
         
         VirtualMemorySpace* SpaceListHead;
         

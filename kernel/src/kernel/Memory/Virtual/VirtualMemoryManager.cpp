@@ -2,6 +2,8 @@
 #include <arch/Paging.h>
 #include <kernel/debug.h>
 #include <lib/string.h>
+#include <kernel/Memory/IO/IOMemoryManager.h>
+#include <arch/AddressLayout.h>
 
 using namespace Arch;
 using namespace Memory;
@@ -22,6 +24,7 @@ void VirtualMemoryManager::Init(size_t MemorySize)
     VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Initializing virtual kernel memory subsystem. Memory size: " << dec << (unsigned int)MemorySize << "KB");
     
     phys = new BitfieldPhysicalMemoryManager(MemorySize);
+    iomanager = new IOMemoryManager(KERNEL_IO_MEMORY_START, KERNEL_IO_MEMORY_END - KERNEL_IO_MEMORY_START);
     VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Physical memory manager initialized...");
 }
 
