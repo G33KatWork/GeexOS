@@ -4,6 +4,9 @@
 #include <lib/types.h>
 #include <arch/ACPI/ACPITable.h>
 
+#include <kernel/debug.h>
+using namespace IO;
+
 namespace Arch
 {
     namespace ACPI
@@ -31,11 +34,12 @@ namespace Arch
             
             static FADT* FromAddress(Address a)
             {
+                if(a == NULL) return NULL;
                 return new FADT(a);
             }
             
-            Address GetFACSAddress() { return descriptor->FACSAddr; }
-            Address GetDSDTAddress() { return descriptor->DSDTAddr; }
+            Address GetFACSAddress() { return TranslatePhysical(descriptor->FACSAddr); }
+            Address GetDSDTAddress() { return TranslatePhysical(descriptor->DSDTAddr); }
         };
     }
 }

@@ -2,6 +2,7 @@
 #define _ARCH_ACPI_RSDP_H
 
 #include <lib/types.h>
+#include <arch/ACPI/ACPITable.h>
 
 namespace Arch
 {
@@ -24,13 +25,12 @@ namespace Arch
             char reserved[3];
         } RSDPDescriptor;
         
-        class RSDP
+        class RSDP : public ACPITable
         {
         private:
             RSDPDescriptor* descriptor;
             
             bool Find(Address start, size_t size);
-            bool ChecksumValid(Address start, size_t len);
             
         public:
             RSDP();
@@ -41,9 +41,9 @@ namespace Arch
             
             bool IsValid();
             
-            Address GetRSDTAddress() { return descriptor->RsdtAddress; }
-            bool XSDTAvailable() { return descriptor->Revision > 0; }
-            Address GetXSDTAddress() { return descriptor->XsdtAddress; }
+            Address GetRSDTAddress() { return TranslatePhysical(descriptor->RsdtAddress); }
+            bool XSDTAvailable() { return descriptor->Revision > 0 && descriptor->XsdtAddress != NULL; }
+            Address GetXSDTAddress() { return TranslatePhysical(descriptor->XsdtAddress); }
         };
     }
 }

@@ -25,7 +25,7 @@ void IOMemoryManager::AddRegion(IOMemoryRegion* region)
     RegionListHead = region;
 }
 
-void IOMemoryManager::RemoveRegion(IOMemoryRegion* region)
+/*void IOMemoryManager::RemoveRegion(IOMemoryRegion* region)
 {
     IO_MEMORY_MANAGER_DEBUG_MSG("Removing IOMemoryRegion " << region->name);
 
@@ -42,7 +42,7 @@ void IOMemoryManager::RemoveRegion(IOMemoryRegion* region)
 
     if(curItem->Next == region)
         curItem->Next = curItem->Next->Next;
-}
+}*/
 
 IOMemoryRegion* IOMemoryManager::FindRegionByName(const char* regionName)
 {
@@ -104,7 +104,7 @@ IOMemoryRegion* IOMemoryManager::MapPhysical(Address physicalAddress, size_t siz
 
 Address IOMemoryManager::TranslatePhysicalAddress(Address physicalAddress)
 {
-    IO_MEMORY_MANAGER_DEBUG_MSG("Trying to translate physical address" << hex << physicalAddress << " to appropriate virtual address in I/O Memory");
+    IO_MEMORY_MANAGER_DEBUG_MSG("Trying to translate physical address " << hex << physicalAddress << " to appropriate virtual address in I/O Memory");
     
     IOMemoryRegion* iomemregion = VirtualMemoryManager::GetInstance()->IOMemory()->FindRegionEnclosingPhysicalAddress(physicalAddress);
     if(iomemregion == NULL)
@@ -113,14 +113,13 @@ Address IOMemoryManager::TranslatePhysicalAddress(Address physicalAddress)
         return NULL;
     }
     
-    Address offsetInPage = physicalAddress & OFFSET_MASK;
-    physicalAddress = physicalAddress & IDENTITY_POSITION;
+    Address offsetInRegion = (physicalAddress & IDENTITY_POSITION) - iomemregion->StartAddressPhysical();
     
-    Address offset = iomemregion->StartAddress() - physicalAddress;
+    Address offset = iomemregion->StartAddress() - (physicalAddress & IDENTITY_POSITION);
     IO_MEMORY_MANAGER_DEBUG_MSG("Offset between virtual and physical address is " << hex << offset);
-    IO_MEMORY_MANAGER_DEBUG_MSG("Resulting virtual address is " << hex << physicalAddress + offset);
+    IO_MEMORY_MANAGER_DEBUG_MSG("Resulting virtual address is " << hex << physicalAddress + offset + offsetInRegion);
     
-    return physicalAddress + offset + offsetInPage;
+    return physicalAddress + offset + offsetInRegion;
 }
 
 IOMemoryRegion* IOMemoryManager::Allocate(Address virtualAddress, Address physicalAddress, size_t size, const char* regionName)

@@ -2,9 +2,12 @@
 #include <kernel/debug.h>
 #include <kernel/global.h>
 #include <lib/string.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <kernel/Memory/IO/IOMemoryManager.h>
 
 using namespace Arch::ACPI;
 using namespace IO;
+using namespace Memory;
 
 bool ACPITable::ChecksumValid(Address start, size_t len)
 {
@@ -14,4 +17,9 @@ bool ACPITable::ChecksumValid(Address start, size_t len)
         checksum += ptr[i];
     
     return checksum == 0;
+}
+
+Address ACPITable::TranslatePhysical(Address physical)
+{
+    return VirtualMemoryManager::GetInstance()->IOMemory()->TranslatePhysicalAddress(physical);
 }

@@ -13,7 +13,7 @@ namespace Memory
         IOMemoryManager(Address IOMemoryStart, size_t IOMemorySize);
         
         void AddRegion(IOMemoryRegion* region);
-        void RemoveRegion(IOMemoryRegion* region);
+        //void RemoveRegion(IOMemoryRegion* region);
         
         IOMemoryRegion* FindRegionByName(const char* regionName);
         IOMemoryRegion* FindRegionEnclosingPhysicalAddress(Address physicalAddress);

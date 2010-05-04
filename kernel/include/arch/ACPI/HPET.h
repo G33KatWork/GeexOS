@@ -32,6 +32,7 @@ namespace Arch
             
             static HPET* FromAddress(Address a)
             {
+                if(a == NULL) return NULL;
                 return new HPET(a);
             }
         };

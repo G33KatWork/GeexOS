@@ -5,6 +5,8 @@
 #include <arch/ACPI/RSDT.h>
 #include <arch/ACPI/ACPITable.h>
 
+//FIXME: Dirty casting hell... Perhaps we can use templates here to solve this
+
 namespace Arch
 {
     namespace ACPI
@@ -12,19 +14,53 @@ namespace Arch
         struct RSDTDescriptor
         {
             struct ACPITableHeader h;
-            Address NextSDT[1];
+            uint32_t NextSDT[1];
         } __attribute__((packed));
         
         class RSDT : public ACPITable
         {
+        protected:
+            Address descriptor;
+            RSDT(Address a) { descriptor = a; }
+        
+        public:
+            virtual unsigned int GetSubtableCount()
+            {
+                return (((struct RSDTDescriptor*)descriptor)->h.Length - sizeof(struct ACPITableHeader)) / 4;
+            }
+            
+            virtual Address GetTable(const char* Signature);
+            virtual Address GetTable(unsigned int index);
+            
+            virtual bool IsValid()
+            {
+                return ChecksumValid(descriptor, ((struct RSDTDescriptor*)descriptor)->h.Length);
+            }
+            
+            static RSDT* FromAddress(Address a)
+            {
+                if(a == NULL) return NULL;
+                return new RSDT(a);
+            }
+        };
+        
+        struct XSDTDescriptor
+        {
+            struct ACPITableHeader h;
+            uint64_t NextSDT[1];
+        } __attribute__((packed));
+        
+        class XSDT : public RSDT
+        {
         private:
-            struct RSDTDescriptor* descriptor;
-            RSDT(Address a) { descriptor = (struct RSDTDescriptor*)a; }
+            XSDT(Address a)
+                : RSDT(a)
+            {}
         
         public:
             unsigned int GetSubtableCount()
             {
-                return (descriptor->h.Length - sizeof(struct ACPITableHeader)) / 4;
+                return (((struct XSDTDescriptor*)descriptor)->h.Length - sizeof(struct ACPITableHeader)) / 8;
             }
             
             Address GetTable(const char* Signature);
@@ -32,12 +68,13 @@ namespace Arch
             
             bool IsValid()
             {
-                return ChecksumValid((Address)descriptor, descriptor->h.Length);
+                return ChecksumValid((Address)descriptor, ((struct RSDTDescriptor*)descriptor)->h.Length);
             }
             
-            static RSDT* FromAddress(Address a)
+            static XSDT* FromAddress(Address a)
             {
-                return new RSDT(a);
+                if(a == NULL) return NULL;
+                return new XSDT(a);
             }
         };
     }

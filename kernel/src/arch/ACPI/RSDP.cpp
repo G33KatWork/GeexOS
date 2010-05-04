@@ -12,7 +12,7 @@ RSDP::RSDP()
     descriptor = NULL;
     
     Address ebda = *(unsigned short *)(0x040E + KERNEL_BASE);
-    ebda = (Address)ebda << 4;
+    ebda = (Address)((ebda << 4) + KERNEL_BASE);
     HAL_ACPI_DEBUG_MSG("BIOS EBDA at " << hex << ebda);
     
     if(!Find(0xF0000 + KERNEL_BASE, 0x10000))
@@ -40,16 +40,6 @@ bool RSDP::Find(Address start, size_t size)
     }
     
     return false;
-}
-
-bool RSDP::ChecksumValid(Address start, size_t len)
-{
-    char checksum = 0;
-    char* ptr = (char*)start;
-    for(unsigned int i = 0; i < len; i++)
-        checksum += ptr[i];
-    
-    return checksum == 0;
 }
 
 bool RSDP::IsValid()

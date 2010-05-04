@@ -4,19 +4,15 @@ ENTRY (start)
 SECTIONS{
     . = 0x00100000;
 
-    .multibootHeader :
-    {
-        *(.multibootHeader)
-    }
-
     .setup :
-	{
+	 {
+	   *(.multibootHeader)
 		*(.setup)
 	}
 
     . += 0xC0000000;
     
-    .text : AT(ADDR(.text) - 0xC0000000)
+    .text ALIGN (4096) : AT(ADDR(.text) - 0xC0000000)
     {
         code = .; _code = .; __code = .;
         *(.text*)

@@ -29,6 +29,7 @@ namespace Arch
             
             static AmlSDT* FromAddress(Address a)
             {
+                if(a == NULL) return NULL;
                 return new AmlSDT(a);
             }
             

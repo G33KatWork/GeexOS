@@ -24,6 +24,7 @@ namespace Arch
         {
         protected:
             bool ChecksumValid(Address start, size_t len);
+            Address TranslatePhysical(Address physical);
         };
     }
 }

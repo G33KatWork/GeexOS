@@ -62,9 +62,11 @@ namespace IO
             PrintString((char*)c);  
         }
 		
-		void PrintHex(unsigned int n);
+		void PrintHex(unsigned int n, size_t len);
         void PrintDec(unsigned int n);
         void PrintDec(int n);
+        
+        void PrintData(Address start, size_t len);
         
         void Clear(Color c);
 
