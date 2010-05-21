@@ -11,71 +11,44 @@ namespace Arch
 {
     namespace ACPI
     {
-        struct RSDTDescriptor
+        /*struct RSDTDescriptor
         {
             struct ACPITableHeader h;
             uint32_t NextSDT[1];
-        } __attribute__((packed));
+        } __attribute__((packed));*/
         
         class RSDT : public ACPITable
         {
-        protected:
-            Address descriptor;
-            RSDT(Address a) { descriptor = a; }
+        public:
+            RSDT(Address a)
+				: ACPITable(a)
+			{}
         
         public:
-            virtual unsigned int GetSubtableCount()
-            {
-                return (((struct RSDTDescriptor*)descriptor)->h.Length - sizeof(struct ACPITableHeader)) / 4;
-            }
+            virtual unsigned int GetSubtableCount() { return (Length() - ACPITABLEHEADERLEN) / 4; }
             
-            virtual Address GetTable(const char* Signature);
+            virtual Address GetTable(const char* SubtableSignature);
             virtual Address GetTable(unsigned int index);
-            
-            virtual bool IsValid()
-            {
-                return ChecksumValid(descriptor, ((struct RSDTDescriptor*)descriptor)->h.Length);
-            }
-            
-            static RSDT* FromAddress(Address a)
-            {
-                if(a == NULL) return NULL;
-                return new RSDT(a);
-            }
         };
         
-        struct XSDTDescriptor
+        /*struct XSDTDescriptor
         {
             struct ACPITableHeader h;
             uint64_t NextSDT[1];
-        } __attribute__((packed));
+        } __attribute__((packed));*/
         
         class XSDT : public RSDT
         {
-        private:
+        public:
             XSDT(Address a)
                 : RSDT(a)
             {}
         
         public:
-            unsigned int GetSubtableCount()
-            {
-                return (((struct XSDTDescriptor*)descriptor)->h.Length - sizeof(struct ACPITableHeader)) / 8;
-            }
+            unsigned int GetSubtableCount() { return (Length() - ACPITABLEHEADERLEN) / 8; }
             
-            Address GetTable(const char* Signature);
+            Address GetTable(const char* SubtableSignature);
             Address GetTable(unsigned int index);
-            
-            bool IsValid()
-            {
-                return ChecksumValid((Address)descriptor, ((struct RSDTDescriptor*)descriptor)->h.Length);
-            }
-            
-            static XSDT* FromAddress(Address a)
-            {
-                if(a == NULL) return NULL;
-                return new XSDT(a);
-            }
         };
     }
 }

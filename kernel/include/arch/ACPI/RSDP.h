@@ -3,6 +3,8 @@
 
 #include <lib/types.h>
 #include <arch/ACPI/ACPITable.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <kernel/Memory/IO/IOMemoryManager.h>
 
 namespace Arch
 {
@@ -25,12 +27,13 @@ namespace Arch
             char reserved[3];
         } RSDPDescriptor;
         
-        class RSDP : public ACPITable
+        class RSDP
         {
         private:
             RSDPDescriptor* descriptor;
             
             bool Find(Address start, size_t size);
+			bool ChecksumValidInternal(Address start, size_t len);
             
         public:
             RSDP();
@@ -41,9 +44,9 @@ namespace Arch
             
             bool IsValid();
             
-            Address GetRSDTAddress() { return TranslatePhysical(descriptor->RsdtAddress); }
+            Address GetRSDTAddress() { return Memory::VirtualMemoryManager::GetInstance()->IOMemory()->TranslatePhysicalAddress(descriptor->RsdtAddress); }
             bool XSDTAvailable() { return descriptor->Revision > 0 && descriptor->XsdtAddress != NULL; }
-            Address GetXSDTAddress() { return TranslatePhysical(descriptor->XsdtAddress); }
+            Address GetXSDTAddress() { return Memory::VirtualMemoryManager::GetInstance()->IOMemory()->TranslatePhysicalAddress(descriptor->XsdtAddress); }
         };
     }
 }

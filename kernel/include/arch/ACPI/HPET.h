@@ -8,33 +8,19 @@ namespace Arch
 {
     namespace ACPI
     {
-        struct HPETDescriptor
+		class HPET : public ACPITable
         {
-            struct ACPITableHeader h;
-            uint32_t BlockID;
-            uint32_t BaseAddress;   //This is not a linear address, refer to HPEC spec from intel
-            char HPETNumber;
-            short MainCounterMinimumPeriodicClockTick;
-            char PageProtectionOEMAttribute;
-        } __attribute__((packed));
-        
-        class HPET : public ACPITable
-        {
-        private:
-            struct HPETDescriptor* descriptor;
-            HPET(Address a) { descriptor = (struct HPETDescriptor*)a; }
+        public:
+            HPET(Address a)
+				: ACPITable(a)
+			{}
         
         public:
-            bool IsValid()
-            {
-                return ChecksumValid((Address)descriptor, descriptor->h.Length);
-            }
-            
-            static HPET* FromAddress(Address a)
-            {
-                if(a == NULL) return NULL;
-                return new HPET(a);
-            }
+			uint32_t GetBlockID() { return Read32(36); }
+			uint32_t GetBaseAddress() { return Read32(40); }
+			uint8_t GetHPETNumber() { return Read8(44); }
+			uint16_t GetMainCounterMinimumPeriodicClock() { return Read16(45); }
+			uint8_t GetPageProtectionOEMAttribute() { return Read8(47); }
         };
     }
 }

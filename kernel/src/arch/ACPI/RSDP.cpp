@@ -42,17 +42,27 @@ bool RSDP::Find(Address start, size_t size)
     return false;
 }
 
+bool RSDP::ChecksumValidInternal(Address start, size_t len)
+{
+    char checksum = 0;
+    char* ptr = (char*)start;
+    for(unsigned int i = 0; i < len; i++)
+        checksum += ptr[i];
+    
+    return checksum == 0;
+}
+
 bool RSDP::IsValid()
 {
     if(descriptor == NULL)
         return false;
     
-    if(!ChecksumValid((Address)descriptor, RSDPLENGTH_V1))
+    if(!ChecksumValidInternal((Address)descriptor, RSDPLENGTH_V1))
         return false;
     
     if(descriptor->Revision > 0)
     {
-        if(!ChecksumValid((Address)descriptor, RSDPLENGTH_V2))
+        if(!ChecksumValidInternal((Address)descriptor, RSDPLENGTH_V2))
             return false;
     }
     

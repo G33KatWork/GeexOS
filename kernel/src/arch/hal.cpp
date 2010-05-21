@@ -12,7 +12,7 @@
 #include <arch/ACPI/RSDP.h>
 #include <arch/ACPI/RSDT.h>
 #include <arch/ACPI/FADT.h>
-#include <arch/ACPI/AmlDST.h>
+#include <arch/ACPI/AmlSDT.h>
 #include <arch/ACPI/HPET.h>
 
 using namespace Arch;
@@ -119,12 +119,12 @@ void Arch::SetupArchMemRegions(Multiboot* m)
         if(p->GetRevision() > 0 && p->GetXSDTAddress() != NULL)
         {
             HAL_DEBUG_MSG("We have at least ACPI 2 and XSDT is available");
-            rsdt = XSDT::FromAddress(p->GetXSDTAddress());
+            rsdt = ACPITable::FromAddress<XSDT>(p->GetXSDTAddress());
         }
         else
         {
             HAL_DEBUG_MSG("XSDT is not available, using RSDT");
-            rsdt = RSDT::FromAddress(p->GetRSDTAddress());
+            rsdt = ACPITable::FromAddress<RSDT>(p->GetRSDTAddress());
         }
     
         ASSERT(rsdt->IsValid(), "Checksum of RSDT/XSDT is invalid");
@@ -134,14 +134,14 @@ void Arch::SetupArchMemRegions(Multiboot* m)
         {
             Address a = rsdt->GetTable(i);
             //kdbg.PrintData(a, 0x40);
-            ACPITableHeader* table = (ACPITableHeader*)a;
+            ACPITable table = ACPITable(a);
             HAL_DEBUG_MSG("Address of Subtable " << dec << i << ": " << hex << a);
             //Signatures are not null-terminated, anyway we just print this here 
-            HAL_DEBUG_MSG("Subtable Signature: " << table->Signature);
-            HAL_DEBUG_MSG("Subtable OEMID: " << table->OEMID);
+            HAL_DEBUG_MSG("Subtable Signature: " << table.Signature());
+            HAL_DEBUG_MSG("Subtable OEMID: " << table.OEMID());
         }
     
-        FADT* fadt = FADT::FromAddress(rsdt->GetTable("FACP"));
+        FADT* fadt = ACPITable::FromAddress<FADT>(rsdt->GetTable("FACP"));
         if(fadt != NULL)
         {
             HAL_DEBUG_MSG("Found FADT");
@@ -155,12 +155,12 @@ void Arch::SetupArchMemRegions(Multiboot* m)
                 //TODO: Write class for FACS
             }
         
-            AmlSDT* dsdt = AmlSDT::FromAddress(fadt->GetDSDTAddress());
+            AmlSDT* dsdt = ACPITable::FromAddress<AmlSDT>(fadt->GetDSDTAddress());
             ASSERT(dsdt->IsValid(), "DSDT is invalid");
             HAL_DEBUG_MSG("DSDT contains " << dec << dsdt->GetAMLCodeLength() << " Byte AML Code");
         }
     
-        AmlSDT* ssdt = AmlSDT::FromAddress(rsdt->GetTable("SSDT"));
+        AmlSDT* ssdt = ACPITable::FromAddress<AmlSDT>(rsdt->GetTable("SSDT"));
         if(ssdt != NULL)
         {
             HAL_DEBUG_MSG("Found SSDT");
@@ -168,7 +168,7 @@ void Arch::SetupArchMemRegions(Multiboot* m)
             HAL_DEBUG_MSG("SSDT contains " << dec << ssdt->GetAMLCodeLength() << " Byte AML Code");
         }
     
-        HPET* hpet = HPET::FromAddress(rsdt->GetTable("HPET"));
+        HPET* hpet = ACPITable::FromAddress<HPET>(rsdt->GetTable("HPET"));
         if(hpet != NULL)
         {
             HAL_DEBUG_MSG("Found HPET");
