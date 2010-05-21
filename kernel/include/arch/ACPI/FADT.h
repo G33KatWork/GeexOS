@@ -3,12 +3,13 @@
 
 #include <lib/types.h>
 #include <arch/ACPI/ACPITable.h>
+#include <arch/ACPI/GAS.h>
 
 namespace Arch
 {
     namespace ACPI
     {
-		/*enum FADTFeatureFlags
+		enum FADTFeatureFlags
 		{
 			WBINVD					=		(1<<0),
 			WBINBVD_FLUSH			=		(1<<1),
@@ -18,14 +19,14 @@ namespace Arch
 			SLP_BUTTON				=		(1<<5),
 			FIX_RTC					=		(1<<6),
 			RTC_S4					=		(1<<7),
-			TMR_V AL_EXT			=		(1<<8),
+			TMR_VAL_EXT				=		(1<<8),
 			DCK_CAP					=		(1<<9),
 			RESET_REG_SUP			=		(1<<10),
 			SEALED_CASE				=		(1<<11),
 			HEADLESS				=		(1<<12),
 			CPU_SW_SLP				=		(1<<13),
-			PCI_EXP_W AK			=		(1<<14),
-			USE_PLA TFORM_CLOCK		=		(1<<15),
+			PCI_EXP_WAK				=		(1<<14),
+			USE_PLATFORM_CLOCK		=		(1<<15),
 			S4_RTC_STS_VALID		=		(1<<16),
 			REMOTE_POWER_ON_CAPABLE	=		(1<<17),
 			FORCE_APIC_CLUSTER_MODEL=		(1<<18),
@@ -42,7 +43,7 @@ namespace Arch
 			SOHOServer				=		5,
 			AppliancePC				=		6,
 			PerformanceServer		=		7
-		};*/
+		};
 		
 		class FADT : public ACPITable
         {
@@ -67,84 +68,52 @@ namespace Arch
 				else
 					return TranslatePhysical(Read64(140));
 			}
+			
+			uint8_t GetPreferredPmProfile() { return Read8(45); }
+			uint16_t GetSCI_INT() { return Read16(46); }
+			uint32_t GetSMI_CMD() { return Read32(48); }
+			uint8_t GetACPIEnable() { return Read8(52); }
+			uint8_t GetACPIDisable() { return Read8(53); }
+			uint8_t GetS4BIOSRequest() { return Read8(54); }
+			uint8_t GetPStateCount() { return Read8(55); }
+			uint32_t GetPM1aEventBlock() { return Read32(56); }
+			uint32_t GetPM1bEventBlock() { return Read32(60); }
+			uint32_t GetPM1aCountBlock() { return Read32(64); }
+			uint32_t GetPM1bCountBlock() { return Read32(68); }
+			uint32_t GetPM2CountBlock() { return Read32(72); }
+			uint32_t GetPMTimerBlock() { return Read32(76); }
+			uint32_t GetGPE0Block() { return Read32(80); }
+			uint32_t GetGPE1Block() { return Read32(84); }
+			uint8_t GetPM1EventLength() { return Read8(88); }
+			uint8_t GetPM1CountLength() { return Read8(89); }
+			uint8_t GetPM2CountLength() { return Read8(90); }
+			uint8_t GetPMTimerLength() { return Read8(91); }
+			uint8_t GetGPE0BlockLength() { return Read8(92); }
+			uint8_t GetGPE1BlockLength() { return Read8(93); }
+			uint8_t GetGPE1Base() { return Read8(94); }
+			uint8_t GetCSTCount() { return Read8(95); }
+			uint16_t GetPLvl2Latency() { return Read16(96); }
+			uint16_t GetPLvl3Latency() { return Read16(98); }
+			uint16_t GetFlushSize() { return Read16(100); }
+			uint16_t GetFlushStride() { return Read16(102); }
+			uint8_t GetDutyOffset() { return Read8(104); }
+			uint8_t GetDutyWidth() { return Read8(105); }
+			uint8_t GetDayAlarm() { return Read8(106); }
+			uint8_t GetMonthAlarm() { return Read8(107); }
+			uint8_t GetCentury() { return Read8(108); }
+			uint16_t GetIAPCBootArch() { return Read16(109); }
+			uint32_t GetFlags() { return Read32(112); }
+			GAS* GetResetRegister() { return (GAS*)Read(116, 12); }
+			uint8_t GetResetValue() { return Read8(128); }
+			GAS* GetX_PM1aEventBlock() { return (GAS*)Read(148, 12); }
+			GAS* GetX_PM1bEventBlock() { return (GAS*)Read(160, 12); }
+			GAS* GetX_PM1aCountBlock() { return (GAS*)Read(172, 12); }
+			GAS* GetX_PM1bCountBlock() { return (GAS*)Read(184, 12); }
+			GAS* GetX_PM2CountBlock() { return (GAS*)Read(196, 12); }
+			GAS* GetX_PMTimerBlock() { return (GAS*)Read(208, 12); }
+			GAS* GetX_GPE0Block() { return (GAS*)Read(220, 12); }
+			GAS* GetX_GPE1Block() { return (GAS*)Read(232, 12); }
         };
-
-        /*struct FADTDescriptor
-        {
-            struct ACPITableHeader h;
-            Address FACSAddr;
-            Address DSDTAddr;
-            char reserved;
-			char PreferredPmProfile;
-			short SCI_INT;
-			uint32_t SMI_CMD;
-			char ACPIEnable;
-			char ACPIDisable;
-			char S4BIOSRequest;
-			char PStateCount;
-			uint32_t PM1aEventBlock;
-			uint32_t PM1bEventBlock;
-			uint32_t PM1aCountBlock;
-			uint32_t PM1bCountBlock;
-			uint32_t PM2CountBlock;
-			uint32_t PMTimerBlock;
-			uint32_t GPE0Block;
-			uint32_t GPE1Block;
-			char PM1EventLength;
-			char PM1CountLength;
-			char PM2CountLength;
-			char PMTimerLength;
-			char GPE0BlockLength;
-			char GPE1BlockLength;
-			char GPE1Base;
-			char CSTCount;
-			short PLvl2Latency;
-			short PLvl3Latency;
-			short FlushSize;
-			short FlushStride;
-			char DutyOffset;
-			char DutyWidth;
-			char DayAlarm;
-			char MonthAlarm;
-			char Century;
-			short IAPCBootArch;
-			char reserved2;
-			uint32_t flags;
-			uint96_t ResetRegister;
-			char ResetValue;
-			char reserved3[3];
-			uint64_t FACSAddr64;
-			uint64_t DSDTAddr64;
-			uint96_t X_PM1aEventBlock;
-			uint96_t X_PM1bEventBlock;
-			uint96_t X_PM1aCountBlock;
-			uint96_t X_PM1bCountBlock;
-			uint96_t X_PM2CountBlock;
-			uint96_t X_PMTimerBlock;
-			uint96_t X_GPE0Block;
-			uint96_t X_GPE1Block;
-        } __attribute__((packed));
-        
-        class FADT : public ACPITable
-        {
-        private:
-            struct FADTDescriptor* descriptor;
-            FADT(Address a) { descriptor = (struct FADTDescriptor*)a; }
-        
-        public:
-            bool IsValid()
-            {
-                return ChecksumValid((Address)descriptor, descriptor->h.Length);
-            }
-            
-            static FADT* FromAddress(Address a)
-            {
-                if(a == NULL) return NULL;
-                return new FADT(a);
-            }
-            
-            
-        };*/
     }
 }
 
