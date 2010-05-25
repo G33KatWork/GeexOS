@@ -14,6 +14,7 @@
 #include <arch/ACPI/FADT.h>
 #include <arch/ACPI/AmlSDT.h>
 #include <arch/ACPI/HPET.h>
+#include <arch/ACPI/MADT.h>
 
 using namespace Arch;
 using namespace Memory;
@@ -173,6 +174,34 @@ void Arch::SetupArchMemRegions(Multiboot* m)
         {
             HAL_DEBUG_MSG("Found HPET");
             ASSERT(hpet->IsValid(), "HPET is invalid");
+        }
+        
+        MADT* madt = ACPITable::FromAddress<MADT>(rsdt->GetTable("APIC"));
+        if(madt != NULL)
+        {
+            HAL_DEBUG_MSG("Found MADT");
+            ASSERT(madt->IsValid(), "MADT is invalid");
+            HAL_DEBUG_MSG("MADT contains " << dec << madt->GetAPICStructureCount() << " APIC structs");
+            
+            for(unsigned int i = 0; i < madt->GetAPICStructureCount(); i++)
+            {
+                uint8_t type;
+                APICStructureHeader* apicStruct = madt->GetAPICStruct(i, &type);
+                
+                if(type == LOCALAPIC)
+                {
+                    HAL_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALAPIC");
+                    LocalAPICStructure* lapic = (LocalAPICStructure*)apicStruct;
+                    HAL_DEBUG_MSG("LAPIC Processor ID is " << hex << lapic->ProcessorID);
+                }
+                else if(type == IOAPIC)
+                {
+                    HAL_DEBUG_MSG("APIC Struct " << dec << i << " is of type IOAPIC");
+                    IOAPICStructure* ioapic = (IOAPICStructure*)apicStruct;
+                    HAL_DEBUG_MSG("IOAPIC ID is " << hex << ioapic->IOAPICID);
+                    HAL_DEBUG_MSG("IOAPIC Base address is " << hex << ioapic->IOAPICAddress);
+                }
+            }
         }
     }
 }
