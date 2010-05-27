@@ -92,16 +92,20 @@ OBJECTS += $(GASOURCES:%.s=%.o)
 OBJECTS += $(CXXSOURCES:%.cpp=%.o)
 OBJECTS += $(CCSOURCES:%.c=%.o)
 
+# define output-directories
+# sort for removing duplicates
+OBJDIRS = $(sort $(addprefix $(OBJDIR)/, $(dir $(OBJECTS))))
+
 # Main targets
 all: createdirs $(TARGET)
 	@:	#Shut up!
 
-# sort for removing duplicates
-$(sort $(addprefix $(OBJDIR)/, $(dir $(OBJECTS)))):
+# Create output directories
+$(OBJDIRS):
 	$(call cmd_msg,MKDIR,$(@))
 	$(Q)mkdir -p $@
 
-createdirs: $(sort $(addprefix $(OBJDIR)/, $(dir $(OBJECTS))))
+createdirs: $(OBJDIRS)
 
 $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS))
 	$(call cmd_msg,LINK,$(@))
@@ -117,7 +121,16 @@ clean:
 	$(Q)rm -f kernel.map
 	$(Q)rm -rf obj
 
-distclean: clean
+# Header dependency generation
+$(OBJDIR)/%.d: $(SRCDIR)/%.cpp
+	$(call cmd_msg,DEPENDS,$@)
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CXX) $(CXXFLAGS) -MM -MG -MP -MT '$(@:%.d=%.o)' $< > $@
+
+$(OBJDIR)/%.d: $(SRCDIR)/%.c
+	$(call cmd_msg,DEPENDS,$@)
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CC) $(CFLAGS) -MM -MG -MP -MT '$(@:%.d=%.o)' $< > $@
 
 # Compile cpp files
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
@@ -134,4 +147,8 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.S
 	$(call cmd_msg,NASM,$<)
 	$(Q)$(NASM) $(ASFLAGS) -o $@ $<
 
-.PHONY: clean distclean
+.PHONY: createdirs clean
+
+ifneq ($(MAKECMDGOALS),clean)
+-include $(addprefix $(OBJDIR)/, $(OBJECTS:%.o=%.d))
+endif

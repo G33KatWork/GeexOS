@@ -174,6 +174,8 @@ void Arch::SetupArchMemRegions(Multiboot* m)
         {
             HAL_DEBUG_MSG("Found HPET");
             ASSERT(hpet->IsValid(), "HPET is invalid");
+            
+            HAL_DEBUG_MSG("HPET has number " << hex << hpet->GetHPETNumber() << " and base address " << hpet->GetBaseAddress());
         }
         
         MADT* madt = ACPITable::FromAddress<MADT>(rsdt->GetTable("APIC"));

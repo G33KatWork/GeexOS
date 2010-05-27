@@ -35,7 +35,7 @@ using namespace Time;
 void syncMemregionsWithPaging(void);
 void attachExceptionHandlers(InterruptDispatcher* irqD);
 
-void umode(int arg)
+void umode(int UNUSED(arg))
 {
     asm volatile("  \
          cli; \
