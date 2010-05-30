@@ -44,7 +44,7 @@ namespace Memory
         void SetFlags(VirtualMemoryRegion* r, AllocationFlags f);
         void AnnounceRegion(Address address, size_t size, const char* rname, AllocationFlags f);
         
-        void Remap(VirtualMemoryRegion* r, Address NewAddress);
+        void Remap(VirtualMemoryRegion* region, Address NewAddress);
         
         bool SwapOutRegion(VirtualMemoryRegion* r, Address address, size_t s);
         bool SwapInRegion(VirtualMemoryRegion* r, Address address, size_t s);

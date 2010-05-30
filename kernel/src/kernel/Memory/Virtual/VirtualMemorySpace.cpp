@@ -94,7 +94,22 @@ VirtualMemoryRegion* VirtualMemorySpace::AllocateInRange(Address startAddress, A
 
 void VirtualMemorySpace::Deallocate(VirtualMemoryRegion* region)
 {
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Deallocating region " << region->name << " in VirtualMemorySpace " << this->name);
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << region->startAddress <<
+                                   " Size: " << region->size <<
+                                   " Flags: " << (region->flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
+                                          " " << (region->flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
+                                          " " << (region->flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
     
+    ASSERT(region != NULL, "Supplied region is NULL");
+    if(region == NULL)
+        return;
+    
+    for(Address i = region->StartAddress(); i < region->StartAddress() + region->Size(); i+=PAGE_SIZE)
+        Paging::GetInstance()->UnmapAddress(i);
+    
+    RemoveRegion(region);
+    delete region;
 }
 
 /*VirtualMemoryRegion* VirtualMemorySpace::MapPhysical(Address physAddr, Address virtAddr, size_t size, const char* regionName, AllocationFlags flags)
@@ -161,23 +176,49 @@ void VirtualMemorySpace::AnnounceRegion(Address address, size_t size, const char
                                    " Flags: " << (f & ALLOCFLAG_WRITABLE?"rw":"ro") <<
                                           " " << (f & ALLOCFLAG_USERMODE?"umode":"kmode") << 
                                           " " << (f & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
-                                          
+    
     VirtualMemoryRegion* region = new VirtualMemoryRegion(address, size, rname);
     SetFlags(region, f);
     AddRegion(region);
 }
 
-void VirtualMemorySpace::Remap(VirtualMemoryRegion* r, Address NewAddress)
+void VirtualMemorySpace::Remap(VirtualMemoryRegion* region, Address NewAddress)
 {
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Remapping region " << region->name << " in VirtualMemorySpace " << this->name);
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("OLD: Starting Address " << hex << region->startAddress <<
+                                   " Size: " << region->size <<
+                                   " Flags: " << (region->flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
+                                          " " << (region->flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
+                                          " " << (region->flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("NEW: Starting Address " << hex << NewAddress);
     
+    ASSERT(region != NULL, "Supplied region is NULL");
+    if(region == NULL)
+        return;
+    
+    Address newStartAddress = NewAddress;
+    
+    for(Address i = region->StartAddress(); i < region->StartAddress() + region->Size(); i+=PAGE_SIZE)
+    {
+        Paging::GetInstance()->MapAddress(
+            NewAddress,
+            Paging::GetInstance()->GetPhysicalAddress(i),
+            region->flags & ALLOCFLAG_WRITABLE,
+            region->flags & ALLOCFLAG_USERMODE
+        );
+        Paging::GetInstance()->UnmapAddress(i);
+        NewAddress += PAGE_SIZE;
+    }
+    
+    region->startAddress = newStartAddress;
 }
 
-bool VirtualMemorySpace::SwapOutRegion(VirtualMemoryRegion* r, Address address, size_t s)
+bool VirtualMemorySpace::SwapOutRegion(VirtualMemoryRegion* UNUSED(r), Address UNUSED(address), size_t UNUSED(s))
 {
     return false;
 }
 
-bool VirtualMemorySpace::SwapInRegion(VirtualMemoryRegion* r, Address address, size_t s)
+bool VirtualMemorySpace::SwapInRegion(VirtualMemoryRegion* UNUSED(r), Address UNUSED(address), size_t UNUSED(s))
 {
     return false;
 }
