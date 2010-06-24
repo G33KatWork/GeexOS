@@ -73,7 +73,7 @@ void Heap::expand(size_t newSize)
     //get nearest following page boundary
     if(newSize % PAGE_SIZE != 0)
     {
-        newSize &= IDENTITY_POSITION;
+        newSize &= PAGEALIGN_MASK;
         newSize += PAGE_SIZE;
     }
     
@@ -118,7 +118,7 @@ list_item* Heap::findFirstFit(size_t size, bool pageAlign)
                 int offset = 0;
                 
                 //calculate offset we need to apply to get this stuff page aligned
-                if ((((location+sizeof(list_item))) & IDENTITY_POSITION) != 0)
+                if ((((location+sizeof(list_item))) & PAGEALIGN_MASK) != 0)
     				offset = PAGE_SIZE - (location+sizeof(list_item)) % PAGE_SIZE;
     				
                 size_t alignedSize = curItem->size - offset;
@@ -171,7 +171,7 @@ void* Heap::Allocate(size_t len, bool pageAlign)
     //calculate offset to be applied to be page aligned
     Address location = (Address)found;
     int offset = 0;
-    if ( pageAlign && ((((location+sizeof(list_item))) & IDENTITY_POSITION) != 0) )
+    if ( pageAlign && ((((location+sizeof(list_item))) & PAGEALIGN_MASK) != 0) )
 		offset = PAGE_SIZE - (location+sizeof(list_item)) % PAGE_SIZE;
     
     //is it worth splitting this block?

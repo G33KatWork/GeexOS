@@ -27,14 +27,9 @@ namespace Memory
             manager = ParentManager;
         }
 		
-		void AddRegion(VirtualMemoryRegion* region);
-		void RemoveRegion(VirtualMemoryRegion* region);
-		
-		VirtualMemoryRegion* Allocate(Address address, size_t size, const char* regionName, AllocationFlags flags);
-		VirtualMemoryRegion* AllocateInRange(Address startAddress, Address endAddress, size_t size, const char* regionName, AllocationFlags flags);
-        void Deallocate(VirtualMemoryRegion* region);
-        
-        //VirtualMemoryRegion* MapPhysical(Address physAddr, Address virtAddress, size_t size, const char* regionName, AllocationFlags flags);
+        void AnnounceRegion(VirtualMemoryRegion* region);
+        void DiscontinueRegion(VirtualMemoryRegion* region);
+		void AnnounceRegionWithPreallocatedMemory(Address address, size_t size, const char* rname, AllocationFlags f);
 		
 		VirtualMemoryRegion* FindRegionByName(const char* regionName);
 		VirtualMemoryRegion* FindRegionByStartAddress(Address start);
@@ -42,12 +37,8 @@ namespace Memory
 		
 		AllocationFlags GetFlags(VirtualMemoryRegion* r) { return r->flags; }
         void SetFlags(VirtualMemoryRegion* r, AllocationFlags f);
-        void AnnounceRegion(Address address, size_t size, const char* rname, AllocationFlags f);
         
-        void Remap(VirtualMemoryRegion* region, Address NewAddress);
-        
-        bool SwapOutRegion(VirtualMemoryRegion* r, Address address, size_t s);
-        bool SwapInRegion(VirtualMemoryRegion* r, Address address, size_t s);
+        //void Remap(VirtualMemoryRegion* region, Address NewAddress);
 		
 		void DumpRegions(IO::CharacterOutputDevice& c);
 		
@@ -61,6 +52,9 @@ namespace Memory
 		VirtualMemoryRegion* RegionListHead;
 		
 		VirtualMemorySpace *Next;
+		
+		void AddRegionToList(VirtualMemoryRegion* region);
+		void RemoveRegionFromList(VirtualMemoryRegion* region);
 	};
 }
 #endif

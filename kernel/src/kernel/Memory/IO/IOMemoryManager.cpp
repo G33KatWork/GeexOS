@@ -113,9 +113,9 @@ Address IOMemoryManager::TranslatePhysicalAddress(Address physicalAddress)
         return NULL;
     }
     
-    Address offsetInRegion = (physicalAddress & IDENTITY_POSITION) - iomemregion->StartAddressPhysical();
+    Address offsetInRegion = (physicalAddress & PAGEALIGN_MASK) - iomemregion->StartAddressPhysical();
     
-    Address offset = iomemregion->StartAddress() - (physicalAddress & IDENTITY_POSITION);
+    Address offset = iomemregion->StartAddress() - (physicalAddress & PAGEALIGN_MASK);
     IO_MEMORY_MANAGER_DEBUG_MSG("Offset between virtual and physical address is " << hex << offset);
     IO_MEMORY_MANAGER_DEBUG_MSG("Resulting virtual address is " << hex << physicalAddress + offset + offsetInRegion);
     

@@ -1,5 +1,5 @@
 #include <kernel/global.h>
-#include <kernel/multiboot.h>
+#include <kernel/utils/multiboot.h>
 #include <lib/string.h>
 
 using namespace Kernel;
@@ -26,6 +26,8 @@ Multiboot::Multiboot(MultibootInfo *i)
         memregions[j].len = i->mmap_addr[j].len;
         memregions[j].type = i->mmap_addr[j].type;
     }
+    
+    //TODO: Copy all the tables and correct addresses. For now we are only doing this with the cmdline and memory map
     
     if(!IsElf()) PANIC("Kernel is not ELF-compatible!");
 }

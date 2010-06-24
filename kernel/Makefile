@@ -15,8 +15,7 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/IO/SerialConsole.cpp \
 			 kernel/global.cpp \
 			 lib/cppruntime.cpp \
-			 kernel/utils/DebuggingSymbols.cpp \
-			 kernel/multiboot.cpp \
+			 kernel/utils/multiboot.cpp \
 			 arch/Paging.cpp \
 			 arch/gdt.cpp \
 			 arch/idt.cpp \
@@ -35,17 +34,17 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/DataStructures/List.cpp\
 			 kernel/Time/Timer.cpp\
 			 kernel/Time/TimerManager.cpp \
-			 kernel/Memory/Stack.cpp \
  			 kernel/Memory/PlacementAllocator.cpp \
              kernel/Memory/Virtual/VirtualMemoryManager.cpp \
              kernel/Memory/Virtual/VirtualMemorySpace.cpp \
              kernel/Memory/Virtual/VirtualMemoryRegion.cpp \
 			 kernel/Memory/BitfieldPhysicalMemoryManager.cpp \
 			 kernel/Memory/IO/IOMemoryManager.cpp \
-			 kernel/ElfInformation.cpp \
+			 kernel/utils/ElfInformation.cpp \
 			 kernel/Processes/Scheduler.cpp \
 			 kernel/Processes/Thread.cpp \
-			 kernel/Processes/KernelThread.cpp
+			 kernel/Processes/KernelThread.cpp \
+			 kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.cpp
 #			 kernel/Memory/Slab/SlabManager.cpp
 
 # List Assembler to be assembled with NASM here
@@ -103,7 +102,7 @@ all: createdirs $(TARGET)
 # Create output directories
 $(OBJDIRS):
 	$(call cmd_msg,MKDIR,$(@))
-	$(Q)mkdir -p $@
+	$(Q)$(MKDIR) -p $@
 
 createdirs: $(OBJDIRS)
 
@@ -115,21 +114,21 @@ $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS))
 
 # Cleaning
 clean:
-	$(Q)rm -f $(TARGET)
-#$(Q)rm -f $(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
-	$(Q)rm -f disasm
-	$(Q)rm -f kernel.map
-	$(Q)rm -rf obj
+	$(Q)$(RM) -f $(TARGET)
+#$(Q)$(RM) -f $(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
+	$(Q)$(RM) -f disasm
+	$(Q)$(RM) -f kernel.map
+	$(Q)$(RM) -rf obj
 
 # Header dependency generation
 $(OBJDIR)/%.d: $(SRCDIR)/%.cpp
 	$(call cmd_msg,DEPENDS,$@)
-	$(Q)mkdir -p $(dir $@)
+	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(CXX) $(CXXFLAGS) -MM -MG -MP -MT '$(@:%.d=%.o)' $< > $@
 
 $(OBJDIR)/%.d: $(SRCDIR)/%.c
 	$(call cmd_msg,DEPENDS,$@)
-	$(Q)mkdir -p $(dir $@)
+	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -MM -MG -MP -MT '$(@:%.d=%.o)' $< > $@
 
 # Compile cpp files

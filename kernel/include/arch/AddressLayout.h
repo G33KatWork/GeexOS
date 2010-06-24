@@ -26,12 +26,12 @@
       |                         |
       | Unused                  |
       |_________________________|
-      |                         | KERNEL_PLACEMENT_END = 0xC0600000
+      |                         | KERNEL_PLACEMENT_END = 0xC0400000
       | Placement region        |   = 4MB
       |_________________________| KERNEL_PLACEMENT_START = 0xC0200000
-      |                         |
+      |                         | KERNEL_ELF_END = 0xC0200000
       | Kernel ELF itself       |   = max. 2MB
-      |_________________________|
+      |_________________________| KERNEL_ELF_START = 0xC0100000
       |                         |
       | BIOS Stuff              |   = 1MB
 3 GiB |_________________________| KERNEL_BASE = 0xC0000000
@@ -67,5 +67,9 @@
 
 #define     KERNEL_IO_MEMORY_START              0xE0000000          //Uppermost 512MB are for IO Memory
 #define     KERNEL_IO_MEMORY_END                0xFFFFFFFF
+
+#define     KERNEL_PLACEMENT_END                (KERNEL_BASE + 0x400000)
+#define     KERNEL_PLACEMENT_START              (KERNEL_BASE + 0x200000)
+#define     KERNEL_PLACEMENT_SIZE               (KERNEL_PLACEMENT_END - KERNEL_PLACEMENT_START)
 
 #endif

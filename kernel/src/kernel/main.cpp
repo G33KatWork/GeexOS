@@ -1,27 +1,28 @@
 #include <arch/hal.h>
 #include <kernel/IO/Monitor.h>
 #include <kernel/global.h>
-#include <kernel/multiboot.h>
-#include <kernel/utils/DebuggingSymbols.h>
+#include <kernel/utils/multiboot.h>
 #include <arch/PageFaultHandler.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <arch/interrupts.h>
 #include <kernel/IInterruptServiceRoutine.h>
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Time/Timer.h>
-#include <kernel/Memory/Stack.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/Memory/Virtual/VirtualMemorySpace.h>
 #include <arch/ExceptionHandler.h>
 #include <kernel/Time/TimerHandler.h>
 #include <arch/KeyboardHandler.h>
 #include <arch/scheduling.h>
-#include <kernel/ElfInformation.h>
+#include <kernel/utils/ElfInformation.h>
 #include <kernel/Processes/Scheduler.h>
 #include <kernel/Processes/KernelThread.h>
 #include <arch/AddressLayout.h>
+#include <kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.h>
 
 #include <lib/string.h>
+
+#include <kernel/Memory/Virtual/Regions/PagedMemoryRegion.h>
 
 extern      Address             bootStack;          //defined in start.S
 
@@ -96,24 +97,20 @@ int main(MultibootInfo* multibootInfo)
     
     //Parse ELF-Stuff delivered from GRUB and create .text, .data, .rodata, .bss and .placement sections in kernel space
     ElfInformation* elfInfo = new ElfInformation(m.GetELFAddress(), m.GetELFshndx(), m.GetELFSize(), m.GetELFNum());
+    VirtualMemoryManager::GetInstance()->KernelElf(elfInfo);
     
     //Create Arch-specific memory regions in kernel space
     //On x86: Framebuffer for textmode and lowest 64K for BIOS
     SetupArchMemRegions(&m);
     
     //Create defined Stack and move boot stack to new position
-    VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, "Kernel stack", ALLOCFLAG_WRITABLE);
-    Stack *kernelStack = new Stack(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE);
+    KernelStackMemoryRegion* kernelStack = new KernelStackMemoryRegion(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, 0x1000, "Main kernel stack");
     kernelStack->MoveCurrentStackHere((Address)&bootStack);
     VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
     MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << KERNEL_STACK_ADDRESS << " with size: " << KERNEL_STACK_SIZE);
     MAIN_DEBUG_MSG("New Stackpointer: " << readStackPointer());
     
     syncMemregionsWithPaging();
-    
-    //Init symtab and strtab for stacktraces
-    Debug::stringTable = elfInfo->GetSection(".strtab");
-    Debug::symbolTable = elfInfo->GetSection(".symtab");
     
     MAIN_DEBUG_MSG("Multiboot structure address: " << hex << m.GetAddress());
     MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
@@ -140,14 +137,14 @@ int main(MultibootInfo* multibootInfo)
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
-    //VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
     
-    KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE, "A Thread");
-    Scheduler::GetInstance()->AddThread(thread);
-    KernelThread* thread2 = new KernelThread(2, foo, (int)'C', PAGE_SIZE, "C Thread");
+    //KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE, "A Thread");
+    //Scheduler::GetInstance()->AddThread(thread);
+    /*KernelThread* thread2 = new KernelThread(2, foo, (int)'C', PAGE_SIZE, "C Thread");
     Scheduler::GetInstance()->AddThread(thread2);
     KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE, "D Thread");
-    Scheduler::GetInstance()->AddThread(thread3);
+    Scheduler::GetInstance()->AddThread(thread3);*/
     
     //VirtualMemoryRegion* uModeCode = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x3000000, 0x1000, "Usercode", ALLOCFLAG_WRITABLE|ALLOCFLAG_EXECUTABLE|ALLOCFLAG_USERMODE);
     //VirtualMemoryRegion* kstack = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x4000000, 0x1000, "kstack", ALLOCFLAG_WRITABLE);
@@ -163,7 +160,7 @@ int main(MultibootInfo* multibootInfo)
     //Scheduler::GetInstance()->AddThread(thread4);
     
     //Initialize the scheduler
-    Scheduler::GetInstance()->SetTimerManager(tm);
+    //Scheduler::GetInstance()->SetTimerManager(tm);
     //Scheduler::GetInstance()->DumpThreads(kdbg);
     
     for(;;) {
@@ -182,7 +179,7 @@ void syncMemregionsWithPaging(void)
     //What we do now is a major cleanup. We need to synchronize the regions which are really allocated
     //and needed within our virtual memory space with the paging.
     //Sine we only have a kernel space at this time, we don't bother about other spaces. There are simply none.
-    for(Address i = 0xC0000000; i < 4*1024*1024+0xC0000000; i += PAGE_SIZE)
+    for(Address i = KERNEL_BASE; i < 4*1024*1024+KERNEL_BASE; i += PAGE_SIZE)
     {
         if(VirtualMemoryManager::GetInstance()->KernelSpace()->FindRegionEnclosingAddress(i) == NULL)
         {

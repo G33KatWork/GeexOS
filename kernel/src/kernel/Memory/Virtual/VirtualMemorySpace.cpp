@@ -1,5 +1,6 @@
 #include <kernel/Memory/Virtual/VirtualMemorySpace.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <kernel/Memory/Virtual/Regions/PreallocatedMemoryRegion.h>
 #include <lib/string.h>
 #include <kernel/global.h>
 #include <kernel/debug.h>
@@ -8,141 +9,6 @@
 using namespace Memory;
 using namespace IO;
 using namespace Arch;
-
-void VirtualMemorySpace::AddRegion(VirtualMemoryRegion* region)
-{
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Adding VirtualMemoryRegion " << region->name << " to VirtualMemorySpace " << name);
-    
-    region->Next = RegionListHead;
-    RegionListHead = region;
-}
-
-void VirtualMemorySpace::RemoveRegion(VirtualMemoryRegion* region)
-{
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Removing VirtualMemoryRegion " << region->name << " from VirtualMemorySpace" << name);
-    
-    if(RegionListHead == region)
-    {
-        RegionListHead = region->Next;
-        return;
-    }
-    
-    VirtualMemoryRegion* curItem = RegionListHead;
-    
-    while(curItem->Next != region && curItem->Next != NULL)
-        	curItem = curItem->Next;
-    
-    if(curItem->Next == region)
-        curItem->Next = curItem->Next->Next;
-}
-
-VirtualMemoryRegion* VirtualMemorySpace::Allocate(Address address, size_t size, const char* regionName, AllocationFlags flags)
-{
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Allocating a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace " << name);
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << address <<
-                                   " Size: " << size <<
-                                   " Flags: " << (flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
-                                          " " << (flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
-                                          " " << (flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
-    
-    VirtualMemoryRegion* r = new VirtualMemoryRegion(address, size, regionName);
-    r->flags = flags;
-    
-    for(Address i = address; i < address + size; i+=PAGE_SIZE)
-    {
-        Paging::GetInstance()->MapAddress(
-            i,
-            this->manager->PhysicalAllocator()->AllocateFrame(),
-            flags & ALLOCFLAG_WRITABLE,
-            flags & ALLOCFLAG_USERMODE
-        );
-    }
-    
-    AddRegion(r);
-    
-    return r;
-}
-
-VirtualMemoryRegion* VirtualMemorySpace::AllocateInRange(Address startAddress, Address endAddress, size_t size, const char* regionName, AllocationFlags flags)
-{
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Allocating a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace " << name << " in a range");
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address of range: " << hex << startAddress <<
-                                   " End Address of range: " << hex << endAddress <<
-                                   " Size: " << size <<
-                                   " Flags: " << (flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
-                                          " " << (flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
-                                          " " << (flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
-    
-    size_t continousFreeSpace = 0;
-    
-    for(Address curAddr = startAddress; curAddr < endAddress; curAddr += PAGE_SIZE)
-    {
-        if(continousFreeSpace >= size)
-        {
-            VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Seems we found a hole large enough to fit our request at " << hex << (curAddr - size));
-            return Allocate(curAddr-size, size, regionName, flags);
-        }
-        
-        if(FindRegionEnclosingAddress(curAddr) == NULL)
-            continousFreeSpace += PAGE_SIZE;
-        else
-            continousFreeSpace = 0;
-    }
-    
-    return NULL;
-}
-
-void VirtualMemorySpace::Deallocate(VirtualMemoryRegion* region)
-{
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Deallocating region " << region->name << " in VirtualMemorySpace " << this->name);
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << region->startAddress <<
-                                   " Size: " << region->size <<
-                                   " Flags: " << (region->flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
-                                          " " << (region->flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
-                                          " " << (region->flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
-    
-    ASSERT(region != NULL, "Supplied region is NULL");
-    if(region == NULL)
-        return;
-    
-    for(Address i = region->StartAddress(); i < region->StartAddress() + region->Size(); i+=PAGE_SIZE)
-        Paging::GetInstance()->UnmapAddress(i);
-    
-    RemoveRegion(region);
-    delete region;
-}
-
-/*VirtualMemoryRegion* VirtualMemorySpace::MapPhysical(Address physAddr, Address virtAddr, size_t size, const char* regionName, AllocationFlags flags)
-{
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Mapping a physical address to a VirtualMemoryRegion " << regionName << " in VirtualMemorySpace " << name);
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Physical Address " << hex << physAddr <<
-                                   " Virtual Address " << hex << virtAddr <<
-                                   " Size: " << size <<
-                                   " Flags: " << (flags & ALLOCFLAG_WRITABLE?"rw":"ro") <<
-                                          " " << (flags & ALLOCFLAG_USERMODE?"umode":"kmode") << 
-                                          " " << (flags & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
-    
-    VirtualMemoryRegion* region = new VirtualMemoryRegion(virtAddr, size, regionName);
-    
-    for(Address i = region->startAddress; i < region->startAddress + region->size; i += PAGE_SIZE)
-    {
-        ASSERT(!this->manager->PhysicalAllocator()->IsFree(physAddr), "Physical frame to be mapped manually into a virtual memory address is not marked as used");
-        ASSERT(!Paging::GetInstance()->IsPresent(i), "Virtual address which should be mapped manually to a physical frame is already present");
-        
-        Paging::GetInstance()->MapAddress(
-            i,
-            physAddr,
-            flags & ALLOCFLAG_WRITABLE,
-            flags & ALLOCFLAG_USERMODE
-        );
-        //this->manager->PhysicalAllocator()->MarkAsUsed(physAddr);
-        
-        physAddr += PAGE_SIZE;
-    }
-    
-    AddRegion(region);
-    return region;
-}*/
 
 void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
 {
@@ -159,30 +25,49 @@ void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
     for(Address i = r->startAddress; i < r->startAddress + r->size; i += PAGE_SIZE)
     {
         VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Remapping page at virtual " << hex << i);
-        Paging::GetInstance()->MapAddress(
-            i,
-            Paging::GetInstance()->GetPhysicalAddress(i),
-            f & ALLOCFLAG_WRITABLE,
-            f & ALLOCFLAG_USERMODE
-        );
+        if(Paging::GetInstance()->IsPresent(i))
+            Paging::GetInstance()->MapAddress(
+                i,
+                Paging::GetInstance()->GetPhysicalAddress(i),
+                f & ALLOCFLAG_WRITABLE,
+                f & ALLOCFLAG_USERMODE
+            );
+        else
+        {
+            VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Address " << hex << i << " wasn't present before, not remapping...");
+        }
     }
 }
 
-void VirtualMemorySpace::AnnounceRegion(Address address, size_t size, const char* rname, AllocationFlags f)
+void VirtualMemorySpace::AnnounceRegion(VirtualMemoryRegion* region)
 {
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Announcing region " << rname << " in VirtualMemorySpace " << this->name);
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Announcing region " << region->name << " in VirtualMemorySpace " << this->name);
+    //FIXME: check if space already occupied?
+    AddRegionToList(region);
+}
+
+void VirtualMemorySpace::DiscontinueRegion(VirtualMemoryRegion* region)
+{
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Discontinuing region " << region->name << " in VirtualMemorySpace " << this->name);
+    RemoveRegionFromList(region);
+}
+
+void VirtualMemorySpace::AnnounceRegionWithPreallocatedMemory(Address address, size_t size, const char* rname, AllocationFlags f)
+{
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Announcing prealloc-region " << rname << " in VirtualMemorySpace " << this->name);
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << address <<
                                    " Size: " << size <<
                                    " Flags: " << (f & ALLOCFLAG_WRITABLE?"rw":"ro") <<
                                           " " << (f & ALLOCFLAG_USERMODE?"umode":"kmode") << 
                                           " " << (f & ALLOCFLAG_EXECUTABLE?"exec":"noexec"));
     
-    VirtualMemoryRegion* region = new VirtualMemoryRegion(address, size, rname);
+    //FIXME: check if space already occupied?
+    VirtualMemoryRegion* region = new PreallocatedMemoryRegion(address, size, rname, f);
     SetFlags(region, f);
-    AddRegion(region);
+    AddRegionToList(region);
 }
 
-void VirtualMemorySpace::Remap(VirtualMemoryRegion* region, Address NewAddress)
+/*void VirtualMemorySpace::Remap(VirtualMemoryRegion* region, Address NewAddress)
 {
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Remapping region " << region->name << " in VirtualMemorySpace " << this->name);
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("OLD: Starting Address " << hex << region->startAddress <<
@@ -211,17 +96,7 @@ void VirtualMemorySpace::Remap(VirtualMemoryRegion* region, Address NewAddress)
     }
     
     region->startAddress = newStartAddress;
-}
-
-bool VirtualMemorySpace::SwapOutRegion(VirtualMemoryRegion* UNUSED(r), Address UNUSED(address), size_t UNUSED(s))
-{
-    return false;
-}
-
-bool VirtualMemorySpace::SwapInRegion(VirtualMemoryRegion* UNUSED(r), Address UNUSED(address), size_t UNUSED(s))
-{
-    return false;
-}
+}*/
 
 VirtualMemoryRegion* VirtualMemorySpace::FindRegionByName(const char* regionName)
 {
@@ -265,4 +140,31 @@ void VirtualMemorySpace::DumpRegions(CharacterOutputDevice& c)
         c << "VMEMSPACE: " << "\tSize: " << hex << (unsigned int)curRegion->size << endl;
         c << endl;
     }
+}
+
+void VirtualMemorySpace::AddRegionToList(VirtualMemoryRegion* region)
+{
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Adding VirtualMemoryRegion " << region->name << " to VirtualMemorySpace " << name);
+    
+    region->Next = RegionListHead;
+    RegionListHead = region;
+}
+
+void VirtualMemorySpace::RemoveRegionFromList(VirtualMemoryRegion* region)
+{
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Removing VirtualMemoryRegion " << region->name << " from VirtualMemorySpace" << name);
+    
+    if(RegionListHead == region)
+    {
+        RegionListHead = region->Next;
+        return;
+    }
+    
+    VirtualMemoryRegion* curItem = RegionListHead;
+    
+    while(curItem->Next != region && curItem->Next != NULL)
+        	curItem = curItem->Next;
+    
+    if(curItem->Next == region)
+        curItem->Next = curItem->Next->Next;
 }

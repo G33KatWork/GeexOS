@@ -3,6 +3,7 @@
 #include <arch/idt.h>
 #include <arch/pit.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <kernel/Memory/Virtual/Regions/PreallocatedMemoryRegion.h>
 #include <kernel/Memory/IO/IOMemoryManager.h>
 #include <arch/Paging.h>
 #include <arch/AddressLayout.h>
@@ -64,14 +65,22 @@ void Arch::SetupArchMemRegions(Multiboot* m)
     HAL_DEBUG_MSG("Announcing architecture specific memory regions...");
     
     //Announce BIOS region
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(BIOS_ADDRESS, BIOS_SIZE, "BIOS", ALLOCFLAG_WRITABLE);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegionWithPreallocatedMemory(
+                                                        BIOS_ADDRESS,
+                                                        BIOS_SIZE,
+                                                        "BIOS",
+                                                        ALLOCFLAG_WRITABLE);
     
     //Announce region for video memory
     //TODO: Implement proper framebuffer, configure VGA properly and throw this away
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(KERNEL_VIDEO_MEMORY, 2*PAGE_SIZE, "Video memory", ALLOCFLAG_WRITABLE);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegionWithPreallocatedMemory(
+                                                        KERNEL_VIDEO_MEMORY,
+                                                        2*PAGE_SIZE,
+                                                        "Video memory",
+                                                        ALLOCFLAG_WRITABLE);
     
     //Reserve memory regions
-    HAL_DEBUG_MSG("The following " << dec << m->GetMemregionCount() << " memory regions were given from the bootloader:");
+    /*HAL_DEBUG_MSG("The following " << dec << m->GetMemregionCount() << " memory regions were given from the bootloader:");
     HAL_DEBUG_MSG("Address\t\tLength\t\tType");
     for(unsigned int i = 0; i < m->GetMemregionCount(); i++)
     {
@@ -205,7 +214,7 @@ void Arch::SetupArchMemRegions(Multiboot* m)
                 }
             }
         }
-    }
+    }*/
 }
 
 ClockSource_t Arch::ClockSource  = {

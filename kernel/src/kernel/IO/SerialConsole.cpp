@@ -39,6 +39,12 @@ void SerialConsole::Clear()
 {
 }
 
+char SerialConsole::GetChar()
+{
+    while (!(inb(portNum + 5) & 0x01));
+    return inb(portNum);
+}
+
 bool SerialConsole::readyToTransmit()
 {
     uint8_t status = inb(portNum + 5);

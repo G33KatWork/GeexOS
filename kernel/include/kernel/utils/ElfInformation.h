@@ -2,7 +2,7 @@
 #define ELFINFORMATION_H_
 
 #include <lib/types.h>
-#include <kernel/elf32.h>
+#include <kernel/utils/elf32.h>
 
 class ElfInformation
 {
@@ -12,7 +12,10 @@ public:
     Elf32SectionHeader* GetSection(const char* name);
     char* GetSectionName(Elf32SectionHeader* section);
     
+    char* FindSymbol(Address addr, Address *symbolStart);
+    
 private:
+    void announceElfRegions(void);
     void announceStringTables(void);
     
     Elf32SectionHeader *shstrtab;

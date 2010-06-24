@@ -19,6 +19,10 @@ VirtualMemoryManager* VirtualMemoryManager::GetInstance()
     return instance;
 }
 
+VirtualMemoryManager::VirtualMemoryManager()
+    : kernelStack(NULL)
+{}
+
 void VirtualMemoryManager::Init(size_t MemorySize)
 {
     VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Initializing virtual kernel memory subsystem. Memory size: " << dec << (unsigned int)MemorySize << "KB");

@@ -1,7 +1,6 @@
 #include <kernel/global.h>
 #include <arch/hal.h>
 #include <arch/interrupts.h>
-#include <kernel/utils/DebuggingSymbols.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/IO/Monitor.h>
 #include <kernel/IO/SerialConsole.h>
@@ -10,7 +9,6 @@
 
 using namespace IO;
 using namespace Arch;
-using namespace Debug;
 using namespace Memory;
 
 PlacementAllocator placementAlloc = PlacementAllocator();
@@ -28,7 +26,8 @@ void panic(const char *message)
     kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: " << message << endl;
     
-    VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
+    if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
+        VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
     
     HaltMachine();
 }
@@ -40,7 +39,8 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
     kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
     
-    VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
+    if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
+        VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
     
     HaltMachine();
 }

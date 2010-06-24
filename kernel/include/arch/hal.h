@@ -4,7 +4,7 @@
 #include <lib/types.h>
 #include <arch/pit.h>
 #include <arch/clock_source.h>
-#include <kernel/Multiboot.h>
+#include <kernel/utils/Multiboot.h>
 
 namespace Arch
 {

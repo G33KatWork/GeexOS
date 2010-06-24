@@ -13,6 +13,20 @@ ifneq ($(V),1)
   MAKEFLAGS += --no-print-directory
 endif
 
+############################
+# General utilities	       #
+############################
+ifeq ($(shell uname),Darwin)
+	export SUDO_ASKPASS:= build/macos-askpass
+SUDO		:= sudo -A
+else
+SUDO		:= sudo
+endif
+
+RM			:= rm
+MKDIR		:= mkdir
+CP			:= cp
+
 #####################
 # Utility functions #
 #####################
@@ -41,7 +55,7 @@ endif
 
 # Create the directory that the target will go in if non-existant.
 define target_mkdir
-@mkdir -p $(dir $(@))
+@$(MKDIR) -p $(dir $(@))
 endef
 
 ############################

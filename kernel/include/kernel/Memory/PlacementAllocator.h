@@ -5,8 +5,6 @@
 
 namespace Memory
 {
-    #define     PLACEMENT_SIZE      0x400000             //4MB
-    
     Address GetPlacementBeginning();
     
     class PlacementAllocator
@@ -16,6 +14,7 @@ namespace Memory
         
         void* Allocate(size_t len, bool pageAlign);
         unsigned int GetPointerPosition();
+        size_t GetPlacementAllocatedSize();
 
     private:
         unsigned int placement_address;

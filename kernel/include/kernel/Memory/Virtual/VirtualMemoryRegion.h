@@ -3,6 +3,7 @@
 
 #include <lib/types.h>
 #include <kernel/global.h>
+#include <arch/Paging.h>
 
 namespace Memory
 {
@@ -30,23 +31,36 @@ namespace Memory
     friend class VirtualMemorySpace;
         
     public:
-        VirtualMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName);
+        VirtualMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName, AllocationFlags RegionFlags)
+        {
+            ASSERT(IS_PAGE_ALIGNED(RegionStart), "Start address needs to be page aligned.");
+            ASSERT(RegionSize % PAGE_SIZE == 0, "Size of a region must be a multiple of the page size.");
+
+            startAddress = RegionStart;
+            size = RegionSize;
+            name = RegionName;
+            flags = RegionFlags;
+            Next = NULL;
+        }
         
         Address StartAddress() { return startAddress; }
         size_t Size() { return size; }
         const char* Name() { return name; }
-    
-    private:
+		
+		virtual void* AllocateMemory(size_t size) = 0;
+		virtual void DeallocateMemory(void* beginning) = 0;
+		
+		virtual void DoSwapping() {}
+        bool HandlePageFault() { PANIC("PageFault occoured!"); return false; } //FIXME: Better error message here...
+
+	protected:
         AllocationFlags flags;
         Address startAddress;
         size_t size;
         const char* name;
-        
+    
+    private:
         VirtualMemoryRegion *Next;
-        
-        //Set this variable to false is no swapping should ever occour
-        //Standard is true
-        bool SwappingAllowed;
     };
 }
 #endif

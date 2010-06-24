@@ -4,7 +4,8 @@
 #include <lib/types.h>
 #include <kernel/Memory/BitfieldPhysicalMemoryManager.h>
 #include <kernel/Memory/Virtual/VirtualMemorySpace.h>
-#include <kernel/Memory/Stack.h>
+#include <kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.h>
+#include <kernel/utils/ElfInformation.h>
 
 namespace Memory
 {
@@ -15,6 +16,8 @@ namespace Memory
     public:
         static VirtualMemoryManager* GetInstance();
         
+        VirtualMemoryManager();
+        
         void Init(size_t MemorySize);
         
         void AddSpace(VirtualMemorySpace* space);
@@ -24,8 +27,10 @@ namespace Memory
         
         VirtualMemorySpace* KernelSpace() { return kernelSpace; }
         void KernelSpace(VirtualMemorySpace* NewKernelSpace) { kernelSpace = NewKernelSpace; }
-        Stack* KernelStack() { return kernelStack; }
-        void KernelStack(Stack* NewKernelStack) { kernelStack = NewKernelStack; }
+        KernelStackMemoryRegion* KernelStack() { return kernelStack; }
+        void KernelStack(KernelStackMemoryRegion* NewKernelStack) { kernelStack = NewKernelStack; }
+        ElfInformation* KernelElf() { return kernelElf; }
+        void KernelElf(ElfInformation* NewKernelElf) { kernelElf = NewKernelElf; }
         
         BitfieldPhysicalMemoryManager* PhysicalAllocator() { return phys; }
         IOMemoryManager* IOMemory() { return iomanager; }
@@ -35,11 +40,11 @@ namespace Memory
         
         BitfieldPhysicalMemoryManager* phys;
         IOMemoryManager* iomanager;
+        VirtualMemorySpace* kernelSpace;
+        KernelStackMemoryRegion* kernelStack;
+        ElfInformation* kernelElf;
         
         VirtualMemorySpace* SpaceListHead;
-        
-        VirtualMemorySpace* kernelSpace;
-        Stack* kernelStack;
     };
 }
 #endif

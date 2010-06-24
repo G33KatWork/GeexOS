@@ -5,6 +5,7 @@
 #include <kernel/IO/CharacterOutputDevice.h>
 
 #define SERIAL_COM1  0x3f8
+#define SERIAL_COM2  0x2f8
 //#define SERIAL_COLOR
 
 namespace IO
@@ -17,6 +18,8 @@ namespace IO
         
         void PrintChar(char c);
         void Clear();
+        
+        char GetChar();
         
     private:
         uint16_t portNum;

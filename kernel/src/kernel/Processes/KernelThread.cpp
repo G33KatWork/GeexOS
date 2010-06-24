@@ -8,7 +8,9 @@ using namespace Memory;
 KernelThread::KernelThread(unsigned int threadId, void(*entryFunction)(int), int arg, size_t stackSize, const char* threadName)
     : Thread(threadId, (Address)entryFunction, 0, 0, threadName, false, Paging::GetInstance()->GetKernelDirectory())
 {
-    threadStack = VirtualMemoryManager::GetInstance()->KernelSpace()->AllocateInRange(KERNEL_THREAD_STACK_REGION_START, KERNEL_THREAD_STACK_REGION_END, stackSize, threadName, ALLOCFLAG_WRITABLE);
+    //FIXME: fix das!
+    //threadStack = VirtualMemoryManager::GetInstance()->KernelSpace()->AllocateInRange(KERNEL_THREAD_STACK_REGION_START, KERNEL_THREAD_STACK_REGION_END, stackSize, threadName, ALLOCFLAG_WRITABLE);
+    threadStack = NULL;
     ASSERT(threadStack != NULL, "Returned Stack MemoryRegion for a KernelThread was NULL");
     
     /* We are building this stack here:
@@ -36,5 +38,6 @@ KernelThread::KernelThread(unsigned int threadId, void(*entryFunction)(int), int
 
 KernelThread::~KernelThread()
 {
-    VirtualMemoryManager::GetInstance()->KernelSpace()->Deallocate(threadStack);
+    //FIXME: fix das!
+    //VirtualMemoryManager::GetInstance()->KernelSpace()->Deallocate(threadStack);
 }
