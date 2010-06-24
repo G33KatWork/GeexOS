@@ -73,7 +73,7 @@ $(TOOLCHAIN_ROOTDIR)/.gcc-install: $(TOOLCHAIN_ROOTDIR)/.gcc-compile
 
 # Download, build and install binutils to run on the host system.
 GCC_TARGET := $(TOOLCHAIN_ROOTDIR)/.gcc-install
-all-gcc: $(BINUTILS_TARGET)
+all-gcc: $(GCC_TARGET)
 .PHONY: all-gcc
 
 all: $(GCC_TARGET)
