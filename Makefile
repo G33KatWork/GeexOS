@@ -7,8 +7,9 @@ STARTTIME := $(shell date +%s)
 all: kernel servers drivers applications bootfloppy
 	$(call cmd_msg,NOTICE,Build completed in $$(($$(date +%s)-$(STARTTIME))) seconds)
 
-kernel: kernel.elf
-kernel.elf: toolchain
+kernel: kernel/kernel.elf
+
+kernel/kernel.elf: toolchain
 	$(call cmd_msg,SUBDIR,kernel)
 	$(call call_submake,kernel,all)
 
@@ -45,7 +46,7 @@ else
 	$(Q)$(SUDO) mount -o loop floppy.img tmp $(QOUTPUT)
 endif
 
-	$(Q)$(SUDO) $(CP) kernel/kernel.elf tmp/kernel
+	$(Q)$(SUDO) $(CP) kernel/kernel/kernel.elf tmp/kernel
 	$(Q)$(SUDO) $(CP) initrd.img tmp/initrd.img
 
 ifeq ($(shell uname),Darwin)
