@@ -44,7 +44,8 @@ CXXSOURCES = lib/string.cpp \
 			 kernel/Processes/Scheduler.cpp \
 			 kernel/Processes/Thread.cpp \
 			 kernel/Processes/KernelThread.cpp \
-			 kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.cpp
+			 kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.cpp \
+			 kernel/IO/CharacterInputDevice.cpp
 #			 kernel/Memory/Slab/SlabManager.cpp
 
 # List Assembler to be assembled with NASM here

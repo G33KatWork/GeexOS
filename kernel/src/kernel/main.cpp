@@ -128,6 +128,15 @@ int main(MultibootInfo* multibootInfo)
     Arch::EnableInterrupts();
     MAIN_DEBUG_MSG("Interrupts enabled...");
     
+    /*char line[20];
+    SerialConsole *ser = new SerialConsole(SERIAL_COM2);
+    ser->ReadLine(line, 20);
+    kdbg << "Read line: " << line;    
+    int hexbla = ser->ReadHex();
+    kdbg << hex << "read: " << hexbla << endl;
+    int foo = ser->ReadDec();
+    kdbg << dec << "read: " << foo << endl;*/
+    
     //Make it crash
     //int* a = (int*)0x100000;
     //*a = 0x41414141;

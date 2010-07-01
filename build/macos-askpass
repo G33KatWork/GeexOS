@@ -8,7 +8,7 @@
 # setenv SSH_ASKPASS "macos-askpass"
 # setenv DISPLAY ":0"
 #
-TITLE=${MACOS_ASKPASS_TITLE:-"SSH"}
+TITLE=${MACOS_ASKPASS_TITLE:-"SUDO"}
 
 DIALOG="display dialog \"$@\" default answer \"\" with title \"$TITLE\""
 DIALOG="$DIALOG with icon caution with hidden answer"

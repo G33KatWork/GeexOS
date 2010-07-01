@@ -17,6 +17,8 @@ SerialConsole::SerialConsole(uint16_t port)
     outb(port + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
     outb(port + 4, 0x0B);    // IRQs enabled, RTS/DSR set
     outb(port + 1, 0x0C);    // enable all interrupts.
+    
+    storedCharacterAvailable = false;
 }
 
 SerialConsole::~SerialConsole()
@@ -39,7 +41,35 @@ void SerialConsole::Clear()
 {
 }
 
-char SerialConsole::GetChar()
+void SerialConsole::fetchStoredCharacterIfNecessary()
+{
+    if(!storedCharacterAvailable)
+    {
+        storedCharacter = getCharFromHW();
+        storedCharacterAvailable = true;
+    }
+}
+
+bool SerialConsole::IsNextChar(char c)
+{
+    fetchStoredCharacterIfNecessary();
+    return c == storedCharacter;
+}
+
+char SerialConsole::GetCharFromDevice(InputType type)
+{
+    fetchStoredCharacterIfNecessary();
+    
+    if(IsTypeOfChar(type, storedCharacter))
+    {
+        storedCharacterAvailable = false;
+        return storedCharacter;
+    }
+    else
+        return NULL;
+}
+
+char SerialConsole::getCharFromHW()
 {
     while (!(inb(portNum + 5) & 0x01));
     return inb(portNum);
