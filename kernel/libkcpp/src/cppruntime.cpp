@@ -1,5 +1,6 @@
 #include <kernel/global.h>
 #include <string.h>
+#include <cxxabi.h>
 
 //C++ runtime shit
 //See: http://wiki.osdev.org/C_PlusPlus
@@ -64,13 +65,6 @@ namespace __cxxabiv1
 {
     //FIXME: Use a real guard, e.g. a Mutex or Semaphore, here!
 	/* guard variables */
- 
-	/* The ABI requires a 64-bit type.  */
-	__extension__ typedef int __guard __attribute__((mode (__DI__)));
- 
-	extern "C" int __cxa_guard_acquire (__guard *);
-	extern "C" void __cxa_guard_release (__guard *);
-	extern "C" void __cxa_guard_abort (__guard *);
  
 	extern "C" int __cxa_guard_acquire (__guard *g) 
 	{

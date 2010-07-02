@@ -59,7 +59,7 @@ CFLAGS += -DARCH_X86 -DDEBUG
 CFLAGS += $(addprefix -I,$(INCLUDES))
 
 # C++ compiler flags
-CXXFLAGS += -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
+CXXFLAGS += -ggdb -fno-builtin -fno-exceptions -nostdlib -nostartfiles -nodefaultlibs
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long \
 			-Wconversion #-Werror

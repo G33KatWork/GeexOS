@@ -24,6 +24,8 @@
 
 #include <kernel/Memory/Virtual/Regions/PagedMemoryRegion.h>
 
+#include <typeinfo>
+
 extern      Address             bootStack;          //defined in start.S
 
 
@@ -98,6 +100,12 @@ int main(MultibootInfo* multibootInfo)
     //Parse ELF-Stuff delivered from GRUB and create .text, .data, .rodata, .bss and .placement sections in kernel space
     ElfInformation* elfInfo = new ElfInformation(m.GetELFAddress(), m.GetELFshndx(), m.GetELFSize(), m.GetELFNum());
     VirtualMemoryManager::GetInstance()->KernelElf(elfInfo);
+    const std::type_info *t = &typeid(elfInfo);
+    DEBUG_MSG("name: " << t->name());
+    if(*t == typeid(elfInfo))
+    {
+        DEBUG_MSG("THEY ARE EQUAL! WOOOHOOOOO!");
+    }
     
     //Create Arch-specific memory regions in kernel space
     //On x86: Framebuffer for textmode and lowest 64K for BIOS
