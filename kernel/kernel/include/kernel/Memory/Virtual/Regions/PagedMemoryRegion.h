@@ -16,16 +16,6 @@ namespace Memory
             : LazyMemoryRegion(RegionStart, RegionSize, RegionName, RegionFlags)
         {}
         
-        virtual void* AllocateMemory(size_t UNUSED(size))
-        {
-            return NULL;
-        }
-        
-        virtual void DeallocateMemory(void* UNUSED(beginning))
-        {
-            
-        }
-        
         virtual void DoSwapping()
         {
             //TODO: Swap stuff out...

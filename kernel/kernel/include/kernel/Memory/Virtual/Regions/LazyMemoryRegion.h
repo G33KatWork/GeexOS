@@ -16,9 +16,6 @@ namespace Memory
         : VirtualMemoryRegion(RegionStart, RegionSize, RegionName, RegionFlags)
         {}
         
-        virtual void* AllocateMemory(size_t size) = 0;
-        virtual void DeallocateMemory(void* beginning) = 0;
-        
         virtual void DoSwapping(){}
         
 		virtual bool HandlePageFault()

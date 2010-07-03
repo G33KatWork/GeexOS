@@ -47,11 +47,16 @@ namespace Memory
         size_t Size() { return size; }
         const char* Name() { return name; }
 		
-		virtual void* AllocateMemory(size_t size) = 0;
-		virtual void DeallocateMemory(void* beginning) = 0;
+		//FIXME: What were these for? ;)
+		/*virtual void* AllocateMemory(size_t size) = 0;
+		virtual void DeallocateMemory(void* beginning) = 0;*/
 		
 		virtual void DoSwapping() {}
         bool HandlePageFault() { PANIC("PageFault occoured!"); return false; } //FIXME: Better error message here...
+
+    protected:
+        void MapFreshPages(Address start, size_t length);
+        void UnmapPages(Address start, size_t length);
 
 	protected:
         AllocationFlags flags;

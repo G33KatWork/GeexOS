@@ -21,10 +21,6 @@ namespace Memory
     public:
         KernelStackMemoryRegion(Address RegionStart, size_t MaxRegionSize, size_t InitialSize, const char* RegionName);
         
-        virtual void* AllocateMemory(size_t UNUSED(size)) { return NULL; }
-        virtual void DeallocateMemory(void* UNUSED(beginning)) {}
-        
-        
         //Remember: Stack grows down!
         Address GetStartAddress() { return startAddress + size; }
         unsigned int GetSize() { return size; }

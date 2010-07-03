@@ -31,6 +31,7 @@ CXXSOURCES = main.cpp \
 			 Processes/Thread.cpp \
 			 Processes/KernelThread.cpp \
 			 Memory/Virtual/Regions/KernelStackMemoryRegion.cpp \
+			 Memory/Virtual/Regions/KernelThreadStackRegion.cpp \
 			 IO/CharacterInputDevice.cpp
 #			 Memory/Slab/SlabManager.cpp
 

@@ -4,18 +4,18 @@
 #include <types.h>
 #include <kernel/Processes/Thread.h>
 #include <kernel/Processes/KernelThread.h>
-#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
+#include <kernel/Memory/Virtual/Regions/KernelThreadStackRegion.h>
 
 namespace Processes
 {
     class KernelThread : public Thread
     {
     public:
-        KernelThread(unsigned int threadId, void(*entryFunction)(int), int arg, size_t stackSize, const char* threadName);
+        KernelThread(unsigned int threadId, void(*entryFunction)(int), int arg, size_t intialStackSize, size_t maxStackSize, const char* threadName);
         ~KernelThread();
     
     private:
-        Memory::VirtualMemoryRegion* threadStack;
+        Memory::KernelThreadStack* threadStack;
     };
 }
 

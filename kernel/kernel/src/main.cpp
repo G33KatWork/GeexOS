@@ -114,6 +114,7 @@ int main(MultibootInfo* multibootInfo)
     //Create defined Stack and move boot stack to new position
     KernelStackMemoryRegion* kernelStack = new KernelStackMemoryRegion(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, 0x1000, "Main kernel stack");
     kernelStack->MoveCurrentStackHere((Address)&bootStack);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(kernelStack);
     VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
     MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << KERNEL_STACK_ADDRESS << " with size: " << KERNEL_STACK_SIZE);
     MAIN_DEBUG_MSG("New Stackpointer: " << readStackPointer());
@@ -156,12 +157,20 @@ int main(MultibootInfo* multibootInfo)
     
     VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
     
-    //KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE, "A Thread");
-    //Scheduler::GetInstance()->AddThread(thread);
-    /*KernelThread* thread2 = new KernelThread(2, foo, (int)'C', PAGE_SIZE, "C Thread");
+    //Set up the memory region for upcoming kernel threads
+    MAIN_DEBUG_MSG("Initializing kernel thread stack memory region...");
+    KernelThreadStackMemoryRegion* kernelThreadStacks = new KernelThreadStackMemoryRegion(KERNEL_THREAD_STACK_REGION_START, KERNEL_THREAD_STACK_REGION_SIZE, "Kernel thread stacks");
+    VirtualMemoryManager::GetInstance()->KernelThreadStacks(kernelThreadStacks);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(kernelThreadStacks);
+    
+    KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE, PAGE_SIZE*10, "A Thread");
+    Scheduler::GetInstance()->AddThread(thread);
+    KernelThread* thread2 = new KernelThread(2, foo, (int)'C', PAGE_SIZE, PAGE_SIZE*10, "C Thread");
     Scheduler::GetInstance()->AddThread(thread2);
-    KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE, "D Thread");
-    Scheduler::GetInstance()->AddThread(thread3);*/
+    KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE, PAGE_SIZE*10, "D Thread");
+    Scheduler::GetInstance()->AddThread(thread3);
+    
+    VirtualMemoryManager::GetInstance()->KernelThreadStacks()->DumpStacks(kdbg);
     
     //VirtualMemoryRegion* uModeCode = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x3000000, 0x1000, "Usercode", ALLOCFLAG_WRITABLE|ALLOCFLAG_EXECUTABLE|ALLOCFLAG_USERMODE);
     //VirtualMemoryRegion* kstack = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x4000000, 0x1000, "kstack", ALLOCFLAG_WRITABLE);
@@ -176,9 +185,10 @@ int main(MultibootInfo* multibootInfo)
     //KernelThread* thread4 = new KernelThread(4, umode, (int)'U', PAGE_SIZE, "Umode Thread");
     //Scheduler::GetInstance()->AddThread(thread4);
     
+    Scheduler::GetInstance()->DumpThreads(kdbg);
+    
     //Initialize the scheduler
-    //Scheduler::GetInstance()->SetTimerManager(tm);
-    //Scheduler::GetInstance()->DumpThreads(kdbg);
+    Scheduler::GetInstance()->SetTimerManager(tm);
     
     for(;;) {
         kdbg << "B";

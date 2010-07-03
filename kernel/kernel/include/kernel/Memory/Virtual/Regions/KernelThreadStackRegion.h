@@ -4,10 +4,34 @@
 #include <types.h>
 #include <kernel/global.h>
 #include <kernel/Memory/Virtual/Regions/LazyMemoryRegion.h>
+#include <kernel/debug.h>
 
 namespace Memory
 {
-    class KernelThreadStack;
+    /* This class represents a stack of a kernel thread
+     * They are only meant to be created by KernelThreadStackMemoryRegion
+     */
+    class KernelThreadStack
+    {
+        friend class KernelThreadStackMemoryRegion;
+    private:
+        Address beginning;
+        size_t curSize;
+        size_t maxSize;
+        
+        KernelThreadStack* next;
+        
+        KernelThreadStack(Address stackBeginning, size_t CurSize, size_t MaxSize, KernelThreadStack* Next)
+        {
+            beginning = stackBeginning;
+            curSize = CurSize;
+            maxSize = MaxSize;
+            next = Next;
+        }
+    
+    public:
+        Address Beginning() { return beginning; }
+    };
     
     /*  This region maintains all the stacks of kernel threads
      */
@@ -17,37 +41,26 @@ namespace Memory
     private:
         size_t initialSize;
         size_t curSize;
+        
+        KernelThreadStack* stackList;
     
     public:
-        KernelThreadStackMemoryRegion(Address RegionStart, size_t MaxRegionSize, const char* RegionName)´
+        KernelThreadStackMemoryRegion(Address RegionStart, size_t MaxRegionSize, const char* RegionName)
             : LazyMemoryRegion(RegionStart, MaxRegionSize, RegionName, ALLOCFLAG_WRITABLE)
-        {}
-        
-        KernelThreadStack* CreateStack(size_t InitialSize, size_t MaxSize)
         {
+            stackList = NULL;
         }
         
-        void DestroyStack(KernelThreadStack* stack)
-        {
-        }
+        KernelThreadStack* CreateStack(size_t InitialSize, size_t MaxSize);
+        void DestroyStack(KernelThreadStack* stack);
         
-        virtual bool HandlePageFault()
-		{
-		    //TODO: Determine the corresponding thread stack and expand it appropriately
-		    //      alternatively we need to panic here. We can't hand this fault up
-		    //      because LazyMemoryRegion doesn't know about our stacks here
-		    
-		    //We handle this stuff here or we are in kernel panic land, so return true
-            return true;
-		}
-    };
-    
-    class KernelThreadStack
-    {
-    private:
-        Address beginning;
-        size_t curSize;
-        size_t maxSize;
+        virtual bool HandlePageFault();
+		
+        void DumpStacks(IO::CharacterOutputDevice& c);
+		
+	private:
+        void AddToList(KernelThreadStack* toAdd);
+        void RemoveFromList(KernelThreadStack* toRemove);
     };
 }
 #endif

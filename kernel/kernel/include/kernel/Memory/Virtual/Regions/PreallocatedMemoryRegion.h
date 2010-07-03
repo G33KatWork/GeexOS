@@ -12,11 +12,6 @@ namespace Memory
         friend class VirtualMemorySpace;
         
     public:
-        virtual void* AllocateMemory(size_t UNUSED(size)) { PANIC("You are not supposed to allocate memory from this region."
-                                                                  "Everything in here already is allocated or at least it should be.");
-                                                            return NULL;
-                                                          }
-        virtual void DeallocateMemory(void* UNUSED(beginning)){};
     
     protected:
         PreallocatedMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName, AllocationFlags RegionFlags)

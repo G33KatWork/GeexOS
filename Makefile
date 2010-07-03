@@ -4,12 +4,12 @@ include $(SRC)/build/base.mak
 STARTTIME := $(shell date +%s)
 
 # Main targets
-all: kernel servers drivers applications bootfloppy
+all: kernel drivers servers applications floppy.img
 	$(call cmd_msg,NOTICE,Build completed in $$(($$(date +%s)-$(STARTTIME))) seconds)
 
-kernel: kernel/kernel.elf
+kernel/kernel/kernel.elf: kernel
 
-kernel/kernel.elf: toolchain
+kernel: toolchain
 	$(call cmd_msg,SUBDIR,kernel)
 	$(call call_submake,kernel,all)
 
@@ -33,9 +33,7 @@ $(CC):
 	$(call call_submake,toolchain,all)
 
 # Create bootfloppy
-bootfloppy: floppy.img
-
-floppy.img: kernel initrd.img
+floppy.img: kernel/kernel/kernel.elf initrd.img
 	$(call cmd_msg,MKFLOPPY,floppy.img)
 	$(Q)$(SUDO) -A $(MKDIR) tmp
 	$(Q)$(SUDO) $(CP) resources/floppy.$(FLOPPYTYPE).img ./floppy.img
@@ -50,14 +48,14 @@ endif
 	$(Q)$(SUDO) $(CP) initrd.img tmp/initrd.img
 
 ifeq ($(shell uname),Darwin)
-	$(Q)sudo hdiutil detach tmp $(QOUTPUT)
+	$(Q)$(SUDO) hdiutil detach tmp $(QOUTPUT)
 else
-	$(Q)sudo umount tmp $(QOUTPUT)
+	$(Q)$(SUDO) umount tmp $(QOUTPUT)
 endif
 
 	$(Q)$(SUDO) $(RM) -Rf tmp
 
-initrd.img: utils/geninitramfs
+initrd.img: utils/geninitramfs resources/test.txt resources/test1.txt
 	$(call cmd_msg,GENINITRD,initrd.img)
 	$(Q)utils/geninitramfs resources/test.txt test.txt resources/test1.txt test1.txt $(QOUTPUT)
 
@@ -66,22 +64,22 @@ utils/geninitramfs:
 	$(call call_submake,utils,all)
 
 # Start bochs
-bochs: bootfloppy
+bochs: floppy.img
 	$(call cmd_msg,BOCHS,floppy.img)
 	$(Q)$(BOCHS) -f resources/bochsrc.txt -q $(QOUTPUT)
 
 # Start qemu
-qemu: bootfloppy
+qemu: floppy.img
 	$(call cmd_msg,QEMU,floppy.img)
 	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut $(QOUTPUT)
 
-qemudebug: bootfloppy
+qemudebug: floppy.img
 	$(call cmd_msg,QEMU,floppy.img)
 	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
 	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
 
 # Start VMware Fusion
-vmware: bootfloppy
+vmware: floppy.img
 	$(call cmd_msg,VMWARE,floppy.img)
 	$(Q)/Library/Application\ Support/VMware\ Fusion/vmrun -T fusion start resources/vmware.vmx $(QOUTPUT)
 
@@ -103,5 +101,5 @@ distclean: clean
 	$(call call_submake,toolchain,distclean)
 	$(call call_submake,toolchain,toolchain-clean)
 
-.PHONY: kernel servers drivers applications clean distclean qemu qemudebug bochs bochsdebug initrd.img mkinitrd
+.PHONY: all kernel servers drivers applications clean distclean qemu qemudebug bochs bochsdebug
 
