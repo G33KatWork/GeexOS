@@ -2,7 +2,7 @@
 #define _TIMER_MANAGER_H
 
 #include <types.h>
-#include <arch/clock_source.h>
+#include <halinterface/ClockSource.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/DataStructures/List.h>
 
@@ -13,23 +13,23 @@ namespace Time
 {
     class TimerManager {
     private:
-        ClockSource_t *clockSource;
+        ClockSource *clockSource;
         unsigned long tickLen;
         List<Timer*> *currentTimers;
         
         void prepareClock(unsigned long ns);
         
     public:
-        TimerManager(ClockSource_t* source)
+        TimerManager(ClockSource* source)
         {
             clockSource = NULL;
             currentTimers = new List<Timer*>();
             SetClockSource(source);
         }
         
-        void SetClockSource(ClockSource_t *newSource);
+        void SetClockSource(ClockSource *newSource);
         
-        bool HandleTick(ClockSource_t *source);
+        bool HandleTick(ClockSource *source);
         void StartTimer(Timer* t, unsigned long length);
         void StopTimer(Timer* t);
     };

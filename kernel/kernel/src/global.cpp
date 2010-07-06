@@ -1,11 +1,11 @@
 #include <kernel/global.h>
 #include <arch/hal.h>
-#include <arch/interrupts.h>
 #include <kernel/Memory/PlacementAllocator.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/IO/Monitor.h>
 #include <kernel/IO/SerialConsole.h>
-#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/debug.h>
+#include <arch/hal.h>
 
 using namespace IO;
 using namespace Arch;
@@ -19,22 +19,22 @@ PlacementAllocator placementAlloc = PlacementAllocator();
     Monitor kdbg = Monitor();
 #endif
 
-void panic(const char *message)
+void doPanic()
 {
-    DisableInterrupts();
+    CurrentHAL->DisableInterrupts();
     
-    kdbg.SetForeground(Red);
-    kdbg << "[PANIC] Kernel Panic: " << message << endl;
+    /*kdbg.SetForeground(Red);
+    kdbg << "[PANIC] Kernel Panic: " << message << endl;*/
     
     if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
         VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
     
-    HaltMachine();
+    CurrentHAL->HaltMachine();
 }
 
 void panic_assert(const char *file, unsigned int line, const char *condition, const char *desc)
 {
-    DisableInterrupts();
+    CurrentHAL->DisableInterrupts();
     
     kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
@@ -42,7 +42,7 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
     if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
         VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
     
-    HaltMachine();
+    CurrentHAL->HaltMachine();
 }
 
 void *operator new(size_t size)

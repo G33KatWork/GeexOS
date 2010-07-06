@@ -64,22 +64,22 @@ utils/geninitramfs:
 	$(call call_submake,utils,all)
 
 # Start bochs
-bochs: floppy.img
+bochs: all
 	$(call cmd_msg,BOCHS,floppy.img)
 	$(Q)$(BOCHS) -f resources/bochsrc.txt -q $(QOUTPUT)
 
 # Start qemu
-qemu: floppy.img
+qemu: all
 	$(call cmd_msg,QEMU,floppy.img)
 	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut $(QOUTPUT)
 
-qemudebug: floppy.img
+qemudebug: all
 	$(call cmd_msg,QEMU,floppy.img)
 	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
 	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
 
 # Start VMware Fusion
-vmware: floppy.img
+vmware: all
 	$(call cmd_msg,VMWARE,floppy.img)
 	$(Q)/Library/Application\ Support/VMware\ Fusion/vmrun -T fusion start resources/vmware.vmx $(QOUTPUT)
 

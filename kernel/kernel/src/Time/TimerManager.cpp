@@ -11,14 +11,14 @@ using namespace IO;
 
 void TimerManager::prepareClock(unsigned long ns)
 {
-    if(clockSource->type == PERIODIC)
+    if(clockSource->type == CLKTYPE_PERIODIC)
         return;
     
     tickLen = ns;
     clockSource->prepare(ns);
 }
 
-void TimerManager::SetClockSource(ClockSource_t *newSource)
+void TimerManager::SetClockSource(ClockSource *newSource)
 {
     if(clockSource != NULL)
     {
@@ -27,7 +27,7 @@ void TimerManager::SetClockSource(ClockSource_t *newSource)
     
     clockSource = newSource;
     
-    if(clockSource->type == PERIODIC)
+    if(clockSource->type == CLKTYPE_PERIODIC)
     {
         tickLen = clockSource->tickLength;
         clockSource->enable();
@@ -39,7 +39,7 @@ void TimerManager::SetClockSource(ClockSource_t *newSource)
     }
 }
 
-bool TimerManager::HandleTick(ClockSource_t *source)
+bool TimerManager::HandleTick(ClockSource *source)
 {
     bool needScheduling = false;
     

@@ -1,5 +1,5 @@
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
-#include <arch/Paging.h>
+#include <arch/HAL.h>
 #include <kernel/debug.h>
 #include <string.h>
 #include <kernel/Memory/IO/IOMemoryManager.h>

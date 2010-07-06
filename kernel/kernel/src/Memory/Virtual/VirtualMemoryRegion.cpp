@@ -1,5 +1,5 @@
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
-#include <arch/Paging.h>
+#include <arch/HAL.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/debug.h>
 
@@ -11,7 +11,7 @@ void VirtualMemoryRegion::MapFreshPages(Address start, size_t length)
 {
     VIRTUAL_MEMORY_REGION_DEBUG_MSG("Mapping pages into virtual memory region " << name << endl
                                     << "Start: " << start << endl
-                                    << "Size: " << (unsigned)length << endl
+                                    << "Size: " << (unsigned)length
                                     );
     
     ASSERT(IS_PAGE_ALIGNED(start) && IS_PAGE_ALIGNED(length), "Start address and length of region to be equipped with fresh pages must be page aligned");
@@ -20,7 +20,7 @@ void VirtualMemoryRegion::MapFreshPages(Address start, size_t length)
         PANIC("Arguments out of bounds");
     
     for(Address i = start; i < start + length; i += PAGE_SIZE)
-        Paging::GetInstance()->MapAddress(
+        CurrentHAL->GetPaging()->MapAddress(
             i,
             VirtualMemoryManager::GetInstance()->PhysicalAllocator()->AllocateFrame(),
             flags & ALLOCFLAG_WRITABLE,
@@ -42,8 +42,8 @@ void VirtualMemoryRegion::UnmapPages(Address start, size_t length)
     
     for(Address i = start; i < start + length; i += PAGE_SIZE)
     {
-        Address phys = Paging::GetInstance()->GetPhysicalAddress(i);
-        Paging::GetInstance()->UnmapAddress(i);
+        Address phys = CurrentHAL->GetPaging()->GetPhysicalAddress(i);
+        CurrentHAL->GetPaging()->UnmapAddress(i);
         VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(phys);
     }
 }

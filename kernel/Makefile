@@ -2,11 +2,11 @@ SRC                 := ..
 include $(SRC)/build/base.mak
 
 # Main targets
-all: libkcpp libarch kernel
+all: libkcpp libarchx86 kernel
 
-libarch:
-	$(call cmd_msg,SUBDIR,libarch)
-	$(call call_submake,libarch,all)
+libarchx86:
+	$(call cmd_msg,SUBDIR,libarchx86)
+	$(call call_submake,libarchx86,all)
 
 libkcpp:
 	$(call cmd_msg,SUBDIR,libkcpp)
@@ -18,13 +18,13 @@ kernel:
 
 # Cleaning
 clean:
-	$(call call_submake,libarch,clean)
+	$(call call_submake,libarchx86,clean)
 	$(call call_submake,libkcpp,clean)
 	$(call call_submake,kernel,clean)
 
 distclean: clean
-	$(call call_submake,libarch,distclean)
+	$(call call_submake,libarchx86,distclean)
 	$(call call_submake,libkcpp,distclean)
 	$(call call_submake,kernel,toolchain-clean)
 
-.PHONY: libkcpp libarch kernel clean distclean
+.PHONY: libkcpp libarchx86 kernel clean distclean

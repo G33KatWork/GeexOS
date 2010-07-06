@@ -2,9 +2,7 @@
 #define PROCESSES_THREAD_H_
 
 #include <types.h>
-#include <arch/Paging.h>
-#include <arch/hal.h>
-#include <arch/scheduling.h>
+#include <arch/HAL.h>
 
 using namespace Arch;
 
@@ -20,24 +18,27 @@ namespace Processes
         friend class Scheduler;
         
     public:
-		Thread(unsigned int threadId, Address initialIP, Address initialSP, Address initialBP, const char* threadName, bool umode, PageDirectory* pd);
+		Thread(unsigned int threadId, Address initialIP, Address initialSP, Address initialBP, const char* threadName, bool umode, BasePageDirectory* pd);
         
         int GetId() { return tid; }
         const char* GetName() { return name; }
-        PageDirectory* GetPageDirectory() { return page_directory; }
-        void SetPageDirectory(PageDirectory* p) { page_directory = p; setPageDirectory(&threadInfo, p); }
+        BasePageDirectory* GetPageDirectory() { return threadContext->GetPageDirectory(); }
+        void SetPageDirectory(BasePageDirectory* p) { threadContext->SetPageDirectory(p); }
         /*int GetPriority() { return priority; }
         void SetPriority(unsigned char p) { priority = p; }*/
         unsigned long GetTimeslice() { return timeslice; }
         void SetTimeslice(unsigned long t) { timeslice = t; }
-        Address GetStackPointer() { return threadInfo.esp; }
-        void SetStackPointer(Address s) { threadInfo.esp = s; }
-         Address GetBasePointer() { return threadInfo.ebp; }
-        void SetBasePointer(Address b) { threadInfo.ebp = b; }
-        Address GetInstructionPointer() { return threadInfo.eip; }
-        void SetInstructionPointer(Address i) { threadInfo.eip = i; }
+        Address GetStackPointer() { return threadContext->GetStackPointer(); }
+        void SetStackPointer(Address s) { threadContext->SetStackPointer(s); }
+         Address GetFramePointer() { return threadContext->GetFramePointer(); }
+        void SetFramePointer(Address f) { threadContext->SetFramePointer(f); }
+        Address GetInstructionPointer() { return threadContext->GetInstructionPointer(); }
+        void SetInstructionPointer(Address i) { threadContext->SetInstructionPointer(i); }
         ThreadState GetThreadState() { return state; }
         bool IsUsermode() { return usermode; }
+        
+        void SaveThreadContext(registers_t* regs) { threadContext->SaveThreadContextFromRegisters(regs); }
+        void SwitchTo() { threadContext->SwitchToThisContext(); }
         
         void Sleep() { state = THREAD_SLEEPING; }
         void Wakeup() { state = THREAD_RUNNING; }
@@ -45,9 +46,8 @@ namespace Processes
     protected:
         int tid;
         //unsigned char priority;
-        PageDirectory* page_directory;
         ThreadState state;
-        ThreadInfo threadInfo;
+        ThreadContext* threadContext;
         unsigned long timeslice;
         const char* name;
         bool usermode;

@@ -1,9 +1,9 @@
 #include <kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.h>
-#include <arch/scheduling.h>
-#include <arch/Paging.h>
+#include <arch/HAL.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/global.h>
 #include <kernel/debug.h>
+#include <string.h>
 
 using namespace Memory;
 using namespace Arch;
@@ -23,7 +23,7 @@ KernelStackMemoryRegion::KernelStackMemoryRegion(Address RegionStart, size_t Max
     for(Address i = startAddress + MaxRegionSize - PAGE_SIZE; i > (startAddress + MaxRegionSize - PAGE_SIZE) - initialSize; i -= PAGE_SIZE)
     {
         STACK_DEBUG_MSG("Initial mapping " << hex << i);
-        Paging::GetInstance()->MapAddress(
+        CurrentHAL->GetPaging()->MapAddress(
             i,
             VirtualMemoryManager::GetInstance()->PhysicalAllocator()->AllocateFrame(),
             true,   /* writable */

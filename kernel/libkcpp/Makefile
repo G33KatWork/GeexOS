@@ -16,7 +16,7 @@ CXXSOURCES = cppruntime.cpp \
 ASOURCES = 
 
 # Additional include paths to consider
-INCLUDES =	include ../kernel/include ../libarch/include
+INCLUDES =	include ../kernel/include ../libarchx86/include
 
 # Folder for object files
 OBJDIR = obj

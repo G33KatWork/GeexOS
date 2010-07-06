@@ -2,7 +2,7 @@
 #define TIMERHANDLER_H_
 
 #include <types.h>
-#include <kernel/IInterruptServiceRoutine.h>
+#include <halinterface/InterruptServiceRoutine.h>
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Processes/Scheduler.h>
 
@@ -11,7 +11,7 @@
 using namespace Time;
 using namespace Processes;
 
-class TimerHandler : public IInterruptServiceRoutine
+class TimerHandler : public InterruptServiceRoutine
 {
 private:
     TimerManager *tm;

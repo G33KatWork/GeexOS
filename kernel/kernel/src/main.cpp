@@ -1,24 +1,21 @@
-#include <arch/hal.h>
+#include <halinterface/HAL.h>
 #include <kernel/IO/Monitor.h>
 #include <kernel/global.h>
 #include <kernel/utils/multiboot.h>
-#include <arch/PageFaultHandler.h>
 #include <kernel/Memory/PlacementAllocator.h>
-#include <arch/interrupts.h>
+#include <halinterface/BaseInterruptDispatcher.h>
 #include <kernel/IInterruptServiceRoutine.h>
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/Memory/Virtual/VirtualMemorySpace.h>
-#include <arch/ExceptionHandler.h>
 #include <kernel/Time/TimerHandler.h>
-#include <arch/KeyboardHandler.h>
-#include <arch/scheduling.h>
 #include <kernel/utils/ElfInformation.h>
 #include <kernel/Processes/Scheduler.h>
 #include <kernel/Processes/KernelThread.h>
 #include <arch/AddressLayout.h>
 #include <kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.h>
+#include <kernel/IO/CharacterOutputDevice.h>
 
 #include <string.h>
 
@@ -28,7 +25,7 @@
 
 extern      Address             bootStack;          //defined in start.S
 
-
+using namespace IO;
 using namespace Arch;
 using namespace Kernel;
 using namespace Memory;
@@ -36,7 +33,6 @@ using namespace Processes;
 using namespace Time;
 
 void syncMemregionsWithPaging(void);
-void attachExceptionHandlers(InterruptDispatcher* irqD);
 
 void umode(int UNUSED(arg))
 {
@@ -79,17 +75,17 @@ int main(MultibootInfo* multibootInfo)
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
     char cpuVendor[17] = {0};
-    GetCPUVendor(cpuVendor);
+    CurrentHAL->GetCPUVendor(cpuVendor);
     MAIN_DEBUG_MSG("CPU Vendor: " << cpuVendor);
     
     //Flush GDT and initialize IDT (Interrupts)
-    InitializeCPU();
+    CurrentHAL->Initialize();
     MAIN_DEBUG_MSG("CPU and Interrupt tables initialized...");
     
     //Get information about environment from GRUB
     Multiboot m = Multiboot(multibootInfo);
     
-    InitDone();
+    CurrentHAL->InitializationDone();
     
     //Initialize Memory
     VirtualMemoryManager::GetInstance()->Init(m.GetLowerMemory() + m.GetUpperMemory());
@@ -109,7 +105,7 @@ int main(MultibootInfo* multibootInfo)
     
     //Create Arch-specific memory regions in kernel space
     //On x86: Framebuffer for textmode and lowest 64K for BIOS
-    SetupArchMemRegions(&m);
+    CurrentHAL->SetupArchMemRegions(&m);
     
     //Create defined Stack and move boot stack to new position
     KernelStackMemoryRegion* kernelStack = new KernelStackMemoryRegion(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, 0x1000, "Main kernel stack");
@@ -117,24 +113,19 @@ int main(MultibootInfo* multibootInfo)
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(kernelStack);
     VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
     MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << KERNEL_STACK_ADDRESS << " with size: " << KERNEL_STACK_SIZE);
-    MAIN_DEBUG_MSG("New Stackpointer: " << readStackPointer());
+    //MAIN_DEBUG_MSG("New Stackpointer: " << readStackPointer());
     
     syncMemregionsWithPaging();
     
     MAIN_DEBUG_MSG("Multiboot structure address: " << hex << m.GetAddress());
     MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
     
-    InterruptDispatcher* irqD = InterruptDispatcher::GetInstance();
-    attachExceptionHandlers(irqD);
-    MAIN_DEBUG_MSG("Interrupt dispatcher initialized...");
-    
     //Init timer
-    InitializeTimer();
-    TimerManager *tm = new TimerManager(&Arch::ClockSource);
-    irqD->RegisterHandler(IRQ_TIMER, new TimerHandler(tm, Scheduler::GetInstance()));
+    TimerManager *tm = new TimerManager(CurrentHAL->GetHardwareClockSource());
+    CurrentHAL->GetInterruptDispatcher()->RegisterInterruptHandler(BaseInterruptDispatcher::IRDEV_TIMER, new TimerHandler(tm, Scheduler::GetInstance()));
     MAIN_DEBUG_MSG("Timer initialized...");
     
-    Arch::EnableInterrupts();
+    CurrentHAL->EnableInterrupts();
     MAIN_DEBUG_MSG("Interrupts enabled...");
     
     /*char line[20];
@@ -147,11 +138,11 @@ int main(MultibootInfo* multibootInfo)
     kdbg << dec << "read: " << foo << endl;*/
     
     //Make it crash
-    //int* a = (int*)0x100000;
-    //*a = 0x41414141;
+    /*int* a = (int*)0x100000;
+    *a = 0x41414141;*/
     
-    irqD->RegisterHandler(IRQ_KEYBOARD, new KeyboardHandler());
-    Arch::UnmaskIRQ(IRQ_KEYBOARD);
+    //irqD->RegisterHandler(IRQ_KEYBOARD, new KeyboardHandler());
+    //Arch::UnmaskIRQ(IRQ_KEYBOARD);
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
@@ -210,33 +201,11 @@ void syncMemregionsWithPaging(void)
     {
         if(VirtualMemoryManager::GetInstance()->KernelSpace()->FindRegionEnclosingAddress(i) == NULL)
         {
-            Address physicalAddr = Paging::GetInstance()->GetPhysicalAddress(i);
+            Address physicalAddr = CurrentHAL->GetPaging()->GetPhysicalAddress(i);
             //MAIN_DEBUG_MSG("Virtual address " << hex << i << " pointing to physical " << physicalAddr << " doesn't seem to contain a region.");
             
-            Paging::GetInstance()->UnmapAddress(i);
+            CurrentHAL->GetPaging()->UnmapAddress(i);
             VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(physicalAddr);
         }
     }
-}
-
-void attachExceptionHandlers(InterruptDispatcher* irqD)
-{
-    irqD->RegisterHandler(14, new PageFaultHandler());
-    irqD->RegisterHandler(6, new InvalidOpcodeHandler());
-    ExceptionHandler *ex = new ExceptionHandler();
-    irqD->RegisterHandler(0, ex);
-    irqD->RegisterHandler(1, ex);
-    irqD->RegisterHandler(2, ex);
-    irqD->RegisterHandler(3, ex);
-    irqD->RegisterHandler(4, ex);
-    irqD->RegisterHandler(5, ex);
-    irqD->RegisterHandler(7, ex);
-    irqD->RegisterHandler(8, ex);
-    irqD->RegisterHandler(9, ex);
-    irqD->RegisterHandler(10, ex);
-    irqD->RegisterHandler(11, ex);
-    irqD->RegisterHandler(12, ex);
-    irqD->RegisterHandler(13, ex);
-    irqD->RegisterHandler(15, ex);
-    irqD->RegisterHandler(16, ex);
 }

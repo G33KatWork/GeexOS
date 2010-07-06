@@ -8,7 +8,7 @@ using namespace Processes;
 using namespace Memory;
 
 KernelThread::KernelThread(unsigned int threadId, void(*entryFunction)(int), int arg, size_t intialStackSize, size_t maxStackSize, const char* threadName)
-    : Thread(threadId, (Address)entryFunction, 0, 0, threadName, false, Paging::GetInstance()->GetKernelDirectory())
+    : Thread(threadId, (Address)entryFunction, 0, 0, threadName, false, CurrentHAL->GetPaging()->GetKernelDirectory())
 {
     threadStack = VirtualMemoryManager::GetInstance()->KernelThreadStacks()->CreateStack(intialStackSize, maxStackSize);
     ASSERT(threadStack != NULL, "Returned Stack MemoryRegion for a KernelThread was NULL");
@@ -33,7 +33,7 @@ KernelThread::KernelThread(unsigned int threadId, void(*entryFunction)(int), int
     stack[maxStackSize/sizeof(int) - 2] = 0;   //Return Address
     
     this->SetStackPointer(threadStack->Beginning() + maxStackSize - 2*sizeof(int));
-    this->SetBasePointer(0);
+    this->SetFramePointer(0);
 }
 
 KernelThread::~KernelThread()

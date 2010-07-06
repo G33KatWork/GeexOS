@@ -2,7 +2,7 @@
 #include <string.h>
 #include <kernel/debug.h>
 #include <kernel/global.h>
-#include <arch/Paging.h>
+#include <arch/HAL.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 
 using namespace Memory;
@@ -129,9 +129,9 @@ IOMemoryRegion* IOMemoryManager::Allocate(Address virtualAddress, Address physic
     for(Address i = region->startAddress; i < region->startAddress + region->size; i += PAGE_SIZE)
     {
         ASSERT(!VirtualMemoryManager::GetInstance()->PhysicalAllocator()->IsFree(physicalAddress), "Physical frame to be mapped manually into I/O Memory is not marked as used");
-        ASSERT(!Paging::GetInstance()->IsPresent(i), "Virtual address which should be mapped manually to a physical frame is already present");
+        ASSERT(!CurrentHAL->GetPaging()->IsPresent(i), "Virtual address which should be mapped manually to a physical frame is already present");
         
-        Paging::GetInstance()->MapAddress(
+        CurrentHAL->GetPaging()->MapAddress(
             i,
             physicalAddress,
             true,   /*Writable*/

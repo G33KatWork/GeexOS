@@ -2,9 +2,18 @@
 #define _GLOBAL_H
 
 #include <types.h>
+#include <kernel/debug.h>
 
 #define ASSERT(b, msg)      ((b) ? (void)0 : panic_assert(__FILE__, __LINE__, #b, #msg))
-#define PANIC(msg)          panic(msg)
+//#define PANIC(msg)          panic(msg)
+
+#define PANIC(msg) \
+{ \
+    kdbg.SetForeground(IO::Red); \
+    kdbg.PrintString("[PANIC] Kernel Panic: "); \
+    kdbg << msg << IO::endl; \
+    doPanic(); \
+}
 
 #ifdef UNUSED 
 #elif defined(__GNUC__) 
@@ -15,7 +24,7 @@
 # define UNUSED(x) x 
 #endif
 
-extern void panic(const char *message);
+extern void doPanic();
 void panic_assert(const char *file, unsigned int line, const char *condition, const char *desc);
 
 //Standard heap allocation

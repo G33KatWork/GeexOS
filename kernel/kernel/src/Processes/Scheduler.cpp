@@ -1,6 +1,6 @@
 #include <kernel/Processes/Scheduler.h>
 #include <kernel/Time/TimerManager.h>
-#include <arch/scheduling.h>
+#include <arch/HAL.h>
 #include <kernel/debug.h>
 
 using namespace Processes;
@@ -38,9 +38,9 @@ Scheduler* Scheduler::GetInstance()
 
 Scheduler::Scheduler()
 {
-    DisableInterrupts();
+    CurrentHAL->DisableInterrupts();
     
-    kernelThread = new Thread(0, 0, 0, 0, "Kernel thread", false, Paging::GetInstance()->GetKernelDirectory());
+    kernelThread = new Thread(0, 0, 0, 0, "Kernel thread", false, CurrentHAL->GetPaging()->GetKernelDirectory());
     kernelThread->next = NULL;
     listHead = kernelThread;
     currentThread = kernelThread;
@@ -52,7 +52,7 @@ Scheduler::Scheduler()
     
     SCHEDULER_DEBUG_MSG("Scheduler initialized");
     
-    EnableInterrupts();
+    CurrentHAL->EnableInterrupts();
 }
 
 void Scheduler::SetTimerManager(TimerManager* t)
@@ -71,9 +71,9 @@ void Scheduler::AddThread(Thread* thread)
 void Scheduler::Schedule(registers_t* oldState)
 {
     SCHEDULER_DEBUG_MSG("Entering scheduler");
-    DisableInterrupts();
+    CurrentHAL->DisableInterrupts();
     
-    saveThreadInfo(&currentThread->threadInfo, oldState);
+    currentThread->SaveThreadContext(oldState);
     
     if(tm == NULL) return;
     //check if we have a timer manager
@@ -93,7 +93,7 @@ void Scheduler::Schedule(registers_t* oldState)
     
     //printThreadInfo(currentThread->threadInfo);
     
-    switchToThread(&currentThread->threadInfo);
+    currentThread->SwitchTo();
 }
 
 void Scheduler::DumpThreads(CharacterOutputDevice& c)
@@ -102,9 +102,9 @@ void Scheduler::DumpThreads(CharacterOutputDevice& c)
     {
         c << "SCHEDULER: " << "\tThread ID: " << dec << curThread->GetId() << endl;
         c << "SCHEDULER: " << "\tThread Name: " << curThread->GetName() << endl;
-        c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << curThread->GetInstructionPointer() << endl;
+        /*c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << curThread->GetInstructionPointer() << endl;
         c << "SCHEDULER: " << "\tStack Pointer: " << curThread->GetStackPointer() << endl;
-        c << "SCHEDULER: " << "\tBase Pointer: " << curThread->GetBasePointer() << endl;
+        c << "SCHEDULER: " << "\tBase Pointer: " << curThread->GetBasePointer() << endl;*/
         c << "SCHEDULER: " << "\tTimeslice: " << dec << curThread->GetTimeslice() << endl;
         
         c << endl;

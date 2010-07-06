@@ -2,7 +2,7 @@
 #include <string.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/Memory/Virtual/Regions/PreallocatedMemoryRegion.h>
-#include <arch/Paging.h>
+#include <arch/HAL.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/debug.h>
 #include <arch/AddressLayout.h>

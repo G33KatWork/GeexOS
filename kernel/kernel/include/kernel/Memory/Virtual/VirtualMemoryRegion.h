@@ -3,7 +3,7 @@
 
 #include <types.h>
 #include <kernel/global.h>
-#include <arch/Paging.h>
+#include <arch/HAL.h>
 
 namespace Memory
 {

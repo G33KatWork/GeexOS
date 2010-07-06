@@ -1,6 +1,6 @@
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/global.h>
-#include <arch/Paging.h>
+#include <arch/HAL.h>
 #include <kernel/debug.h>
 #include <arch/AddressLayout.h>
 

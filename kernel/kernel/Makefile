@@ -39,10 +39,10 @@ CXXSOURCES = main.cpp \
 ASOURCES = 
 
 # Additional include paths to consider
-INCLUDES =	include ../libarch/include ../libkcpp/include
+INCLUDES =	include ../libarchx86/include ../libkcpp/include ../libhalinterface/include
 
 # Additional static libs to link agains
-STATICLIBS = ../libarch/libarch.a ../libkcpp/libkcpp.a
+STATICLIBS = ../libarchx86/libarchx86.a ../libkcpp/libkcpp.a
 
 # Folder for object files
 OBJDIR = obj
@@ -94,7 +94,7 @@ $(OBJDIRS):
 
 createdirs: $(OBJDIRS)
 
-$(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS))
+$(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
 	$(call cmd_msg,LINK,$(@))
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(STATICLIBS)
 	$(call cmd_msg,DISASM,$(@) -> disasm)

@@ -2,7 +2,7 @@
 #define _TIMER_H
 
 #include <types.h>
-#include <arch/clock_source.h>
+#include <halinterface/ClockSource.h>
 #include <kernel/Processes/Thread.h>
 
 using namespace Arch;

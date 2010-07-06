@@ -4,7 +4,7 @@
 #include <string.h>
 #include <kernel/global.h>
 #include <kernel/debug.h>
-#include <arch/Paging.h>
+#include <arch/HAL.h>
 
 using namespace Memory;
 using namespace IO;
@@ -25,10 +25,10 @@ void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
     for(Address i = r->startAddress; i < r->startAddress + r->size; i += PAGE_SIZE)
     {
         VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Remapping page at virtual " << hex << i);
-        if(Paging::GetInstance()->IsPresent(i))
-            Paging::GetInstance()->MapAddress(
+        if(CurrentHAL->GetPaging()->IsPresent(i))
+            CurrentHAL->GetPaging()->MapAddress(
                 i,
-                Paging::GetInstance()->GetPhysicalAddress(i),
+                CurrentHAL->GetPaging()->GetPhysicalAddress(i),
                 f & ALLOCFLAG_WRITABLE,
                 f & ALLOCFLAG_USERMODE
             );

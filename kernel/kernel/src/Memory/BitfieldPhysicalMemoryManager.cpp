@@ -1,5 +1,5 @@
 #include <kernel/Memory/BitfieldPhysicalMemoryManager.h>
-#include <arch/Paging.h>
+#include <arch/HAL.h>
 #include <string.h>
 #include <kernel/global.h>
 #include <kernel/debug.h>

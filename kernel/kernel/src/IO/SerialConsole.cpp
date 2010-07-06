@@ -1,7 +1,7 @@
 #include <kernel/IO/SerialConsole.h>
 
 #include <string.h>
-#include <arch/ports.h>
+#include <arch/internal/ports.h>    //FIXME: remove this dependency, move this into libarch, since this is elementary for this architecture
 
 using namespace IO;
 using namespace Arch;
