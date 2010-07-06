@@ -44,7 +44,7 @@ higherhalf:						; Here the CPU adds 0x40000000 to all addresses due to the tric
 
     call static_ctors_loop
     
-    push ebx					; Push pointer to GRUB multiboot-information
+    mov [multibootLocation], ebx; Store pointer to GRUB multiboot-information
 	call main					; Jump to C++-Code
 	cli
 	
@@ -87,7 +87,15 @@ gdt_end:
 
 ;---------------------------------------------------------------------------------------------
 
+section .data
+;a comfy place for the multiboot struct location for the x86 HAL
+global multibootLocation
+multibootLocation:	dw 0
+
+;---------------------------------------------------------------------------------------------
+
 section .bss
+;define the initial bootstack which is used until we set up our own
 align 0x1000                                            ; align to page boundary
 global bootStack
 bootStackEnd:

@@ -1,20 +1,8 @@
-#ifndef _MULTIBOOT_H
-#define _MULTIBOOT_H
+#ifndef _ARCHX86_BOOTENVIRONMENT_H
+#define _ARCHX86_BOOTENVIRONMENT_H
 
 #include <types.h>
-
-#define MULTIBOOT_FLAG_MEM     0x001
-#define MULTIBOOT_FLAG_DEVICE  0x002
-#define MULTIBOOT_FLAG_CMDLINE 0x004
-#define MULTIBOOT_FLAG_MODS    0x008
-#define MULTIBOOT_FLAG_AOUT    0x010
-#define MULTIBOOT_FLAG_ELF     0x020
-#define MULTIBOOT_FLAG_MMAP    0x040
-#define MULTIBOOT_FLAG_DRIVES  0x080
-#define MULTIBOOT_FLAG_CONFIG  0x100
-#define MULTIBOOT_FLAG_LOADER  0x200
-#define MULTIBOOT_FLAG_APM     0x400
-#define MULTIBOOT_FLAG_VBE     0x800
+#include <halinterface/BootEnvironment.h>
 
 // multiboot info structure passed from boot loader
 /*The format of the Multiboot information structure (as defined so far) follows:
@@ -55,7 +43,20 @@
      86      | vbe_interface_len |
              +-------------------+										*/
 
-namespace Kernel
+#define MULTIBOOT_FLAG_MEM     0x001
+#define MULTIBOOT_FLAG_DEVICE  0x002
+#define MULTIBOOT_FLAG_CMDLINE 0x004
+#define MULTIBOOT_FLAG_MODS    0x008
+#define MULTIBOOT_FLAG_AOUT    0x010
+#define MULTIBOOT_FLAG_ELF     0x020
+#define MULTIBOOT_FLAG_MMAP    0x040
+#define MULTIBOOT_FLAG_DRIVES  0x080
+#define MULTIBOOT_FLAG_CONFIG  0x100
+#define MULTIBOOT_FLAG_LOADER  0x200
+#define MULTIBOOT_FLAG_APM     0x400
+#define MULTIBOOT_FLAG_VBE     0x800
+
+namespace Arch
 {
     // format of a module
     struct multiboot_module
@@ -137,31 +138,26 @@ namespace Kernel
     }  __attribute__((packed));
 
     typedef struct multiboot_info MultibootInfo;
-
-    class Multiboot
+    
+    class x86BootEnvironment : public BootEnvironment
     {
     public:
-        Multiboot(MultibootInfo *i);
-        
-        Address GetAddress() { return (Address)&info; }
-        uint32_t GetLowerMemory() { return info.memoryLo; }
-        uint32_t GetUpperMemory() { return info.memoryHi; }
-        const char* GetKernelCommandline() { return cmdLine; }
-        uint32_t GetELFNum() { return info.elf_num; }
-        uint32_t GetELFSize() { return info.elf_size; }
-        uint32_t GetELFAddress() { return info.elf_addr; }
-        uint32_t GetELFshndx() { return info.elf_shndx; }
-        uint32_t GetMemregionCount() { return info.mmap_length / sizeof(multiboot_memory_region_t); }
-        multiboot_memory_region_t* GetMemregions() { return memregions; }
-        
+        x86BootEnvironment(MultibootInfo* i);
+    
+        virtual size_t GetInstalledMemory() { return info.memoryLo + info.memoryHi; }
+        virtual const char* GetKernelCommandline() { return cmdLine; }
+        virtual uint32_t GetELFNum() { return info.elf_num; }
+        virtual uint32_t GetELFSize() { return info.elf_size; }
+        virtual uint32_t GetELFAddress() { return info.elf_addr; }
+        virtual uint32_t GetELFshndx() { return info.elf_shndx; }
+    
+    private:
         bool IsElf() { return info.flags & MULTIBOOT_FLAG_ELF; }
         
-    private:
         MultibootInfo info;
         char* cmdLine;
         multiboot_memory_region_t* memregions;
     };
-
 }
 
 #endif

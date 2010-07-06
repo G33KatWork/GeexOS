@@ -8,19 +8,21 @@
 #include <arch/internal/PIC.h>
 #include <arch/x86Paging.h>
 #include <arch/x86InterruptDispatcher.h>
-#include <kernel/utils/Multiboot.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <arch/AddressLayout.h>
 #include <arch/ExceptionHandler/FatalExceptionHandler.h>
 #include <arch/ExceptionHandler/PageFaultHandler.h>
+#include <arch/x86BootEnvironment.h>
 
 using namespace Arch;
-using namespace Kernel;
 using namespace Memory;
 
 //Create an instance of our HAL for easy access from anywhere
 x86HAL aNewHAL = x86HAL();
 HAL* Arch::CurrentHAL = &aNewHAL;
+
+//defined and set on start.S
+extern MultibootInfo* multibootLocation;
 
 x86HAL::x86HAL()
 {
@@ -50,6 +52,11 @@ void x86HAL::Initialize()
     gdt_setup();
     gdt_install();
     HAL_DEBUG_MSG("GDT installed...");
+    
+    if(multibootLocation == NULL)
+        PANIC("The multiboot structure pointer is NULL. Not good!");
+    bootenv = new x86BootEnvironment(multibootLocation);
+    HAL_DEBUG_MSG("Boot environment information successfully parsed...");
     
     idt_setup();
     idt_install();
@@ -97,7 +104,7 @@ void x86HAL::InitializationDone()
     HAL_DEBUG_MSG("Arch initialization done...");
 }
     
-void x86HAL::SetupArchMemRegions(Multiboot* m)
+void x86HAL::SetupArchMemRegions()
 {
     HAL_DEBUG_MSG("Announcing architecture specific memory regions...");
     

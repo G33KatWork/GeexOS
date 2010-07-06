@@ -5,6 +5,7 @@
 #include <arch/internal/PIT.h>
 #include <arch/x86ThreadContext.h>
 #include <arch/internal/SchedulingHelper.h>
+#include <arch/x86BootEnvironment.h>
 
 namespace Arch
 {
@@ -17,7 +18,7 @@ namespace Arch
         virtual void Initialize();
         virtual void InitializationDone();
         
-        virtual void SetupArchMemRegions(Kernel::Multiboot* m);
+        virtual void SetupArchMemRegions();
         
         virtual void EnableInterrupts();
         virtual void DisableInterrupts();
@@ -31,6 +32,8 @@ namespace Arch
         
         virtual ClockSource* GetHardwareClockSource();
         
+        virtual BootEnvironment* GetBootEnvironment() { return bootenv; }
+        
         virtual Address GetStackPointer() { return readStackPointer(); }
         virtual void SetStackPointer(Address NewPointer) { writeStackPointer(NewPointer); }
         virtual Address GetFramePointer() { return readBasePointer(); }
@@ -39,6 +42,7 @@ namespace Arch
     private:
         BaseInterruptDispatcher* ird;
         BasePaging *paging;
+        BootEnvironment* bootenv;
         
         ClockSource clk;
         PIT* pit;

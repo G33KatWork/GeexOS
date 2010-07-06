@@ -8,7 +8,15 @@ TARGET = libarchx86.a
 CCSOURCES = 
 
 # List C++ source files here
-CXXSOURCES = HAL.cpp GDT.cpp IDT.cpp PIT.cpp PIC.cpp x86Paging.cpp x86InterruptDispatcher.cpp x86ThreadContext.cpp
+CXXSOURCES = HAL.cpp \
+			 GDT.cpp \
+			 IDT.cpp \
+			 PIT.cpp \
+			 PIC.cpp \
+			 x86Paging.cpp \
+			 x86InterruptDispatcher.cpp \
+			 x86ThreadContext.cpp \
+			 x86BootEnvironment.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = start.S interruptStubs.S SchedulingHelper.S gdt_flush.S

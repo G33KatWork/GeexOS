@@ -1,7 +1,6 @@
 #include <halinterface/HAL.h>
 #include <kernel/IO/Monitor.h>
 #include <kernel/global.h>
-#include <kernel/utils/multiboot.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <halinterface/BaseInterruptDispatcher.h>
 #include <kernel/IInterruptServiceRoutine.h>
@@ -68,7 +67,7 @@ void foo(int arg)
     }
 }
 
-int main(MultibootInfo* multibootInfo)
+int main()
 {   
     //Prepare monitor output
     kdbg.Clear();
@@ -82,19 +81,20 @@ int main(MultibootInfo* multibootInfo)
     CurrentHAL->Initialize();
     MAIN_DEBUG_MSG("CPU and Interrupt tables initialized...");
     
-    //Get information about environment from GRUB
-    Multiboot m = Multiboot(multibootInfo);
-    
     CurrentHAL->InitializationDone();
     
     //Initialize Memory
-    VirtualMemoryManager::GetInstance()->Init(m.GetLowerMemory() + m.GetUpperMemory());
+    VirtualMemoryManager::GetInstance()->Init(CurrentHAL->GetBootEnvironment()->GetInstalledMemory());
     
     //Build virtual memory space for kernel ELF
     VirtualMemoryManager::GetInstance()->KernelSpace(new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace"));
     
     //Parse ELF-Stuff delivered from GRUB and create .text, .data, .rodata, .bss and .placement sections in kernel space
-    ElfInformation* elfInfo = new ElfInformation(m.GetELFAddress(), m.GetELFshndx(), m.GetELFSize(), m.GetELFNum());
+    ElfInformation* elfInfo = new ElfInformation(CurrentHAL->GetBootEnvironment()->GetELFAddress(),
+                                                 CurrentHAL->GetBootEnvironment()->GetELFshndx(),
+                                                 CurrentHAL->GetBootEnvironment()->GetELFSize(),
+                                                 CurrentHAL->GetBootEnvironment()->GetELFNum()
+                                                 );
     VirtualMemoryManager::GetInstance()->KernelElf(elfInfo);
     const std::type_info *t = &typeid(elfInfo);
     DEBUG_MSG("name: " << t->name());
@@ -105,7 +105,7 @@ int main(MultibootInfo* multibootInfo)
     
     //Create Arch-specific memory regions in kernel space
     //On x86: Framebuffer for textmode and lowest 64K for BIOS
-    CurrentHAL->SetupArchMemRegions(&m);
+    CurrentHAL->SetupArchMemRegions();
     
     //Create defined Stack and move boot stack to new position
     KernelStackMemoryRegion* kernelStack = new KernelStackMemoryRegion(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, 0x1000, "Main kernel stack");
@@ -117,8 +117,7 @@ int main(MultibootInfo* multibootInfo)
     
     syncMemregionsWithPaging();
     
-    MAIN_DEBUG_MSG("Multiboot structure address: " << hex << m.GetAddress());
-    MAIN_DEBUG_MSG("Kernel commandline: " << m.GetKernelCommandline());
+    MAIN_DEBUG_MSG("Kernel commandline: " << CurrentHAL->GetBootEnvironment()->GetKernelCommandline());
     
     //Init timer
     TimerManager *tm = new TimerManager(CurrentHAL->GetHardwareClockSource());

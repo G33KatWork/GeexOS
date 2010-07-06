@@ -13,7 +13,6 @@ CXXSOURCES = main.cpp \
 			 IO/Monitor.cpp \
 			 IO/SerialConsole.cpp \
 			 global.cpp \
-			 utils/multiboot.cpp \
 			 Processes/Scheduler.cpp \
 			 Processes/Thread.cpp \
 			 DataStructures/OrderedArray.cpp \
