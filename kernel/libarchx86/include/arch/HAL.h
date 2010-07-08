@@ -6,6 +6,8 @@
 #include <arch/x86ThreadContext.h>
 #include <arch/internal/SchedulingHelper.h>
 #include <arch/x86BootEnvironment.h>
+#include <arch/TextmodeDebugOutput.h>
+#include <arch/SerialDebugOutput.h>
 
 namespace Arch
 {
@@ -29,10 +31,9 @@ namespace Arch
         
         virtual BaseInterruptDispatcher* GetInterruptDispatcher();
         virtual BasePaging* GetPaging();
-        
         virtual ClockSource* GetHardwareClockSource();
-        
         virtual BootEnvironment* GetBootEnvironment() { return bootenv; }
+        virtual IO::BaseDebugOutputDevice* GetDebugOutputDevice();
         
         virtual Address GetStackPointer() { return readStackPointer(); }
         virtual void SetStackPointer(Address NewPointer) { writeStackPointer(NewPointer); }
@@ -43,6 +44,7 @@ namespace Arch
         BaseInterruptDispatcher* ird;
         BasePaging *paging;
         BootEnvironment* bootenv;
+        IO::BaseDebugOutputDevice* debug;
         
         ClockSource clk;
         PIT* pit;

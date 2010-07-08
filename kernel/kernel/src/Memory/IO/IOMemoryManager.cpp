@@ -146,14 +146,14 @@ IOMemoryRegion* IOMemoryManager::Allocate(Address virtualAddress, Address physic
     return region;
 }
 
-void IOMemoryManager::DumpRegions(CharacterOutputDevice& c)
+void IOMemoryManager::DumpRegions(BaseDebugOutputDevice* c)
 {
     for(IOMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
     {
-        c << "IOMEMSPACE: " << "\tName: " << curRegion->name << endl;
-        c << "IOMEMSPACE: " << "\tVirtualStartAddress: " << hex << (unsigned int)curRegion->startAddress << endl;
-        c << "IOMEMSPACE: " << "\tPhysicalStartAddress: " << hex << (unsigned int)curRegion->startAddressPhysical << endl;
-        c << "IOMEMSPACE: " << "\tSize: " << hex << (unsigned int)curRegion->size << endl;
-        c << endl;
+        *c << "IOMEMSPACE: " << "\tName: " << curRegion->name << endl;
+        *c << "IOMEMSPACE: " << "\tVirtualStartAddress: " << hex << (unsigned int)curRegion->startAddress << endl;
+        *c << "IOMEMSPACE: " << "\tPhysicalStartAddress: " << hex << (unsigned int)curRegion->startAddressPhysical << endl;
+        *c << "IOMEMSPACE: " << "\tSize: " << hex << (unsigned int)curRegion->size << endl;
+        *c << endl;
     }
 }

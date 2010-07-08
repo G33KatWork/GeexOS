@@ -16,7 +16,9 @@ CXXSOURCES = HAL.cpp \
 			 x86Paging.cpp \
 			 x86InterruptDispatcher.cpp \
 			 x86ThreadContext.cpp \
-			 x86BootEnvironment.cpp
+			 x86BootEnvironment.cpp \
+			 TextmodeDebugOutput.cpp \
+			 SerialDebugOutput.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = start.S interruptStubs.S SchedulingHelper.S gdt_flush.S
@@ -42,8 +44,7 @@ CFLAGS += $(addprefix -I,$(INCLUDES))
 # C++ compiler flags
 CXXFLAGS += -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
-			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long \
-			-Wconversion #-Werror
+			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long
 CXXFLAGS += -DARCH_X86 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 

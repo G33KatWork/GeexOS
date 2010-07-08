@@ -16,7 +16,7 @@ CXXSOURCES = cppruntime.cpp \
 ASOURCES = 
 
 # Additional include paths to consider
-INCLUDES =	include ../kernel/include ../libarchx86/include
+INCLUDES =	include ../kernel/include ../libarchx86/include ../libhalinterface/include
 
 # Folder for object files
 OBJDIR = obj
@@ -36,8 +36,7 @@ CFLAGS += $(addprefix -I,$(INCLUDES))
 # C++ compiler flags
 CXXFLAGS += -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
-			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long \
-			-Wconversion #-Werror
+			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long
 CXXFLAGS += -DARCH_X86 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 

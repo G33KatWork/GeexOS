@@ -2,8 +2,6 @@
 #include <arch/hal.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
-#include <kernel/IO/Monitor.h>
-#include <kernel/IO/SerialConsole.h>
 #include <kernel/debug.h>
 #include <arch/hal.h>
 
@@ -12,12 +10,7 @@ using namespace Arch;
 using namespace Memory;
 
 PlacementAllocator placementAlloc = PlacementAllocator();
-
-#ifdef SERIAL_DEBUG
-    SerialConsole kdbg = SerialConsole(SERIAL_COM1);
-#else
-    Monitor kdbg = Monitor();
-#endif
+BaseDebugOutputDevice* kdbg = NULL;
 
 void doPanic()
 {
@@ -36,8 +29,8 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
 {
     CurrentHAL->DisableInterrupts();
     
-    kdbg.SetForeground(Red);
-    kdbg << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
+    kdbg->SetForeground(Red);
+    *kdbg << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
     
     if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
         VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();

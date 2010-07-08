@@ -28,6 +28,8 @@ x86HAL::x86HAL()
 {
     ird = NULL;
     paging = NULL;
+    bootenv = NULL;
+    debug = NULL;
     
     //can't assign directly to clk, why?
     ClockSource clk_tmp = {
@@ -161,4 +163,11 @@ BasePaging* x86HAL::GetPaging()
 ClockSource* x86HAL::GetHardwareClockSource() 
 {
     return &clk;
+}
+
+IO::BaseDebugOutputDevice* x86HAL::GetDebugOutputDevice()
+{
+    if(debug == NULL)
+        debug = new SerialDebugOutput(SERIAL_COM1);
+    return debug;
 }

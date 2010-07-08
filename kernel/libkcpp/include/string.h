@@ -7,7 +7,7 @@
 extern "C"
 {
     void *memcpy(void *dest, const void* src, size_t count);
-    void *memset(void *dest, int val, size_t count);
+    void *memset(void *dest, char val, size_t count);
     void *memmove(void *dest, const void *src, size_t count);
     int memcmp(const void *_a, const void *_b, size_t count);
 
@@ -19,7 +19,7 @@ extern "C"
     int strncasecmp(const char *s1, const char *s2, size_t count);
 
     char *strsep(char **stringp, const char *delim);
-    char *strchr(const char *s, int c);
+    char *strchr(const char *s, char c);
     char *strrchr(const char *s, int c);
     char *strcpy(char *dest, const char *src);
     char *strncpy(char *dest, const char *src, size_t count);

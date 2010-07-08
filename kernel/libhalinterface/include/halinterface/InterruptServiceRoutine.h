@@ -2,6 +2,7 @@
 #define _HAL_INTERFACES_INTERRUPT_SERVICE_ROUTINE_H
 
 #include <types.h>
+#include <arch/types.h>
 
 namespace Arch
 {

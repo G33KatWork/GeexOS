@@ -6,7 +6,7 @@
 #include <kernel/DataStructures/OrderedArray.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/Time/TimerManager.h>
-#include <kernel/IO/CharacterOutputDevice.h>
+#include <halinterface/BaseDebugOutputDevice.h>
 
 using namespace DataStructures;
 using namespace Time;
@@ -23,7 +23,7 @@ namespace Processes
         
         Thread* GetCurrentThread() { return currentThread; }
         
-        void DumpThreads(IO::CharacterOutputDevice& c);
+        void DumpThreads(IO::BaseDebugOutputDevice* c);
         
         void AddThread(Thread* thread);
         

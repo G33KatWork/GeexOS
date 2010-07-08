@@ -2,6 +2,7 @@
 #define _ARCHX86_THREADCONTEXT_H
 
 #include <types.h>
+#include <arch/types.h>
 #include <halinterface/BaseThreadContext.h>
 #include <arch/x86Paging.h>
 #include <arch/internal/SchedulingHelper.h>

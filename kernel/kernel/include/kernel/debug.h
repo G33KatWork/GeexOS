@@ -1,17 +1,12 @@
 #ifndef _DEBUG_H
 #define _DEBUG_H
 
-#include <kernel/IO/Monitor.h>
-#include <kernel/IO/SerialConsole.h>
+#include <halinterface/BaseDebugOutputDevice.h>
 
 //Comment out for on screen debugging
 //#define     SERIAL_DEBUG
 
-#ifdef SERIAL_DEBUG
-    extern class IO::SerialConsole kdbg;
-#else
-    extern class IO::Monitor kdbg;
-#endif
+extern IO::BaseDebugOutputDevice* kdbg;
 
 #ifdef DEBUG
 
@@ -37,11 +32,11 @@
 
 #define DEBUG_MSG(msg) \
 { \
-    IO::Color foreground = kdbg.GetForeground(); \
-    kdbg.SetForeground(IO::LightBlue); \
-    kdbg.PrintString("[DEBUG] "); \
-    kdbg << msg << IO::endl; \
-    kdbg.SetForeground(foreground); \
+    IO::Color foreground = kdbg->GetForeground(); \
+    kdbg->SetForeground(IO::LightBlue); \
+    kdbg->PrintString("[DEBUG] "); \
+    *kdbg << msg << IO::endl; \
+    kdbg->SetForeground(foreground); \
 }
 #else
 #define DEBUG_MSG(msg)

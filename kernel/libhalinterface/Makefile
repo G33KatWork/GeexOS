@@ -2,42 +2,19 @@ SRC                 := ../..
 include $(SRC)/build/base.mak
 
 # Target file name.
-TARGET = kernel.elf
+TARGET = libhalinterface.a
 
 # List C source files here.
 CCSOURCES = 
 
 # List C++ source files here
-CXXSOURCES = main.cpp \
-			 global.cpp \
-			 Processes/Scheduler.cpp \
-			 Processes/Thread.cpp \
-			 DataStructures/OrderedArray.cpp \
-			 DataStructures/List.cpp\
-			 Time/Timer.cpp\
-			 Time/TimerManager.cpp \
- 			 Memory/PlacementAllocator.cpp \
-             Memory/Virtual/VirtualMemoryManager.cpp \
-             Memory/Virtual/VirtualMemorySpace.cpp \
-             Memory/Virtual/VirtualMemoryRegion.cpp \
-			 Memory/BitfieldPhysicalMemoryManager.cpp \
-			 Memory/IO/IOMemoryManager.cpp \
-			 utils/ElfInformation.cpp \
-			 Processes/Scheduler.cpp \
-			 Processes/Thread.cpp \
-			 Processes/KernelThread.cpp \
-			 Memory/Virtual/Regions/KernelStackMemoryRegion.cpp \
-			 Memory/Virtual/Regions/KernelThreadStackRegion.cpp
-#			 Memory/Slab/SlabManager.cpp
+CXXSOURCES = BaseDebugOutputDevice.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = 
 
 # Additional include paths to consider
-INCLUDES =	include ../libarchx86/include ../libkcpp/include ../libhalinterface/include
-
-# Additional static libs to link agains
-STATICLIBS = ../libarchx86/libarchx86.a ../libkcpp/libkcpp.a ../libhalinterface/libhalinterface.a
+INCLUDES =	include ../libkcpp/include
 
 # Folder for object files
 OBJDIR = obj
@@ -64,9 +41,6 @@ CXXFLAGS += $(addprefix -I,$(INCLUDES))
 # NASM flags
 ASFLAGS = -f elf -ggdb
 
-# Linker flags
-LDFLAGS = -T linker.ld -Map kernel.map
-
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)
 OBJECTS += $(GASOURCES:%.s=%.o)
@@ -88,18 +62,13 @@ $(OBJDIRS):
 
 createdirs: $(OBJDIRS)
 
-$(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
-	$(call cmd_msg,LINK,$(@))
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(STATICLIBS)
-	$(call cmd_msg,DISASM,$(@) -> disasm)
-	$(Q)$(OBJDUMP) -d $(TARGET) > disasm
+$(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS))
+	$(call cmd_msg,AR,$(@))
+	$(Q)$(AR) rcs $@ $^
 
 # Cleaning
 clean:
 	$(Q)$(RM) -f $(TARGET)
-#$(Q)$(RM) -f $(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
-	$(Q)$(RM) -f disasm
-	$(Q)$(RM) -f kernel.map
 	$(Q)$(RM) -rf obj
 
 # Header dependency generation

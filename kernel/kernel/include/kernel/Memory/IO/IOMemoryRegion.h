@@ -2,6 +2,7 @@
 #define IOMEMORYREGION_H_
 
 #include <types.h>
+#include <arch/types.h>
 
 namespace Memory
 {

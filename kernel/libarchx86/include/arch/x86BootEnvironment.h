@@ -2,6 +2,7 @@
 #define _ARCHX86_BOOTENVIRONMENT_H
 
 #include <types.h>
+#include <arch/types.h>
 #include <halinterface/BootEnvironment.h>
 
 // multiboot info structure passed from boot loader

@@ -96,17 +96,17 @@ void Scheduler::Schedule(registers_t* oldState)
     currentThread->SwitchTo();
 }
 
-void Scheduler::DumpThreads(CharacterOutputDevice& c)
+void Scheduler::DumpThreads(BaseDebugOutputDevice* c)
 {
     for(Thread* curThread = listHead; curThread != NULL; curThread = curThread->next)
     {
-        c << "SCHEDULER: " << "\tThread ID: " << dec << curThread->GetId() << endl;
-        c << "SCHEDULER: " << "\tThread Name: " << curThread->GetName() << endl;
-        /*c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << curThread->GetInstructionPointer() << endl;
-        c << "SCHEDULER: " << "\tStack Pointer: " << curThread->GetStackPointer() << endl;
-        c << "SCHEDULER: " << "\tBase Pointer: " << curThread->GetBasePointer() << endl;*/
-        c << "SCHEDULER: " << "\tTimeslice: " << dec << curThread->GetTimeslice() << endl;
+        *c << "SCHEDULER: " << "\tThread ID: " << dec << curThread->GetId() << endl;
+        *c << "SCHEDULER: " << "\tThread Name: " << curThread->GetName() << endl;
+        *c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << curThread->GetInstructionPointer() << endl;
+        *c << "SCHEDULER: " << "\tStack Pointer: " << curThread->GetStackPointer() << endl;
+        *c << "SCHEDULER: " << "\tBase Pointer: " << curThread->GetFramePointer() << endl;
+        //*c << "SCHEDULER: " << "\tTimeslice: " << dec << curThread->GetTimeslice() << endl;
         
-        c << endl;
+        *c << endl;
     }
 }

@@ -72,14 +72,14 @@ bool KernelThreadStackMemoryRegion::HandlePageFault()
     return true;
 }
 
-void KernelThreadStackMemoryRegion::DumpStacks(CharacterOutputDevice& c)
+void KernelThreadStackMemoryRegion::DumpStacks(BaseDebugOutputDevice* c)
 {
     for(KernelThreadStack* cur = stackList; cur != NULL; cur = cur->next)
     {
-        c << "KTSTACK: " << "\tBeginning: " << cur->beginning << endl;
-        c << "KTSTACK: " << "\tMax Size: " << (unsigned)cur->maxSize << endl;
-        c << "KTSTACK: " << "\tCur Size: " << (unsigned)cur->curSize << endl;
-        c << endl;
+        *c << "KTSTACK: " << "\tBeginning: " << cur->beginning << endl;
+        *c << "KTSTACK: " << "\tMax Size: " << (unsigned)cur->maxSize << endl;
+        *c << "KTSTACK: " << "\tCur Size: " << (unsigned)cur->curSize << endl;
+        *c << endl;
     }
 }
 

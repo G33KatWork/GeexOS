@@ -2,6 +2,7 @@
 #define _HAL_INTERFACES_CLOCKSOURCE_H
 
 #include <types.h>
+#include <arch/types.h>
 
 namespace Arch
 {

@@ -3,8 +3,7 @@
 
 #include <types.h>
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
-
-#include <kernel/IO/CharacterOutputDevice.h>
+#include <halinterface/BaseDebugOutputDevice.h>
 
 namespace Memory
 {
@@ -40,7 +39,7 @@ namespace Memory
         
         //void Remap(VirtualMemoryRegion* region, Address NewAddress);
 		
-		void DumpRegions(IO::CharacterOutputDevice& c);
+		void DumpRegions(IO::BaseDebugOutputDevice* c);
 		
         const char* Name() { return name; }
 		

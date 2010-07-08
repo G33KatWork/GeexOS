@@ -2,6 +2,7 @@
 #define _ARCHX86_IDT_H
 
 #include <types.h>
+#include <arch/types.h>
 
 // count of gdt entries
 #define I86_IDT_MAX_ENTRY_COUNT			255

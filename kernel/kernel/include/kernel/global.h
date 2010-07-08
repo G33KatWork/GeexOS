@@ -9,9 +9,9 @@
 
 #define PANIC(msg) \
 { \
-    kdbg.SetForeground(IO::Red); \
-    kdbg.PrintString("[PANIC] Kernel Panic: "); \
-    kdbg << msg << IO::endl; \
+    kdbg->SetForeground(IO::Red); \
+    kdbg->PrintString("[PANIC] Kernel Panic: "); \
+    *kdbg << msg << IO::endl; \
     doPanic(); \
 }
 

@@ -1,8 +1,9 @@
 #ifndef _ARCHX86_PAGING_H
 #define _ARCHX86_PAGING_H
 
-#include <halinterface/BasePaging.h>
 #include <types.h>
+#include <arch/types.h>
+#include <halinterface/BasePaging.h>
 #include <kernel/global.h>
 
 #define PAGEALIGN_MASK      0xFFFFF000
@@ -44,7 +45,7 @@ namespace Arch
         void Accessed(bool a)   { a ? accessed = 1 : accessed = 0; }
         void Dirty(bool d)      { d ? dirty = 1 : dirty = 0; }
         void Global(bool g)     { g ? global = 1 : global = 0; }
-        void Frame(Address a)   { frame = (a >> 12); }
+        void Frame(Address a)   { frame = (a >> 12) & 0xFFFFF; }
         
         
         unsigned int present        : 1;   // Page present in memory

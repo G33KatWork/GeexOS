@@ -2,6 +2,7 @@
 #define _ARCHX86_PIT_H
 
 #include <types.h>
+#include <arch/types.h>
 
 namespace Arch
 {

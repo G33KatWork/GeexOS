@@ -37,7 +37,7 @@ namespace Arch
         
         virtual bool Resolve()
         {
-            kdbg.SetForeground(IO::Red);
+            kdbg->SetForeground(IO::Red);
             PANIC("Unresolveable page fault! ( " << (NonPresent ? "not-present " : "")
                 << (WriteOperation ? "write-operation " : "") << (Usermode ? "user-mode " : "")
                 << (ReservedBit ? "reserved-bit " : "") << (InstructionFetch ? "instruction-fetch " : "")

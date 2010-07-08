@@ -1,17 +1,9 @@
-#include <kernel/IO/CharacterOutputDevice.h>
+#include <halinterface/BaseDebugOutputDevice.h>
 #include <string.h>
 
 using namespace IO;
 
-CharacterOutputDevice::CharacterOutputDevice()
-{
-    printMode = dec;
-    
-    foregroundColor = White;
-    backgroundColor = Black;
-}
-
-void CharacterOutputDevice::PrintString(char *c)
+void BaseDebugOutputDevice::PrintString(char *c)
 {
     unsigned int i = 0;
     while(c[i])
@@ -21,7 +13,7 @@ void CharacterOutputDevice::PrintString(char *c)
     }
 }
 
-void CharacterOutputDevice::PrintHex(unsigned int n, size_t len)
+void BaseDebugOutputDevice::PrintHex(unsigned int n)
 {
     char hexChars[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     
@@ -35,14 +27,14 @@ void CharacterOutputDevice::PrintHex(unsigned int n, size_t len)
         n /= 16;
         
         i++;
-    } while(i < len);
+    } while(i < sizeof(unsigned int)*2);
     
     reverseArray(num);
     PrintString("0x");
     PrintString(num);
 }
 
-void CharacterOutputDevice::PrintDec(unsigned int n)
+void BaseDebugOutputDevice::PrintDec(unsigned int n)
 {
     char num[20];
     memset(num, 0, 20);
@@ -50,7 +42,7 @@ void CharacterOutputDevice::PrintDec(unsigned int n)
     int i = 0;
     do
     {
-        num[i] = (n % 10) + '0';
+        num[i] = (char)((n % 10) + '0');
         n /= 10;
         
         i++;
@@ -60,7 +52,7 @@ void CharacterOutputDevice::PrintDec(unsigned int n)
     PrintString(num);
 }
 
-void CharacterOutputDevice::PrintDec(int n)
+void BaseDebugOutputDevice::PrintDec(int n)
 {
     int sign;
     char num[20];
@@ -71,7 +63,7 @@ void CharacterOutputDevice::PrintDec(int n)
     int i = 0;
     do
     {
-        num[i] = (n % 10) + '0';
+        num[i] = (char)((n % 10) + '0');
         n /= 10;
         
         i++;
@@ -84,17 +76,17 @@ void CharacterOutputDevice::PrintDec(int n)
     PrintString(num);
 }
 
-void CharacterOutputDevice::PrintData(Address start, size_t len)
+void BaseDebugOutputDevice::PrintData(char* start, size_t len)
 {
     for(unsigned int i = 0; i < (len / 0x10)+1; i++)
     {
-        PrintHex(start, sizeof(Address)*2);
+        PrintHex((unsigned)start);
         PrintString(": ");
         
         char* ptr = (char*)start;
         for(int j = 0; j < 0x10; j++)
         {
-            PrintHex(*ptr++, 2);
+            PrintHex(*ptr++);
             PrintString(" ");
         }
         
@@ -114,55 +106,39 @@ void CharacterOutputDevice::PrintData(Address start, size_t len)
     }
 }
 
-void CharacterOutputDevice::Clear(Color c)
-{
-    backgroundColor = c;
-    Clear();
-}
-
-CharacterOutputDevice &CharacterOutputDevice::operator<<(char *c)
+BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(char *c)
 {
     PrintString(c);
     return *this;
 }
 
-CharacterOutputDevice &CharacterOutputDevice::operator<<(const char *c)
+BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(const char *c)
 {
     PrintString(c);
     return *this;
 }
 
-CharacterOutputDevice &CharacterOutputDevice::operator<<(unsigned int i)
+BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(unsigned int i)
 {
     if (printMode == dec)
         PrintDec(i);
     else
-        PrintHex(i, sizeof(unsigned int)*2);
+        PrintHex(i);
     
     return *this;
 }
 
-CharacterOutputDevice &CharacterOutputDevice::operator<<(int i)
+BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(int i)
 {
     if (printMode == dec)
         PrintDec(i);
     else
-        PrintHex(i, sizeof(int)*2);
+        PrintHex(i);
     
     return *this;
 }
 
-CharacterOutputDevice &CharacterOutputDevice::operator<<(size_t i)
-{
-    if (printMode == dec)
-        PrintDec((unsigned)i);
-    else
-        PrintHex((unsigned)i, sizeof(size_t)*2);
-    
-    return *this;
-}
-
-CharacterOutputDevice &CharacterOutputDevice::operator<<(Special s)
+BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(Special s)
 {
     switch(s)
     {
@@ -180,12 +156,12 @@ CharacterOutputDevice &CharacterOutputDevice::operator<<(Special s)
       return *this;
 }
 
-void CharacterOutputDevice::reverseArray(char* arr)
+void BaseDebugOutputDevice::reverseArray(char* arr)
 {
     int i, j;
     for (i = 0, j = strlen(arr)-1; i<j; i++, j--)
     {
-        int c = arr[i];
+        char c = arr[i];
         arr[i] = arr[j];
         arr[j] = c;
     }

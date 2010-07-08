@@ -5,7 +5,7 @@
 
 namespace Arch
 {
-    typedef struct x86ThreadInfo
+    typedef struct
     {
         uint32_t  eip;       // 0
         uint32_t  cs;        // 4
@@ -24,7 +24,7 @@ namespace Arch
         uint32_t  gs;        // 56
         uint32_t  ss;        // 60
         uint32_t  cr3;       // 64
-    };
+    } x86ThreadInfo;
     
     extern "C"  uint32_t    readEflags();
     extern "C"  void        switchToThread(x86ThreadInfo* info);

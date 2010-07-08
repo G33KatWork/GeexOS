@@ -1,4 +1,4 @@
-QEMU_VERSION		:= 0.11.1
+QEMU_VERSION		:= 0.12.4
 QEMU_SOURCE	     	:= $(TOOLCHAIN_SRCDIR)/qemu-$(QEMU_VERSION).tar.bz2
 QEMU_DOWNLOAD	    := http://download.savannah.gnu.org/releases/qemu/qemu-$(QEMU_VERSION).tar.gz
 QEMU_PATCHES	    := 
@@ -34,7 +34,6 @@ ifeq ($(shell uname),Darwin)
 		--enable-cocoa \
 		--disable-sdl \
 		--disable-xen \
-		--disable-kqemu \
 		--disable-kvm \
 		--enable-system \
 		--disable-linux-user \

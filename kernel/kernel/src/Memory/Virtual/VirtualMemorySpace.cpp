@@ -131,14 +131,14 @@ VirtualMemoryRegion* VirtualMemorySpace::FindRegionEnclosingAddress(Address addr
     return NULL;
 }
 
-void VirtualMemorySpace::DumpRegions(CharacterOutputDevice& c)
+void VirtualMemorySpace::DumpRegions(BaseDebugOutputDevice* c)
 {
     for(VirtualMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
     {
-        c << "VMEMSPACE: " << "\tName: " << curRegion->name << endl;
-        c << "VMEMSPACE: " << "\tStartAddress: " << hex << (unsigned int)curRegion->startAddress << endl;
-        c << "VMEMSPACE: " << "\tSize: " << hex << (unsigned int)curRegion->size << endl;
-        c << endl;
+        *c << "VMEMSPACE: " << "\tName: " << curRegion->name << endl;
+        *c << "VMEMSPACE: " << "\tStartAddress: " << hex << (unsigned int)curRegion->startAddress << endl;
+        *c << "VMEMSPACE: " << "\tSize: " << hex << (unsigned int)curRegion->size << endl;
+        *c << endl;
     }
 }
 

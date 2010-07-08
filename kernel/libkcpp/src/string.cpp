@@ -15,7 +15,7 @@ void */*Lib::*/memcpy(void *dest, const void* src, size_t count)
 	return dest;
 }
 
-void */*Lib::*/memset(void *dest, int val, size_t count)
+void */*Lib::*/memset(void *dest, char val, size_t count)
 {
     char *temp = (char *)dest;
 	for(; count != 0; count--) *temp++ = val;
@@ -166,7 +166,7 @@ char */*Lib::*/strsep(char **stringp, const char *delim)
 	}
 }
 
-char */*Lib::*/strchr(const char *s, int c)
+char */*Lib::*/strchr(const char *s, char c)
 {
 	char ch = c;
 

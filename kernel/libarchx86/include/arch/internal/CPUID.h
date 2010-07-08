@@ -82,7 +82,7 @@ namespace Arch
 
     static inline int cpuid_string(int in, uint32_t dest[4])
     {
-        int h;
+        int h = 0;
         asm volatile("cpuid":"=a"(*(dest+4)),"=b"(*(dest)), "=c"(*(dest+2)),"=d"(*(dest+1)):"0"(in));
         return h;
     }

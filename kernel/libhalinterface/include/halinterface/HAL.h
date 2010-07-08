@@ -6,6 +6,7 @@
 #include <halinterface/BaseInterruptDispatcher.h>
 #include <halinterface/BasePaging.h>
 #include <halinterface/BootEnvironment.h>
+#include <halinterface/BaseDebugOutputDevice.h>
 
 namespace Arch
 {
@@ -26,10 +27,9 @@ namespace Arch
         
         virtual BaseInterruptDispatcher* GetInterruptDispatcher() = 0;
         virtual BasePaging* GetPaging() = 0;
-        
         virtual ClockSource* GetHardwareClockSource() = 0;
-        
         virtual BootEnvironment* GetBootEnvironment() = 0;
+        virtual IO::BaseDebugOutputDevice* GetDebugOutputDevice() = 0;
         
         virtual Address GetStackPointer() = 0;
         virtual void SetStackPointer(Address NewPointer) = 0;

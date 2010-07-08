@@ -2,6 +2,7 @@
 #define PHYSICAL_MEMORY_MANAGER_H_
 
 #include <types.h>
+#include <arch/types.h>
 
 namespace Memory
 {

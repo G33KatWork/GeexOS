@@ -16,11 +16,13 @@ SECTIONS{
     {
         code = .; _code = .; __code = .;
         *(.text*)
+				*(.gnu.linkonce.t*)
     }
 
     .rodata ALIGN (4096) : AT(ADDR(.rodata) - 0xC0000000)
     {
         *(.rodata*)
+				*(.gnu.linkonce.r*)
     }
 
     .data ALIGN (4096) : AT(ADDR(.data) - 0xC0000000)
@@ -31,6 +33,8 @@ SECTIONS{
         
         data = .; _data = .; __data = .;
         *(.data)
+
+				*(.gnu.linkonce.d*)
     }
 
     .bss ALIGN (4096) : AT(ADDR(.bss) - 0xC0000000)
@@ -40,6 +44,8 @@ SECTIONS{
         *(COMMON)
         *(.bss)
         ebss = .;
+
+				*(.gnu.linkonce.b*)
     }
     
     end = .; _end = .; __end = .;

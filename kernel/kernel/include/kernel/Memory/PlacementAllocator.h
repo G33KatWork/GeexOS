@@ -2,6 +2,7 @@
 #define PLACEMENT_ALLOCATOR_H_
 
 #include <types.h>
+#include <arch/types.h>
 
 namespace Memory
 {

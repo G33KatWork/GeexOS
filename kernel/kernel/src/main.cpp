@@ -1,5 +1,4 @@
 #include <halinterface/HAL.h>
-#include <kernel/IO/Monitor.h>
 #include <kernel/global.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <halinterface/BaseInterruptDispatcher.h>
@@ -14,13 +13,10 @@
 #include <kernel/Processes/KernelThread.h>
 #include <arch/AddressLayout.h>
 #include <kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.h>
-#include <kernel/IO/CharacterOutputDevice.h>
 
 #include <string.h>
 
 #include <kernel/Memory/Virtual/Regions/PagedMemoryRegion.h>
-
-#include <typeinfo>
 
 extern      Address             bootStack;          //defined in start.S
 
@@ -62,15 +58,16 @@ void foo(int arg)
 {   
     while(1)
     {
-        kdbg.PrintChar((char)arg);
+        kdbg->PrintChar((char)arg);
         for(int i = 0; i < 10000000; i++);
     }
 }
 
 int main()
-{   
+{
     //Prepare monitor output
-    kdbg.Clear();
+    kdbg = CurrentHAL->GetDebugOutputDevice();
+    kdbg->Clear();
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
     char cpuVendor[17] = {0};
@@ -96,12 +93,6 @@ int main()
                                                  CurrentHAL->GetBootEnvironment()->GetELFNum()
                                                  );
     VirtualMemoryManager::GetInstance()->KernelElf(elfInfo);
-    const std::type_info *t = &typeid(elfInfo);
-    DEBUG_MSG("name: " << t->name());
-    if(*t == typeid(elfInfo))
-    {
-        DEBUG_MSG("THEY ARE EQUAL! WOOOHOOOOO!");
-    }
     
     //Create Arch-specific memory regions in kernel space
     //On x86: Framebuffer for textmode and lowest 64K for BIOS
@@ -181,7 +172,7 @@ int main()
     Scheduler::GetInstance()->SetTimerManager(tm);
     
     for(;;) {
-        kdbg << "B";
+        *kdbg << "B";
         for(int i = 0; i < 10000000; i++);
     }
     

@@ -3,6 +3,8 @@
 #ifndef CHARACTER_INPUT_DEVICE_H
 #define CHARACTER_INPUT_DEVICE_H
 
+//FIXME: move into hal somehow
+
 namespace IO
 {   
     //Baseclass for Character input devices
