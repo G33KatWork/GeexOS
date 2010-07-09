@@ -23,7 +23,7 @@ namespace Memory
         
         Address TranslatePhysicalAddress(Address physicalAddress);
         
-        void DumpRegions(IO::BaseDebugOutputDevice* c);
+        void DumpRegions(Debug::BaseDebugOutputDevice* c);
         
     private:
         Address iomemStart;

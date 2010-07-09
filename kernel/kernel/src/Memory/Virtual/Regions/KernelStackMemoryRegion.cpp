@@ -7,7 +7,7 @@
 
 using namespace Memory;
 using namespace Arch;
-using namespace IO;
+using namespace Debug;
 
 KernelStackMemoryRegion::KernelStackMemoryRegion(Address RegionStart, size_t MaxRegionSize, size_t InitialSize, const char* RegionName)
 : LazyMemoryRegion(RegionStart, MaxRegionSize, RegionName, ALLOCFLAG_WRITABLE)

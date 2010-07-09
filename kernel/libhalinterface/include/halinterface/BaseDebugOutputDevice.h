@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-namespace IO
+namespace Debug
 {
     //Colors
 	enum Color
@@ -36,7 +36,7 @@ namespace IO
     };
 }
 
-namespace IO
+namespace Debug
 {   
     //Baseclass for Debugging output devices
     class BaseDebugOutputDevice
@@ -48,8 +48,8 @@ namespace IO
 	
 		BaseDebugOutputDevice()
 		{
-		    foregroundColor = IO::White;
-            backgroundColor = IO::Black;
+		    foregroundColor = White;
+            backgroundColor = Black;
             printMode = hex;
 		}
         virtual ~BaseDebugOutputDevice() {};
@@ -58,10 +58,10 @@ namespace IO
 
     public:    
         //Color management
-        void SetForeground(IO::Color c) { foregroundColor = c; }
-        void SetBackground(IO::Color c) { backgroundColor = c; }
-        IO::Color GetForeground() { return (IO::Color)foregroundColor; }
-        IO::Color GetBackground() { return (IO::Color)backgroundColor; }
+        void SetForeground(Color c) { foregroundColor = c; }
+        void SetBackground(Color c) { backgroundColor = c; }
+        Color GetForeground() { return (Color)foregroundColor; }
+        Color GetBackground() { return (Color)backgroundColor; }
         
         void PrintString(char *c);
         void PrintString(const char *c) { PrintString((char*)c); }

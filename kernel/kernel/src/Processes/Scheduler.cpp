@@ -6,7 +6,7 @@
 using namespace Processes;
 using namespace Arch;
 using namespace Time;
-using namespace IO;
+using namespace Debug;
 
 #define     SCHED_TIMER_FREQUENCY       10000000
 #define     SCHED_THREAD_TIMESLICE      10000000

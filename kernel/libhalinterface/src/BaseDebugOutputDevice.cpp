@@ -1,7 +1,7 @@
 #include <halinterface/BaseDebugOutputDevice.h>
 #include <string.h>
 
-using namespace IO;
+using namespace Debug;
 
 void BaseDebugOutputDevice::PrintString(char *c)
 {

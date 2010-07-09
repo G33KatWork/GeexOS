@@ -23,7 +23,7 @@ namespace Processes
         
         Thread* GetCurrentThread() { return currentThread; }
         
-        void DumpThreads(IO::BaseDebugOutputDevice* c);
+        void DumpThreads(Debug::BaseDebugOutputDevice* c);
         
         void AddThread(Thread* thread);
         

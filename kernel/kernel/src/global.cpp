@@ -5,7 +5,7 @@
 #include <kernel/debug.h>
 #include <arch/hal.h>
 
-using namespace IO;
+using namespace Debug;
 using namespace Arch;
 using namespace Memory;
 

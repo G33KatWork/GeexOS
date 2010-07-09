@@ -7,7 +7,7 @@
 
 using namespace Arch;
 using namespace Memory;
-using namespace IO;
+using namespace Debug;
 
 VirtualMemoryManager* VirtualMemoryManager::instance = NULL;
 

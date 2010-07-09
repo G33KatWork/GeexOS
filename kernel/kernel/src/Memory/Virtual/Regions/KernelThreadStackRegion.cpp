@@ -1,7 +1,7 @@
 #include <kernel/Memory/Virtual/Regions/KernelThreadStackRegion.h>
 
 using namespace Memory;
-using namespace IO;
+using namespace Debug;
 
 KernelThreadStack* KernelThreadStackMemoryRegion::CreateStack(size_t InitialSize, size_t MaxSize)
 {

@@ -5,7 +5,7 @@
 
 using namespace Memory;
 using namespace Arch;
-using namespace IO;
+using namespace Debug;
 
 void VirtualMemoryRegion::MapFreshPages(Address start, size_t length)
 {

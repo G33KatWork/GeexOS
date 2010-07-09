@@ -12,7 +12,7 @@ namespace Arch
     public:
         virtual void Execute(registers_t* regs)
         {
-            PANIC("Exception " << IO::dec << regs->int_no << ": EIP: " << IO::hex << regs->eip << ": Errorcode: " << IO::dec << (unsigned)regs->err_code);
+            PANIC("Exception " << Debug::dec << regs->int_no << ": EIP: " << Debug::hex << regs->eip << ": Errorcode: " << Debug::dec << (unsigned)regs->err_code);
         }
     };
 }

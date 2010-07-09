@@ -9,9 +9,9 @@
 
 #define PANIC(msg) \
 { \
-    kdbg->SetForeground(IO::Red); \
+    kdbg->SetForeground(Debug::Red); \
     kdbg->PrintString("[PANIC] Kernel Panic: "); \
-    *kdbg << msg << IO::endl; \
+    *kdbg << msg << Debug::endl; \
     doPanic(); \
 }
 

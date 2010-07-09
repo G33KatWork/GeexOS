@@ -5,7 +5,7 @@
 #include <arch/HAL.h>
 
 using namespace Arch;
-using namespace IO;
+using namespace Debug;
 
 void x86Paging::Init()
 {

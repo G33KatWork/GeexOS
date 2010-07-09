@@ -6,7 +6,7 @@
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 
 using namespace Memory;
-using namespace IO;
+using namespace Debug;
 using namespace Arch;
 
 IOMemoryManager::IOMemoryManager(Address IOMemoryStart, size_t IOMemorySize)

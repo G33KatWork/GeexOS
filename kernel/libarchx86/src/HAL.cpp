@@ -165,9 +165,9 @@ ClockSource* x86HAL::GetHardwareClockSource()
     return &clk;
 }
 
-IO::BaseDebugOutputDevice* x86HAL::GetDebugOutputDevice()
+Debug::BaseDebugOutputDevice* x86HAL::GetDebugOutputDevice()
 {
     if(debug == NULL)
-        debug = new SerialDebugOutput(SERIAL_COM1);
+        debug = new Debug::SerialDebugOutput(SERIAL_COM1);
     return debug;
 }

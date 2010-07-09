@@ -4,7 +4,7 @@
 #include <arch/internal/ports.h>
 
 using namespace Arch;
-using namespace IO;
+using namespace Debug;
 
 SerialDebugOutput::SerialDebugOutput(uint16_t port)
     :portNum(port)

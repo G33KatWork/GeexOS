@@ -19,7 +19,7 @@ namespace Arch
             Prepare(regs);
             
             if(!Resolve())
-                PANIC("Recovery from exception " << IO::dec << regs->int_no << " failed. EIP: " << IO::hex << regs->eip << ": Errorcode: " << IO::dec << (unsigned)regs->err_code);
+                PANIC("Recovery from exception " << Debug::dec << regs->int_no << " failed. EIP: " << Debug::hex << regs->eip << ": Errorcode: " << Debug::dec << (unsigned)regs->err_code);
         }
     };
 }

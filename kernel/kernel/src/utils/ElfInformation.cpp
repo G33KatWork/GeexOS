@@ -8,7 +8,7 @@
 #include <arch/AddressLayout.h>
 
 using namespace Memory;
-using namespace IO;
+using namespace Debug;
 
 ElfInformation::ElfInformation(unsigned int elfAddr, unsigned int elfShndx, unsigned int elfSize, unsigned int elfNum)
 {

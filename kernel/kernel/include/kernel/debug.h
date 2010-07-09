@@ -6,7 +6,7 @@
 //Comment out for on screen debugging
 //#define     SERIAL_DEBUG
 
-extern IO::BaseDebugOutputDevice* kdbg;
+extern Debug::BaseDebugOutputDevice* kdbg;
 
 #ifdef DEBUG
 
@@ -32,10 +32,10 @@ extern IO::BaseDebugOutputDevice* kdbg;
 
 #define DEBUG_MSG(msg) \
 { \
-    IO::Color foreground = kdbg->GetForeground(); \
-    kdbg->SetForeground(IO::LightBlue); \
+    Debug::Color foreground = kdbg->GetForeground(); \
+    kdbg->SetForeground(Debug::LightBlue); \
     kdbg->PrintString("[DEBUG] "); \
-    *kdbg << msg << IO::endl; \
+    *kdbg << msg << Debug::endl; \
     kdbg->SetForeground(foreground); \
 }
 #else

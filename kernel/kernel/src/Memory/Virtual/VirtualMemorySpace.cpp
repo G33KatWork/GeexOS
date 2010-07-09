@@ -7,7 +7,7 @@
 #include <arch/HAL.h>
 
 using namespace Memory;
-using namespace IO;
+using namespace Debug;
 using namespace Arch;
 
 void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)

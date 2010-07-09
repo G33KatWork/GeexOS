@@ -39,7 +39,7 @@ namespace Memory
         
         //void Remap(VirtualMemoryRegion* region, Address NewAddress);
 		
-		void DumpRegions(IO::BaseDebugOutputDevice* c);
+		void DumpRegions(Debug::BaseDebugOutputDevice* c);
 		
         const char* Name() { return name; }
 		

@@ -9,9 +9,9 @@
 #define SERIAL_COM2  0x2f8
 //#define SERIAL_COLOR
 
-namespace Arch
+namespace Debug
 {
-    class SerialDebugOutput : public IO::BaseDebugOutputDevice
+    class SerialDebugOutput : public Debug::BaseDebugOutputDevice
     {
     public:
         SerialDebugOutput(uint16_t port);

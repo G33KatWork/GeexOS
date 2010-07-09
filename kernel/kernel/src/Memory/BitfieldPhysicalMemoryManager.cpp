@@ -4,7 +4,7 @@
 #include <kernel/global.h>
 #include <kernel/debug.h>
 
-using namespace IO;
+using namespace Debug;
 using namespace Memory;
 using namespace Arch;
 

@@ -20,7 +20,7 @@
 
 extern      Address             bootStack;          //defined in start.S
 
-using namespace IO;
+using namespace Debug;
 using namespace Arch;
 using namespace Kernel;
 using namespace Memory;

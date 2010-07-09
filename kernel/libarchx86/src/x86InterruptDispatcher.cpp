@@ -5,7 +5,7 @@
 #include <kernel/debug.h>
 
 using namespace Arch;
-using namespace IO;
+using namespace Debug;
 
 int nestedExceptions = 0;
 

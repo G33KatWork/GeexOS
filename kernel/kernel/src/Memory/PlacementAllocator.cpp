@@ -5,7 +5,7 @@
 #include <arch/AddressLayout.h>
 
 using namespace Memory;
-using namespace IO;
+using namespace Debug;
 
 extern unsigned int placement;
 

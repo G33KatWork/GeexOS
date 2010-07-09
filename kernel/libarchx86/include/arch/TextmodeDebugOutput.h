@@ -5,9 +5,9 @@
 
 #include <halinterface/BaseDebugOutputDevice.h>
 
-namespace Arch
+namespace Debug
 {
-    class TextmodeDebugOutput : public IO::BaseDebugOutputDevice
+    class TextmodeDebugOutput : public Debug::BaseDebugOutputDevice
     {
     public:
         TextmodeDebugOutput();

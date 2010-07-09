@@ -56,7 +56,7 @@ namespace Memory
         
         virtual bool HandlePageFault();
 		
-        void DumpStacks(IO::BaseDebugOutputDevice* c);
+        void DumpStacks(Debug::BaseDebugOutputDevice* c);
 		
 	private:
         void AddToList(KernelThreadStack* toAdd);

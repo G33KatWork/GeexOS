@@ -4,6 +4,7 @@
 #include <arch/internal/ports.h>
 #include <arch/addressLayout.h>
 
+using namespace Debug;
 using namespace Arch;
 
 TextmodeDebugOutput::TextmodeDebugOutput()
