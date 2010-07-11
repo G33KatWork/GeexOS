@@ -2,6 +2,7 @@
 #define LAZYMEMORYREGION_H_
 
 #include <types.h>
+#include <arch/types.h>
 #include <kernel/global.h>
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
 

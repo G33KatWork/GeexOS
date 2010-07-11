@@ -1,7 +1,6 @@
 #ifndef _GLOBAL_H
 #define _GLOBAL_H
 
-#include <types.h>
 #include <kernel/debug.h>
 
 #define ASSERT(b, msg)      ((b) ? (void)0 : panic_assert(__FILE__, __LINE__, #b, #msg))

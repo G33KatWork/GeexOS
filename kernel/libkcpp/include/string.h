@@ -4,8 +4,10 @@
 #include <types.h>
 
 //namespace Lib
+#ifdef __cplusplus
 extern "C"
 {
+#endif
     void *memcpy(void *dest, const void* src, size_t count);
     void *memset(void *dest, char val, size_t count);
     void *memmove(void *dest, const void *src, size_t count);
@@ -26,6 +28,8 @@ extern "C"
     char * strncat(char *dst, const char *src, size_t n);
     
     unsigned long strtoul(const char *nptr, char **endptr, int base);
+#ifdef __cplusplus
 }
+#endif
 
 #endif

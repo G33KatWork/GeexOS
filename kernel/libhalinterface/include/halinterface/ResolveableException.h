@@ -1,7 +1,6 @@
 #ifndef _HAL_INTERFACES_RESOLVEABLEEXCEPTION_H
 #define _HAL_INTERFACES_RESOLVEABLEEXCEPTION_H
 
-#include <types.h>
 #include <halinterface/InterruptServiceRoutine.h>
 #include <kernel/global.h>
 

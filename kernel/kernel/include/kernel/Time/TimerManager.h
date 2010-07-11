@@ -1,7 +1,6 @@
 #ifndef _TIMER_MANAGER_H
 #define _TIMER_MANAGER_H
 
-#include <types.h>
 #include <halinterface/ClockSource.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/DataStructures/List.h>

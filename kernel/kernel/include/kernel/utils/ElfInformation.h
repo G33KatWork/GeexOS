@@ -1,7 +1,6 @@
 #ifndef ELFINFORMATION_H_
 #define ELFINFORMATION_H_
 
-#include <types.h>
 #include <arch/types.h>
 #include <kernel/utils/elf32.h>
 

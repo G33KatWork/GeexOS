@@ -2,6 +2,7 @@
 #define VIRTUALMEMORYSPACE_H_
 
 #include <types.h>
+#include <arch/types.h>
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
 #include <halinterface/BaseDebugOutputDevice.h>
 

@@ -1,7 +1,6 @@
 #ifndef _TIMER_H
 #define _TIMER_H
 
-#include <types.h>
 #include <halinterface/ClockSource.h>
 #include <kernel/Processes/Thread.h>
 

@@ -1,7 +1,6 @@
 #ifndef _HAL_INTERFACES_THREADCONTEXT_H
 #define _HAL_INTERFACES_THREADCONTEXT_H
 
-#include <types.h>
 #include <halinterface/BasePaging.h>
 
 namespace Arch

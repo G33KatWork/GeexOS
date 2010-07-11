@@ -1,7 +1,7 @@
-#include <types.h>
-
 #ifndef _INTERRUPT_SERVICE_ROUTINE_H
 #define _INTERRUPT_SERVICE_ROUTINE_H
+
+#include <arch/types.h>
 
 namespace Kernel
 {

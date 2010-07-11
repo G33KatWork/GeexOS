@@ -1,7 +1,6 @@
 #ifndef PROCESSES_SCHEDULER_H_
 #define PROCESSES_SCHEDULER_H_
 
-#include <types.h>
 #include <kernel/Processes/Thread.h>
 #include <kernel/DataStructures/OrderedArray.h>
 #include <kernel/Time/Timer.h>

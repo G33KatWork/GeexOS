@@ -1,8 +1,6 @@
 #ifndef _HAL_INTERFACES_IPAGING_H
 #define _HAL_INTERFACES_IPAGING_H
 
-#include <types.h>
-
 #define PAGE_ALIGN(x)       ((x & PAGEALIGN_MASK) + PAGE_SIZE)
 #define IS_PAGE_ALIGNED(x)  ((x % PAGE_SIZE) == 0)
 

@@ -1,6 +1,7 @@
 #ifndef HEAP_H_
 #define HEAP_H_
 
+#include <arch/types.h>
 #include <types.h>
 #include <kernel/Memory/IMemoryAllocator.h>
 #include <kernel/IO/CharacterOutputDevice.h>

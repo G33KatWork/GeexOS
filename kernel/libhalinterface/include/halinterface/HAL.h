@@ -1,7 +1,6 @@
 #ifndef _HAL_INTERFACES_HAL_H
 #define _HAL_INTERFACES_HAL_H
 
-#include <types.h>
 #include <halinterface/ClockSource.h>
 #include <halinterface/BaseInterruptDispatcher.h>
 #include <halinterface/BasePaging.h>

@@ -1,7 +1,7 @@
 #ifndef PROCESSES_THREAD_H_
 #define PROCESSES_THREAD_H_
 
-#include <types.h>
+#include <arch/types.h>
 #include <arch/HAL.h>
 
 using namespace Arch;

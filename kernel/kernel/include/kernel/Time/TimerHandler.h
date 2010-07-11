@@ -1,7 +1,6 @@
 #ifndef TIMERHANDLER_H_
 #define TIMERHANDLER_H_
 
-#include <types.h>
 #include <halinterface/InterruptServiceRoutine.h>
 #include <kernel/Time/TimerManager.h>
 #include <kernel/Processes/Scheduler.h>

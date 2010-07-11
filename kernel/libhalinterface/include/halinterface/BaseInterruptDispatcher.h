@@ -1,7 +1,6 @@
 #ifndef _HAL_INTERFACES_IINTERRUPTDISPATCHER_H
 #define _HAL_INTERFACES_IINTERRUPTDISPATCHER_H
 
-#include <types.h>
 #include <halinterface/InterruptServiceRoutine.h>
 
 namespace Arch
