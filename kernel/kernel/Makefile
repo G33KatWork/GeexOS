@@ -93,6 +93,8 @@ $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(STATICLIBS)
 	$(call cmd_msg,DISASM,$(@) -> disasm)
 	$(Q)$(OBJDUMP) -d $(TARGET) > disasm
+	$(call cmd_msg,MKSYMS,$(@) -> bochs.sym)
+	$(Q)$(NM) $@ | awk '{print $1 " " $3}' > bochs.sym
 
 # Cleaning
 clean:
@@ -101,6 +103,7 @@ clean:
 	$(Q)$(RM) -f disasm
 	$(Q)$(RM) -f kernel.map
 	$(Q)$(RM) -rf obj
+	$(Q)$(RM) -rf bochs.sym
 
 # Header dependency generation
 $(OBJDIR)/%.d: $(SRCDIR)/%.cpp

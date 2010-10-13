@@ -1,0 +1,20 @@
+.DS_Store
+resources/OS Test.nvram
+resources/vmware.vmsd
+resources/vmware.vmxf
+serialOut
+toolchain/i686-elf
+toolchain/source
+kernel/kernel/disasm
+utils/geninitramfs
+utils/genmapfile
+*.img
+*.elf
+*.map
+*.a
+*.sym
+kernel/kernel/obj
+kernel/libarchx86/obj
+kernel/libkcpp/obj
+kernel/libhalinterface/obj
+
