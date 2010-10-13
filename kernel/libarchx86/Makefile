@@ -27,6 +27,9 @@ ASOURCES = start.S interruptStubs.S SchedulingHelper.S gdt_flush.S
 # Additional include paths to consider
 INCLUDES =	include ../kernel/include ../libhalinterface/include ../libkcpp/include
 
+# Additional static libs to link agains
+STATICLIBS = 
+
 # Folder for object files
 OBJDIR = obj
 
@@ -73,9 +76,9 @@ $(OBJDIRS):
 
 createdirs: $(OBJDIRS)
 
-$(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS))
+$(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
 	$(call cmd_msg,AR,$(@))
-	$(Q)$(AR) rcs $@ $^
+	$(Q)$(AR) rcs $@ $^ $(STATICLIBS)
 
 # Cleaning
 clean:
