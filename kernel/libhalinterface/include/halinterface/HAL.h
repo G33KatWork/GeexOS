@@ -28,7 +28,8 @@ namespace Arch
         virtual BasePaging* GetPaging() = 0;
         virtual ClockSource* GetHardwareClockSource() = 0;
         virtual BootEnvironment* GetBootEnvironment() = 0;
-        virtual Debug::BaseDebugOutputDevice* GetDebugOutputDevice() = 0;
+        virtual Debug::BaseDebugOutputDevice* GetCurrentDebugOutputDevice() = 0;
+        virtual void SetCurrentDebugOutputDeviceType(Debug::DebugOutputDeviceType type) = 0;
         
         virtual Address GetStackPointer() = 0;
         virtual void SetStackPointer(Address NewPointer) = 0;

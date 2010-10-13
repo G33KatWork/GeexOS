@@ -33,7 +33,8 @@ namespace Arch
         virtual BasePaging* GetPaging();
         virtual ClockSource* GetHardwareClockSource();
         virtual BootEnvironment* GetBootEnvironment() { return bootenv; }
-        virtual Debug::BaseDebugOutputDevice* GetDebugOutputDevice();
+        virtual Debug::BaseDebugOutputDevice* GetCurrentDebugOutputDevice();
+        virtual void SetCurrentDebugOutputDeviceType(Debug::DebugOutputDeviceType type);
         
         virtual Address GetStackPointer() { return readStackPointer(); }
         virtual void SetStackPointer(Address NewPointer) { writeStackPointer(NewPointer); }
@@ -44,7 +45,11 @@ namespace Arch
         BaseInterruptDispatcher* ird;
         BasePaging *paging;
         BootEnvironment* bootenv;
-        Debug::BaseDebugOutputDevice* debug;
+        Debug::NullDebugOutputDevice nullDebug;
+        Debug::BaseDebugOutputDevice* textDebug;
+        Debug::BaseDebugOutputDevice* graphicalDebug;
+        Debug::BaseDebugOutputDevice* serialDebug;
+        Debug::DebugOutputDeviceType currentDebugDevice;
         
         ClockSource clk;
         PIT* pit;

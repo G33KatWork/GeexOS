@@ -84,7 +84,7 @@ void KernelStackMemoryRegion::PrintStacktrace(unsigned int n)
     //  ebp of calling function (pointed to by current ebp)
     //  Return address in calling function
     unsigned int * ebp = &n + 1;
-    *kdbg << "Stack trace:" << endl;
+    *CurrentHAL->GetCurrentDebugOutputDevice() << "Stack trace:" << endl;
     
     for(unsigned int frame = 0; frame < n; ++frame)
     {
@@ -101,8 +101,8 @@ void KernelStackMemoryRegion::PrintStacktrace(unsigned int n)
         Address symStart;
         char *symName = VirtualMemoryManager::GetInstance()->KernelElf()->FindSymbol(eip, &symStart);
         if(symName == NULL)
-            *kdbg << "\t" << "<" << hex << eip << ">\t" << "<unknown symbol>" << endl;
+            *CurrentHAL->GetCurrentDebugOutputDevice() << "\t" << "<" << hex << eip << ">\t" << "<unknown symbol>" << endl;
         else
-            *kdbg << "\t" << "<" << hex << symStart << ">\t" << symName << endl;
+            *CurrentHAL->GetCurrentDebugOutputDevice() << "\t" << "<" << hex << symStart << ">\t" << symName << endl;
     }
 }

@@ -23,8 +23,7 @@ namespace Debug
         LightRed=12,
         LightMagenta=13,
         Yellow=14,
-        White=15,
-        None=16
+        White=15
     };
     
     //Special control characters
@@ -33,6 +32,15 @@ namespace Debug
         endl,
         hex,
         dec
+    };
+    
+    //Type of debug output device
+    enum DebugOutputDeviceType
+    {
+        None,
+        TextMonitor,
+        GraphicalMonitor,
+        Serial
     };
 }
 
@@ -74,10 +82,22 @@ namespace Debug
         BaseDebugOutputDevice &operator<<(const char *c);
         BaseDebugOutputDevice &operator<<(unsigned int i);
         BaseDebugOutputDevice &operator<<(int i);
+        BaseDebugOutputDevice &operator<<(size_t s);
         BaseDebugOutputDevice &operator<<(Special s);
         
 		virtual void Clear() = 0;
         virtual void PrintChar(char c) = 0;
+    };
+    
+    class NullDebugOutputDevice : public BaseDebugOutputDevice
+    {
+    public:
+        NullDebugOutputDevice() {}
+        ~NullDebugOutputDevice() {}
+
+        //CharacterOutputDevice Methods
+        void PrintChar(char c __attribute__((unused))) {}
+        void Clear() {}
     };
 }
 

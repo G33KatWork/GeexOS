@@ -138,6 +138,16 @@ BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(int i)
     return *this;
 }
 
+BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(size_t s)
+{
+    if (printMode == dec)
+        PrintDec((unsigned)s);
+    else
+        PrintHex((unsigned)s);
+    
+    return *this;
+}
+
 BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(Special s)
 {
     switch(s)

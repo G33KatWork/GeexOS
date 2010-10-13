@@ -10,7 +10,6 @@ using namespace Arch;
 using namespace Memory;
 
 PlacementAllocator placementAlloc = PlacementAllocator();
-BaseDebugOutputDevice* kdbg = NULL;
 
 void doPanic()
 {
@@ -29,8 +28,8 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
 {
     CurrentHAL->DisableInterrupts();
     
-    kdbg->SetForeground(Red);
-    *kdbg << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
+    CurrentHAL->GetCurrentDebugOutputDevice()->SetForeground(Red);
+    *CurrentHAL->GetCurrentDebugOutputDevice() << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
     
     if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
         VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();

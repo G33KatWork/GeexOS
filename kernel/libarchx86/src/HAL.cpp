@@ -14,8 +14,11 @@
 #include <arch/ExceptionHandler/PageFaultHandler.h>
 #include <arch/x86BootEnvironment.h>
 
+#include <arch/VBEDebugOutput.h>
+
 using namespace Arch;
 using namespace Memory;
+using namespace Debug;
 
 //Create an instance of our HAL for easy access from anywhere
 x86HAL aNewHAL = x86HAL();
@@ -29,7 +32,11 @@ x86HAL::x86HAL()
     ird = NULL;
     paging = NULL;
     bootenv = NULL;
-    debug = NULL;
+    serialDebug = NULL;
+    textDebug = NULL;
+    graphicalDebug = NULL;
+    nullDebug = NullDebugOutputDevice();
+    currentDebugDevice = None;
     
     //can't assign directly to clk, why?
     ClockSource clk_tmp = {
@@ -104,8 +111,11 @@ void x86HAL::InitializationDone()
     GetPaging()->InitDone();
     
     HAL_DEBUG_MSG("Arch initialization done...");
+
+    Debug::VBEDebugOutput* vbe = new Debug::VBEDebugOutput();
+    vbe->Test();
 }
-    
+
 void x86HAL::SetupArchMemRegions()
 {
     HAL_DEBUG_MSG("Announcing architecture specific memory regions...");
@@ -118,12 +128,11 @@ void x86HAL::SetupArchMemRegions()
                                                         ALLOCFLAG_WRITABLE);
     
     //Announce region for video memory
-    //TODO: Implement proper framebuffer, configure VGA properly and throw this away
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegionWithPreallocatedMemory(
+    /*VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegionWithPreallocatedMemory(
                                                         KERNEL_VIDEO_MEMORY,
                                                         2*PAGE_SIZE,
                                                         "Video memory",
-                                                        ALLOCFLAG_WRITABLE);
+                                                        ALLOCFLAG_WRITABLE);*/
 }
     
 void x86HAL::EnableInterrupts()
@@ -165,9 +174,40 @@ ClockSource* x86HAL::GetHardwareClockSource()
     return &clk;
 }
 
-Debug::BaseDebugOutputDevice* x86HAL::GetDebugOutputDevice()
+Debug::BaseDebugOutputDevice* x86HAL::GetCurrentDebugOutputDevice()
 {
-    if(debug == NULL)
-        debug = new Debug::SerialDebugOutput(SERIAL_COM1);
-    return debug;
+    switch(currentDebugDevice)
+    {
+        case TextMonitor:
+            return textDebug;
+        case GraphicalMonitor:
+            return graphicalDebug;
+        case Serial:
+            return serialDebug;
+        default:
+            return &nullDebug;
+    }
+}
+
+void x86HAL::SetCurrentDebugOutputDeviceType(Debug::DebugOutputDeviceType type)
+{
+    switch(type)
+    {
+        case TextMonitor:
+            if(textDebug == NULL)
+                textDebug = new TextmodeDebugOutput();
+            break;
+        case GraphicalMonitor:
+            //if(graphicalDebug == NULL)
+            //    graphicalDebug = new VBEDebugOutput();
+            break;
+        case Serial:
+            if(serialDebug == NULL)
+                serialDebug = new SerialDebugOutput(SERIAL_COM1);
+            break;
+        case None:
+            break;
+    }
+    
+    currentDebugDevice = type;
 }

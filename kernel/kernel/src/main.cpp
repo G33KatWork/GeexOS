@@ -58,16 +58,20 @@ void foo(int arg)
 {   
     while(1)
     {
-        kdbg->PrintChar((char)arg);
+        CurrentHAL->GetCurrentDebugOutputDevice()->PrintChar((char)arg);
         for(int i = 0; i < 10000000; i++);
     }
 }
 
 int main()
 {
-    //Prepare monitor output
-    kdbg = CurrentHAL->GetDebugOutputDevice();
-    kdbg->Clear();
+    //Prepare debug output
+    #ifdef SERIAL_DEBUG
+        CurrentHAL->SetCurrentDebugOutputDeviceType(Debug::Serial);
+    #else
+        CurrentHAL->SetCurrentDebugOutputDeviceType(Debug::TextMonitor);
+    #endif
+    CurrentHAL->GetCurrentDebugOutputDevice()->Clear();
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
     char cpuVendor[17] = {0};
@@ -136,7 +140,7 @@ int main()
     
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
-    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(kdbg);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(CurrentHAL->GetCurrentDebugOutputDevice());
     
     //Set up the memory region for upcoming kernel threads
     MAIN_DEBUG_MSG("Initializing kernel thread stack memory region...");
@@ -151,7 +155,7 @@ int main()
     KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE, PAGE_SIZE*10, "D Thread");
     Scheduler::GetInstance()->AddThread(thread3);
     
-    VirtualMemoryManager::GetInstance()->KernelThreadStacks()->DumpStacks(kdbg);
+    VirtualMemoryManager::GetInstance()->KernelThreadStacks()->DumpStacks(CurrentHAL->GetCurrentDebugOutputDevice());
     
     //VirtualMemoryRegion* uModeCode = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x3000000, 0x1000, "Usercode", ALLOCFLAG_WRITABLE|ALLOCFLAG_EXECUTABLE|ALLOCFLAG_USERMODE);
     //VirtualMemoryRegion* kstack = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x4000000, 0x1000, "kstack", ALLOCFLAG_WRITABLE);
@@ -166,13 +170,13 @@ int main()
     //KernelThread* thread4 = new KernelThread(4, umode, (int)'U', PAGE_SIZE, "Umode Thread");
     //Scheduler::GetInstance()->AddThread(thread4);
     
-    Scheduler::GetInstance()->DumpThreads(kdbg);
+    Scheduler::GetInstance()->DumpThreads(CurrentHAL->GetCurrentDebugOutputDevice());
     
     //Initialize the scheduler
     Scheduler::GetInstance()->SetTimerManager(tm);
     
     for(;;) {
-        *kdbg << "B";
+        *CurrentHAL->GetCurrentDebugOutputDevice() << "B";
         for(int i = 0; i < 10000000; i++);
     }
     
