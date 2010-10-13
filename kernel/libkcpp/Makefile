@@ -10,7 +10,8 @@ CCSOURCES =
 # List C++ source files here
 CXXSOURCES = cppruntime.cpp \
 			 string.cpp \
-			 typeinfo.cpp
+			 typeinfo.cpp \
+			 stdlib.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = 
