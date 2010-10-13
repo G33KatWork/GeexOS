@@ -144,4 +144,10 @@
     #define KERNEL_THREAD_STACK_DEBUG_MSG(x)
 #endif
 
+#ifdef EN_X86EMU_DEBUG_MSG
+    #define X86EMU_DEBUG_MSG(x)                 DEBUG_MSG("X86EMU: "x)
+#else
+    #define X86EMU_DEBUG_MSG(x)
+#endif
+
 #endif

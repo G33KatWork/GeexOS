@@ -1,0 +1,4 @@
+TODO: decoder->CurrentOpcode() instead of opcode passed as argument
+TODO: all those AL/(E)AX add, adc, sub, sbb, and, or, xor opcodes: pack into one function and determine action by dissecting opcode. Register is lower nibble, action upper etc.
+TODO: better debug messages, make them selectable for registers, opcodes, memory accesses etc.
+TODO: move primitive instructions to header file containing real instructions which use them
