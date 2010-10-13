@@ -1,0 +1,129 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXFileReference section */
+		A10439F611D161DC00B10433 /* applications */ = {isa = PBXFileReference; lastKnownFileType = folder; path = applications; sourceTree = "<group>"; };
+		A10439F911D161DC00B10433 /* build */ = {isa = PBXFileReference; lastKnownFileType = folder; path = build; sourceTree = "<group>"; };
+		A1043A0E11D161DC00B10433 /* doc */ = {isa = PBXFileReference; lastKnownFileType = folder; path = doc; sourceTree = "<group>"; };
+		A1043A1211D161DC00B10433 /* drivers */ = {isa = PBXFileReference; lastKnownFileType = folder; path = drivers; sourceTree = "<group>"; };
+		A1043A1511D161DC00B10433 /* kernel */ = {isa = PBXFileReference; lastKnownFileType = folder; path = kernel; sourceTree = "<group>"; };
+		A1043AD711D161DD00B10433 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		A1043AD811D161DD00B10433 /* resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = resources; sourceTree = "<group>"; };
+		A1043AE511D161DD00B10433 /* servers */ = {isa = PBXFileReference; lastKnownFileType = folder; path = servers; sourceTree = "<group>"; };
+		A1043AE811D161DD00B10433 /* utils */ = {isa = PBXFileReference; lastKnownFileType = folder; path = utils; sourceTree = "<group>"; };
+		A1043AF511D1627F00B10433 /* toolchain */ = {isa = PBXFileReference; lastKnownFileType = folder; path = toolchain; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		A1DF5A9111D1606300DAC40F = {
+			isa = PBXGroup;
+			children = (
+				A10439F611D161DC00B10433 /* applications */,
+				A10439F911D161DC00B10433 /* build */,
+				A1043A0E11D161DC00B10433 /* doc */,
+				A1043A1211D161DC00B10433 /* drivers */,
+				A1043A1511D161DC00B10433 /* kernel */,
+				A1043AD711D161DD00B10433 /* Makefile */,
+				A1043AD811D161DD00B10433 /* resources */,
+				A1043AE511D161DD00B10433 /* servers */,
+				A1043AF511D1627F00B10433 /* toolchain */,
+				A1043AE811D161DD00B10433 /* utils */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		A1043BB011D169B100B10433 /* build */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = A1043BB511D169CF00B10433 /* Build configuration list for PBXLegacyTarget "build" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			dependencies = (
+			);
+			name = build;
+			passBuildSettingsInEnvironment = 1;
+			productName = kernel;
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		A1DF5A9311D1606300DAC40F /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = A1DF5A9611D1606300DAC40F /* Build configuration list for PBXProject "GeeXOS" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 0;
+			mainGroup = A1DF5A9111D1606300DAC40F;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1043BB011D169B100B10433 /* build */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		A1043BB111D169B100B10433 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_COLOUR = 0;
+			};
+			name = Debug;
+		};
+		A1043BB211D169B100B10433 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = kernel;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		A1DF5A9411D1606300DAC40F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		A1DF5A9511D1606300DAC40F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1043BB511D169CF00B10433 /* Build configuration list for PBXLegacyTarget "build" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1043BB111D169B100B10433 /* Debug */,
+				A1043BB211D169B100B10433 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1DF5A9611D1606300DAC40F /* Build configuration list for PBXProject "GeeXOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1DF5A9411D1606300DAC40F /* Debug */,
+				A1DF5A9511D1606300DAC40F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1DF5A9311D1606300DAC40F /* Project object */;
+}
