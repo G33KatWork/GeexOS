@@ -19,6 +19,7 @@ void PageFaultHandler::Execute(registers_t *regs)
     int reserved = regs->err_code & 0x8;     // Overwritten CPU-reserved bits of page entry?
     int id = regs->err_code & 0x10;          // Caused by an instruction fetch?
 
+    Debug::BaseDebugOutputDevice* kdbg = CurrentHAL->GetCurrentDebugOutputDevice();
     kdbg->SetForeground(Red);
     *kdbg << "Page fault! ( " << (present ? "present " : "") << (rw ? "read-only " : "")
         << (us ? "user-mode " : "") << (reserved ? "reserved " : "")
