@@ -9,6 +9,7 @@
 #define PAGEALIGN_MASK      0xFFFFF000
 #define OFFSET_MASK         0xFFF
 #define PAGE_SIZE           0x1000
+#define PAGE_SHIFT          12
 
 namespace Arch
 {
@@ -59,7 +60,7 @@ namespace Arch
         unsigned int global         : 1;   // Don't update cache in TLB if CR3 is reset
         unsigned int unused         : 3;   // Amalgamation of unused bits
         unsigned int frame          : 20;  // Frame address (shifted right 12 bits)
-    };
+	};
 
     class x86PageTable
     {
@@ -121,7 +122,7 @@ namespace Arch
             tables[index] = table;
         }
         
-    public:
+    private:
         Address tablesPhysical[1024];
         x86PageTable* tables[1024];
     };

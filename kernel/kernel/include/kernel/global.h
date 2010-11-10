@@ -11,9 +11,9 @@
 { \
     Debug::BaseDebugOutputDevice* kdbg = Arch::CurrentHAL->GetCurrentDebugOutputDevice(); \
     kdbg->SetForeground(Debug::Red); \
-    kdbg->PrintString("[PANIC] Kernel Panic: "); \
+    kdbg->PrintString("[PANIC] Kernel Panic <"__FILE__">: "); \
     *kdbg << msg << Debug::endl; \
-    doPanic(); \
+	doPanic(); \
 }
 
 #ifdef UNUSED 

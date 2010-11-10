@@ -168,3 +168,21 @@ void VirtualMemorySpace::RemoveRegionFromList(VirtualMemoryRegion* region)
     if(curItem->Next == region)
         curItem->Next = curItem->Next->Next;
 }
+
+
+bool VirtualMemorySpace::HandlePageFault(Address faultingAddress)
+{
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Handling pagefault in VirtualMemorySpace " << name << " at Address " << faultingAddress);
+    
+    VirtualMemoryRegion* faultingRegion = FindRegionEnclosingAddress(faultingAddress);
+    if(!faultingRegion)
+    {
+        VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Given faulting address doesn't seem to belong to any region. Can't resolve!");
+        return false;
+    }
+    else
+    {
+        VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Given faulting address seems to belong to region " << faultingRegion->name << ". Handing over to region...");
+        return faultingRegion->HandlePageFault(faultingAddress);
+    }
+}

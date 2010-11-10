@@ -5,6 +5,7 @@
 #include <arch/types.h>
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
 #include <halinterface/BaseDebugOutputDevice.h>
+#include <halinterface/BasePaging.h>
 
 namespace Memory
 {
@@ -19,12 +20,13 @@ namespace Memory
     friend class VirtualMemoryManager;
         
 	public:
-        VirtualMemorySpace(VirtualMemoryManager* ParentManager, const char* SpaceName)
+        VirtualMemorySpace(VirtualMemoryManager* ParentManager, const char* SpaceName, Arch::BasePageDirectory* pageDir)
         {
             RegionListHead = NULL;
             Next = NULL;
             name = SpaceName;
             manager = ParentManager;
+            pageDirectory = pageDir;
         }
 		
         void AnnounceRegion(VirtualMemoryRegion* region);
@@ -39,6 +41,9 @@ namespace Memory
         void SetFlags(VirtualMemoryRegion* r, AllocationFlags f);
         
         //void Remap(VirtualMemoryRegion* region, Address NewAddress);
+        
+        /* To be called by a page fault handler */
+        bool HandlePageFault(Address faultingAddress);
 		
 		void DumpRegions(Debug::BaseDebugOutputDevice* c);
 		
@@ -52,6 +57,8 @@ namespace Memory
 		VirtualMemoryRegion* RegionListHead;
 		
 		VirtualMemorySpace *Next;
+		
+        Arch::BasePageDirectory* pageDirectory;
 		
 		void AddRegionToList(VirtualMemoryRegion* region);
 		void RemoveRegionFromList(VirtualMemoryRegion* region);

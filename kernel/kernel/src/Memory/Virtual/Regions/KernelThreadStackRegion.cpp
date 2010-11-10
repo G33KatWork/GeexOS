@@ -3,18 +3,14 @@
 using namespace Memory;
 using namespace Debug;
 
-KernelThreadStack* KernelThreadStackMemoryRegion::CreateStack(size_t InitialSize, size_t MaxSize)
+KernelThreadStack* KernelThreadStackMemoryRegion::CreateStack(size_t StackSize)
 {
     //WARNING: This function assumes that the list of allocated stacks is ordered by their start adresses!
     //This is normally assured by the AddToList and RemoveFromList methods. USE THEM!
     
-    KERNEL_THREAD_STACK_DEBUG_MSG("Creating new kernel thread stack with"
-                                  << " initial size " << (unsigned)InitialSize
-                                  << " and max size " << (unsigned)MaxSize
-                                  );
+    KERNEL_THREAD_STACK_DEBUG_MSG("Creating new kernel thread stack with size " << StackSize);
     
-    ASSERT(MaxSize >= InitialSize, "Initial size cannot be bigger than max size");
-    ASSERT(IS_PAGE_ALIGNED(InitialSize) && IS_PAGE_ALIGNED(MaxSize), "Initial size and max size must be page aligned");
+    ASSERT(IS_PAGE_ALIGNED(StackSize), "Stack size must be page aligned");
     
     //Initialize the list if neccessary
     if(!stackList)
@@ -22,8 +18,8 @@ KernelThreadStack* KernelThreadStackMemoryRegion::CreateStack(size_t InitialSize
         KERNEL_THREAD_STACK_DEBUG_MSG("Allocation of first stack, this one is easy.");
         
         //Stack grows down, so it starts on the upper boundary
-        MapFreshPages(startAddress + MaxSize - InitialSize, InitialSize);
-        stackList = new KernelThreadStack(startAddress, InitialSize, MaxSize, NULL);
+        MapFreshPages(startAddress, StackSize);
+        stackList = new KernelThreadStack(startAddress, StackSize, NULL);
         return stackList;
     }
     
@@ -35,17 +31,17 @@ KernelThreadStack* KernelThreadStackMemoryRegion::CreateStack(size_t InitialSize
         size_t holeSize;
         
         if(cur->next != NULL) //check if we are at the end of the list
-            holeSize = cur->next->beginning - (cur->beginning + cur->maxSize);
+            holeSize = cur->next->beginning - (cur->beginning + cur->stackSize);
         else
-            holeSize = (startAddress + size) - (cur->beginning + cur->maxSize);
+            holeSize = (startAddress + size) - (cur->beginning + cur->stackSize);
             
         KERNEL_THREAD_STACK_DEBUG_MSG("Hole between two stacks: " << hex << (unsigned)holeSize);
         
-        if(holeSize >= MaxSize)
+        if(holeSize >= StackSize)
         {
             KERNEL_THREAD_STACK_DEBUG_MSG("Hole is big enough...");
-            KernelThreadStack* s = new KernelThreadStack(cur->beginning + cur->maxSize, InitialSize, MaxSize, NULL);
-            MapFreshPages(cur->beginning + cur->maxSize + MaxSize - InitialSize, InitialSize);
+            KernelThreadStack* s = new KernelThreadStack(cur->beginning + cur->stackSize, StackSize, NULL);
+            MapFreshPages(cur->beginning + cur->stackSize, StackSize);
             AddToList(s);
             return s;
         }
@@ -56,20 +52,15 @@ KernelThreadStack* KernelThreadStackMemoryRegion::CreateStack(size_t InitialSize
 
 void KernelThreadStackMemoryRegion::DestroyStack(KernelThreadStack* stack)
 {
-    UnmapPages(stack->beginning + stack->maxSize - stack->curSize, stack->curSize);
+    UnmapPages(stack->beginning, stack->stackSize);
     RemoveFromList(stack);
     delete stack;
 }
 
-bool KernelThreadStackMemoryRegion::HandlePageFault()
+bool KernelThreadStackMemoryRegion::HandlePageFault(Address faultingAddress)
 {
-    //TODO: Determine the corresponding thread stack and expand it appropriately
-    //      alternatively we need to panic here. We can't hand this fault up
-    //      because LazyMemoryRegion doesn't know about our stacks here
-    PANIC("Dynamic growing of kernel thread stacks not yet implemented");
-    
-    //We handle this stuff here or we are in kernel panic land, so return true
-    return true;
+    PANIC("Stack overflow in kernel thread stack. Faulting address: " << faultingAddress);
+    return false;
 }
 
 void KernelThreadStackMemoryRegion::DumpStacks(BaseDebugOutputDevice* c)
@@ -77,8 +68,7 @@ void KernelThreadStackMemoryRegion::DumpStacks(BaseDebugOutputDevice* c)
     for(KernelThreadStack* cur = stackList; cur != NULL; cur = cur->next)
     {
         *c << "KTSTACK: " << "\tBeginning: " << cur->beginning << endl;
-        *c << "KTSTACK: " << "\tMax Size: " << (unsigned)cur->maxSize << endl;
-        *c << "KTSTACK: " << "\tCur Size: " << (unsigned)cur->curSize << endl;
+        *c << "KTSTACK: " << "\tSize: " << cur->stackSize << endl;
         *c << endl;
     }
 }
@@ -90,7 +80,8 @@ void KernelThreadStackMemoryRegion::AddToList(KernelThreadStack* toAdd)
     ASSERT(stackList, "stackList should not be NULL anymore when AddToList is called");
     
     KERNEL_THREAD_STACK_DEBUG_MSG("Adding a stack to the list...");
-    
+	KERNEL_THREAD_STACK_DEBUG_MSG("beginning: " << toAdd->beginning);    
+
     for(KernelThreadStack* cur = stackList; cur != NULL; cur = cur->next)
     {
         if(cur->next == NULL) //end of list?

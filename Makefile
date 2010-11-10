@@ -78,6 +78,10 @@ qemudebug: all
 	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
 	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
 
+ddd: all
+	$(call cmd_msg,NOTE,Attaching ddd to port 1234)
+	$(Q)ddd --debugger toolchain/i686-elf/bin/i686-elf-gdb --command=resources/gdbinit
+
 # Start VMware Fusion
 vmware: all
 	$(call cmd_msg,VMWARE,floppy.img)

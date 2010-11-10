@@ -69,3 +69,11 @@ VirtualMemorySpace* VirtualMemoryManager::FindSpaceByName(const char* spaceName)
     
     return NULL;
 }
+
+void VirtualMemoryManager::SetCurrentMemorySpace(VirtualMemorySpace* newSpace)
+{
+    VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Setting new current VirtualMemorySpace " << newSpace->name);
+    
+    CurrentHAL->GetPaging()->SwitchCurrentPageDirectory(newSpace->pageDirectory);
+    currentSpace = newSpace;
+}

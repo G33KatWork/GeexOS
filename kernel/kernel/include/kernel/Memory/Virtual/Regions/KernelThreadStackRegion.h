@@ -16,27 +16,27 @@ namespace Memory
     {
         friend class KernelThreadStackMemoryRegion;
     private:
-        Address beginning;
-        size_t curSize;
-        size_t maxSize;
+        Address beginning;	/* LOWERMOST address */
+        size_t stackSize;
         
         KernelThreadStack* next;
         
-        KernelThreadStack(Address stackBeginning, size_t CurSize, size_t MaxSize, KernelThreadStack* Next)
+        KernelThreadStack(Address stackBeginning, size_t StackSize, KernelThreadStack* Next)
         {
             beginning = stackBeginning;
-            curSize = CurSize;
-            maxSize = MaxSize;
+            stackSize = StackSize;
             next = Next;
         }
     
     public:
-        Address Beginning() { return beginning; }
+        Address GetEndAddress() { return beginning; }				//lowermost address
+		Address GetStartAddress() { return beginning + stackSize; }	//uppermost address
+		size_t GetSize() { return stackSize; }
     };
     
     /*  This region maintains all the stacks of kernel threads
      */
-    class KernelThreadStackMemoryRegion : public LazyMemoryRegion
+    class KernelThreadStackMemoryRegion : public VirtualMemoryRegion
     {
         friend class VirtualMemorySpace;
     private:
@@ -47,15 +47,15 @@ namespace Memory
     
     public:
         KernelThreadStackMemoryRegion(Address RegionStart, size_t MaxRegionSize, const char* RegionName)
-            : LazyMemoryRegion(RegionStart, MaxRegionSize, RegionName, ALLOCFLAG_WRITABLE)
+            : VirtualMemoryRegion(RegionStart, MaxRegionSize, RegionName, ALLOCFLAG_WRITABLE)
         {
             stackList = NULL;
         }
         
-        KernelThreadStack* CreateStack(size_t InitialSize, size_t MaxSize);
+        KernelThreadStack* CreateStack(size_t StackSize);
         void DestroyStack(KernelThreadStack* stack);
         
-        virtual bool HandlePageFault();
+        virtual bool HandlePageFault(Address faultingAddress);
 		
         void DumpStacks(Debug::BaseDebugOutputDevice* c);
 		

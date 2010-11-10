@@ -52,8 +52,11 @@ namespace Memory
 		/*virtual void* AllocateMemory(size_t size) = 0;
 		virtual void DeallocateMemory(void* beginning) = 0;*/
 		
-		virtual void DoSwapping() {}
-        bool HandlePageFault() { PANIC("PageFault occoured!"); return false; } //FIXME: Better error message here...
+        virtual bool HandlePageFault(Address faultingAddress)
+        {
+            PANIC("PageFault occured at " << Debug::hex << faultingAddress << " in VirtualMemoryRegion " << name << " and it couldn't be resolved by any class lying over this. Bad for you!");
+            return false;
+        }
 
     protected:
         void MapFreshPages(Address start, size_t length);

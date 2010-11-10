@@ -7,10 +7,10 @@
 using namespace Processes;
 using namespace Memory;
 
-KernelThread::KernelThread(unsigned int threadId, void(*entryFunction)(int), int arg, size_t intialStackSize, size_t maxStackSize, const char* threadName)
+KernelThread::KernelThread(unsigned int threadId, void(*entryFunction)(int), int arg, size_t stackSize, const char* threadName)
     : Thread(threadId, (Address)entryFunction, 0, 0, threadName, false, CurrentHAL->GetPaging()->GetKernelDirectory())
 {
-    threadStack = VirtualMemoryManager::GetInstance()->KernelThreadStacks()->CreateStack(intialStackSize, maxStackSize);
+    threadStack = VirtualMemoryManager::GetInstance()->KernelThreadStacks()->CreateStack(stackSize);
     ASSERT(threadStack != NULL, "Returned Stack MemoryRegion for a KernelThread was NULL");
     
     /* We are building this stack here:
@@ -28,11 +28,11 @@ KernelThread::KernelThread(unsigned int threadId, void(*entryFunction)(int), int
      */
     
     //memset((void*)threadStack->Beginning(), 0, stackSize);
-    int* stack = (int*)threadStack->Beginning();
-    stack[maxStackSize/sizeof(int) - 1] = arg; //Argument
-    stack[maxStackSize/sizeof(int) - 2] = 0;   //Return Address
+    int* stack = (int*)threadStack->GetEndAddress();
+    stack[stackSize/sizeof(int) - 1] = arg; //Argument
+    stack[stackSize/sizeof(int) - 2] = 0;   //Return Address
     
-    this->SetStackPointer(threadStack->Beginning() + maxStackSize - 2*sizeof(int));
+    this->SetStackPointer(threadStack->GetStartAddress() - 2*sizeof(int));
     this->SetFramePointer(0);
 }
 

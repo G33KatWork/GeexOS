@@ -1,5 +1,5 @@
-#ifndef PAGEDMEMORYREGION_H_
-#define PAGEDMEMORYREGION_H_
+#ifndef SWAPPEDMEMORYREGION_H_
+#define SWAPPEDMEMORYREGION_H_
 
 #include <types.h>
 #include <arch/types.h>
@@ -8,12 +8,12 @@
 
 namespace Memory
 {
-    class PagedMemoryRegion : public LazyMemoryRegion
+    class SwappedMemoryRegion : public LazyMemoryRegion
     {
         friend class VirtualMemorySpace;
         
     public:
-        PagedMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName, AllocationFlags RegionFlags)
+        SwappedMemoryRegion(Address RegionStart, size_t RegionSize, const char* RegionName, AllocationFlags RegionFlags)
             : LazyMemoryRegion(RegionStart, RegionSize, RegionName, RegionFlags)
         {}
         
@@ -22,12 +22,13 @@ namespace Memory
             //TODO: Swap stuff out...
         }
         
-		virtual bool HandlePageFault()
+		virtual bool HandlePageFault(Address faultingAddress)
 		{
+            VIRTUAL_MEMORY_REGION_DEBUG_MSG("Pagefault handler in PagedMemoryRegion called");
 		    //TODO: Swap stuff in if possible or panic/kill process etc. 
 		    
 		    if(false)   //not able to handle here...
-		        return LazyMemoryRegion::HandlePageFault(); //hand up
+		        return LazyMemoryRegion::HandlePageFault(faultingAddress); //hand up
 		    
             return true;
 		}

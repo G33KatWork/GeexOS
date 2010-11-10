@@ -26,6 +26,10 @@ namespace Memory
         
         VirtualMemorySpace* FindSpaceByName(const char* spaceName);
         
+        /* Sets the current memory space which is used. Also changes the associated page directory! */
+        void SetCurrentMemorySpace(VirtualMemorySpace* newSpace);
+        VirtualMemorySpace* GetCurrentMemorySpace() { return currentSpace; }
+        
         BitfieldPhysicalMemoryManager* PhysicalAllocator() { return phys; }
         IOMemoryManager* IOMemory() { return iomanager; }
         
@@ -45,6 +49,7 @@ namespace Memory
         
         //All important regions which are often needed
         IOMemoryManager* iomanager;
+        VirtualMemorySpace* currentSpace;
         VirtualMemorySpace* kernelSpace;
         KernelStackMemoryRegion* kernelStack;
         ElfInformation* kernelElf;

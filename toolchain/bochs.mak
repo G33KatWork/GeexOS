@@ -1,4 +1,4 @@
-BOCHS_VERSION		:= 2.4.2
+BOCHS_VERSION		:= 2.4.5
 BOCHS_SOURCE	    := $(TOOLCHAIN_SRCDIR)/bochs-$(BOCHS_VERSION).tar.bz2
 BOCHS_DOWNLOAD	    := http://downloads.sourceforge.net/project/bochs/bochs/$(BOCHS_VERSION)/bochs-$(BOCHS_VERSION).tar.gz
 BOCHS_PATCHES	    := 
@@ -31,12 +31,15 @@ $(TOOLCHAIN_ROOTDIR)/.bochs-configure: $(TOOLCHAIN_ROOTDIR)/.bochs-extract
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/bochs-$(BOCHS_VERSION); \
 		./configure \
 		--with-x11 \
+		--x-includes=/usr/X11/include \
+		--x-libraries=/usr/X11/lib \
 		--enable-debugger \
 		--enable-disasm \
 		--enable-debugger-gui \
 		--enable-smp \
 		--enable-x86-64 \
 		--enable-smp \
+		--disable-reset-on-triple-fault \
 		--prefix=$(TOOLCHAIN_ROOTDIR) \
 		$(QOUTPUT)
 	$(Q)touch $(@)

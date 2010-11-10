@@ -18,8 +18,8 @@ void doPanic()
     /*kdbg.SetForeground(Red);
     kdbg << "[PANIC] Kernel Panic: " << message << endl;*/
     
-    if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
-        VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
+    /*if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
+        VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();*/
     
     CurrentHAL->HaltMachine();
 }

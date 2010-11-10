@@ -44,6 +44,7 @@ void x86Paging::Init()
 
 void x86Paging::InitDone()
 {
+    ARCH_PAGING_DEBUG_MSG("HAL Initialization done, removing lowermost mapping");
     kernel_directory->SetTable(0, NULL, NULL);
     
     for(Address i = 0; i < 4*1024*1024; i+=PAGE_SIZE)
@@ -51,8 +52,9 @@ void x86Paging::InitDone()
         
     //Allocate remaining page tables in kernel land, for easy cloning of address spaces for userspace later
     //TODO: Find a better way to do this. This are 2MB of RAM! :-/
-    for(int i = 769; i < 1024; i++)
-        kernel_directory->GetTable(i, true);
+    ARCH_PAGING_DEBUG_MSG("Creating pagetables of uppermost gigabyte for kernel");
+    //for(int i = 769; i < 1024; i++)
+    //    kernel_directory->GetTable(i, true);
 }
 
 Address x86Paging::GetPhysicalAddress(Address virtualaddr)
@@ -85,7 +87,7 @@ void x86Paging::MapAddress(Address virt, Address phys, bool readwrite, bool user
     unsigned int pdindex = virt >> 22;
     unsigned int ptindex = (virt >> 12) & 0x03FF;
     
-    x86PageTable *t = kernel_directory->GetTable(pdindex, true);
+    x86PageTable *t = current_directory->GetTable(pdindex, true);
     ARCH_PAGING_DEBUG_MSG("Address of PageTable: " << (unsigned)t);
     x86Page *p = (x86Page*)t->GetPage(ptindex);
     ARCH_PAGING_DEBUG_MSG("Address of Page: " << (unsigned)p);
@@ -107,7 +109,7 @@ void x86Paging::UnmapAddress(Address virt)
     unsigned int pdindex = virt >> 22;
     unsigned int ptindex = (virt >> 12) & 0x03FF;
     
-    x86PageTable *t = kernel_directory->GetTable(pdindex, true);
+    x86PageTable *t = current_directory->GetTable(pdindex, true);
     ARCH_PAGING_DEBUG_MSG("Address of PageTable: " << (unsigned)t);
     x86Page *p = t->GetPage(ptindex);
     ARCH_PAGING_DEBUG_MSG("Address of Page: " << (unsigned)p);
@@ -126,12 +128,17 @@ bool x86Paging::IsPresent(Address virt)
     unsigned int pdindex = virt >> 22;
     unsigned int ptindex = (virt >> 12) & 0x03FF;
     
-    x86PageTable *t = (x86PageTable*)kernel_directory->GetTable(pdindex, true);
-    ARCH_PAGING_DEBUG_MSG("Address of PageTable: " << (unsigned)t);
-    x86Page *p = (x86Page*)t->GetPage(ptindex);
-    ARCH_PAGING_DEBUG_MSG("Address of Page: " << (unsigned)p);
+    x86PageTable *t = current_directory->GetTable(pdindex, false);
+	ARCH_PAGING_DEBUG_MSG("Address of PageTable: " << (unsigned)t);
+	if(t != NULL && (current_directory->GetTablePhysical(pdindex) & 0x1) == 1)
+	{
+    	x86Page *p = t->GetPage(ptindex);
+    	ARCH_PAGING_DEBUG_MSG("Address of Page: " << (unsigned)p);
     
-    return p->Present();
+    	return p->Present();
+	}
+	else
+		return false;
 }
 
 void x86Paging::SwitchCurrentPageDirectory(BasePageDirectory* dir)
@@ -147,7 +154,7 @@ BasePageDirectory* x86Paging::DeriveUserspaceDirectory()
     for(Address i = 0xC0000000; i < 0xFFFFFFFF; i+= 4*1024*1024)
     {
         unsigned int pdindex = i / 4*1024*1024;
-        pd->SetTable(pdindex, kernel_directory->GetTable(pdindex), kernel_directory->GetTablePhysical(pdindex) | 0x3);
+        pd->SetTable(pdindex, current_directory->GetTable(pdindex), current_directory->GetTablePhysical(pdindex) | 0x3);
     }
     
     return pd;

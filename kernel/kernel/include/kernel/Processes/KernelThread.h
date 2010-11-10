@@ -11,7 +11,7 @@ namespace Processes
     class KernelThread : public Thread
     {
     public:
-        KernelThread(unsigned int threadId, void(*entryFunction)(int), int arg, size_t intialStackSize, size_t maxStackSize, const char* threadName);
+        KernelThread(unsigned int threadId, void(*entryFunction)(int), int arg, size_t stackSize, const char* threadName);
         ~KernelThread();
     
     private:

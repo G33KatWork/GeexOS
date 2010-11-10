@@ -13,7 +13,7 @@ PATH += :$(TOOLCHAIN_ROOTDIR)/bin
 
 # Hack to build on OS X.
 ifeq ($(shell uname),Darwin)
-  GCC_CONFOPTS := --with-gmp=/opt/local --with-mpfr=/opt/local
+  GCC_CONFOPTS := --with-gmp=/opt/local --with-mpfr=/opt/local --with-mpc=/opt/local
 endif
 
 # Download

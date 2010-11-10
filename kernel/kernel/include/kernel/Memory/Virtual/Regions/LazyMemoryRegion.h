@@ -5,6 +5,7 @@
 #include <arch/types.h>
 #include <kernel/global.h>
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
+#include <arch/HAL.h>
 
 namespace Memory
 {
@@ -17,14 +18,18 @@ namespace Memory
         : VirtualMemoryRegion(RegionStart, RegionSize, RegionName, RegionFlags)
         {}
         
-        virtual void DoSwapping(){}
-        
-		virtual bool HandlePageFault()
+		virtual bool HandlePageFault(Address faultingAddress)
 		{
-		    //TODO: Expand region if possible - demand paging and stuff...
-		    
-		    if(false) //not able to handle here
-		        VirtualMemoryRegion::HandlePageFault(); //hand up
+            VIRTUAL_MEMORY_REGION_DEBUG_MSG("Pagefault handler in LazyMemoryRegion called with faulting address "
+                                            << Debug::hex << faultingAddress << ". Expanding region by one page.");
+            
+            if(Arch::CurrentHAL->GetPaging()->IsPresent(faultingAddress)) //not able to handle here
+		    {
+                VIRTUAL_MEMORY_REGION_DEBUG_MSG("Faulting address is already present. Can't expand region.");
+		        VirtualMemoryRegion::HandlePageFault(faultingAddress); //hand up
+		    }
+		    else
+                MapFreshPages(faultingAddress & PAGEALIGN_MASK, PAGE_SIZE); //else map another page into this region
 		    
             return true;
 		}

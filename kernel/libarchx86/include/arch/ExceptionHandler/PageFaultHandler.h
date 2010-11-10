@@ -4,6 +4,7 @@
 #include <types.h>
 #include <halinterface/ResolveableException.h>
 #include <kernel/global.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 
 namespace Arch
 {
@@ -37,13 +38,15 @@ namespace Arch
         
         virtual bool Resolve()
         {
-            PANIC("Unresolveable page fault! ( " << (NonPresent ? "not-present " : "")
-                << (WriteOperation ? "write-operation " : "") << (Usermode ? "user-mode " : "")
-                << (ReservedBit ? "reserved-bit " : "") << (InstructionFetch ? "instruction-fetch " : "")
-                << ") at " << Debug::hex << faultingAddress << " EIP: " << faultingInstruction
-            );
+            if(!Memory::VirtualMemoryManager::GetInstance()->GetCurrentMemorySpace()->HandlePageFault(this->faultingAddress))
+                PANIC("Unresolveable page fault! ( " << (NonPresent ? "not-present " : "")
+                    << (WriteOperation ? "write-operation " : "") << (Usermode ? "user-mode " : "")
+                    << (ReservedBit ? "reserved-bit " : "") << (InstructionFetch ? "instruction-fetch " : "")
+                    << ") at " << Debug::hex << faultingAddress << " EIP: " << faultingInstruction
+                );
             
-            return false;
+			// either we resolved it or we panicked already, so return true
+            return true;
         }
         
     public:

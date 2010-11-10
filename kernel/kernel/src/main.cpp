@@ -13,10 +13,11 @@
 #include <kernel/Processes/KernelThread.h>
 #include <arch/AddressLayout.h>
 #include <kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.h>
+#include <kernel/Memory/Slab/SlabAllocator.h>
 
 #include <string.h>
 
-#include <kernel/Memory/Virtual/Regions/PagedMemoryRegion.h>
+#include <kernel/Memory/Virtual/Regions/SwappedMemoryRegion.h>
 
 extern      Address             bootStack;          //defined in start.S
 
@@ -56,8 +57,10 @@ void umode(int UNUSED(arg))
 
 void foo(int arg)
 {   
+	//char bla[4096];
     while(1)
     {
+		//bla[100] = 'x';
         CurrentHAL->GetCurrentDebugOutputDevice()->PrintChar((char)arg);
         for(int i = 0; i < 10000000; i++);
     }
@@ -86,9 +89,12 @@ int main()
     
     //Initialize Memory
     VirtualMemoryManager::GetInstance()->Init(CurrentHAL->GetBootEnvironment()->GetInstalledMemory());
+    MAIN_DEBUG_MSG("Virtual memory manager instace created...");
     
     //Build virtual memory space for kernel ELF
-    VirtualMemoryManager::GetInstance()->KernelSpace(new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace"));
+    VirtualMemoryManager::GetInstance()->KernelSpace(new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace", CurrentHAL->GetPaging()->GetKernelDirectory()));
+    VirtualMemoryManager::GetInstance()->SetCurrentMemorySpace(VirtualMemoryManager::GetInstance()->KernelSpace()); //Just to be sure...
+    MAIN_DEBUG_MSG("Virtual memory space for kernel created...");
     
     //Parse ELF-Stuff delivered from GRUB and create .text, .data, .rodata, .bss and .placement sections in kernel space
     ElfInformation* elfInfo = new ElfInformation(CurrentHAL->GetBootEnvironment()->GetELFAddress(),
@@ -97,6 +103,7 @@ int main()
                                                  CurrentHAL->GetBootEnvironment()->GetELFNum()
                                                  );
     VirtualMemoryManager::GetInstance()->KernelElf(elfInfo);
+    MAIN_DEBUG_MSG("ELF-Information for kernel binary parsed...");
     
     //Create Arch-specific memory regions in kernel space
     //On x86: Framebuffer for textmode and lowest 64K for BIOS
@@ -148,13 +155,13 @@ int main()
     VirtualMemoryManager::GetInstance()->KernelThreadStacks(kernelThreadStacks);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(kernelThreadStacks);
     
-    KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE, PAGE_SIZE*10, "A Thread");
+    KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE*10, "A Thread");
     Scheduler::GetInstance()->AddThread(thread);
-    KernelThread* thread2 = new KernelThread(2, foo, (int)'C', PAGE_SIZE, PAGE_SIZE*10, "C Thread");
+    KernelThread* thread2 = new KernelThread(2, foo, (int)'C', PAGE_SIZE*10, "C Thread");
     Scheduler::GetInstance()->AddThread(thread2);
-    KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE, PAGE_SIZE*10, "D Thread");
+    KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE*10, "D Thread");
     Scheduler::GetInstance()->AddThread(thread3);
-    
+
     VirtualMemoryManager::GetInstance()->KernelThreadStacks()->DumpStacks(CurrentHAL->GetCurrentDebugOutputDevice());
     
     //VirtualMemoryRegion* uModeCode = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x3000000, 0x1000, "Usercode", ALLOCFLAG_WRITABLE|ALLOCFLAG_EXECUTABLE|ALLOCFLAG_USERMODE);
@@ -174,6 +181,9 @@ int main()
     
     //Initialize the scheduler
     Scheduler::GetInstance()->SetTimerManager(tm);
+    
+    SlabAllocator* slaballoc = new SlabAllocator();
+        
     
     for(;;) {
         *CurrentHAL->GetCurrentDebugOutputDevice() << "B";
