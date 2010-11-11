@@ -9,20 +9,17 @@ using namespace Memory;
 using namespace Arch;
 using namespace Debug;
 
-KernelStackMemoryRegion::KernelStackMemoryRegion(Address RegionStart, size_t MaxRegionSize, size_t InitialSize, const char* RegionName)
-: LazyMemoryRegion(RegionStart, MaxRegionSize, RegionName, ALLOCFLAG_WRITABLE)
+KernelStackMemoryRegion::KernelStackMemoryRegion(Address RegionStart, size_t StackSize, const char* RegionName)
+: VirtualMemoryRegion(RegionStart, StackSize, RegionName, ALLOCFLAG_WRITABLE)
 {
     STACK_DEBUG_MSG("Creating kernel stack region " << RegionName);
     STACK_DEBUG_MSG("Region start: " << hex << RegionStart
-                 << " Max stack size: " << hex << MaxRegionSize
-                 << " Initial stack size: " << hex << InitialSize);
-    
-    curSize = initialSize = InitialSize;
+                 << " Stack size: " << hex << StackSize);
     
     //map initial stack space
-    for(Address i = startAddress + MaxRegionSize - PAGE_SIZE; i > (startAddress + MaxRegionSize - PAGE_SIZE) - initialSize; i -= PAGE_SIZE)
+    for(Address i = startAddress; i < startAddress + StackSize; i += PAGE_SIZE)
     {
-        STACK_DEBUG_MSG("Initial mapping " << hex << i);
+        STACK_DEBUG_MSG("Stack mapping " << hex << i);
         CurrentHAL->GetPaging()->MapAddress(
             i,
             VirtualMemoryManager::GetInstance()->PhysicalAllocator()->AllocateFrame(),

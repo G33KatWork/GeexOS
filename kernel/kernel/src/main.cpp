@@ -110,7 +110,7 @@ int main()
     CurrentHAL->SetupArchMemRegions();
     
     //Create defined Stack and move boot stack to new position
-    KernelStackMemoryRegion* kernelStack = new KernelStackMemoryRegion(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, 0x1000, "Main kernel stack");
+    KernelStackMemoryRegion* kernelStack = new KernelStackMemoryRegion(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, "Main kernel stack");
     kernelStack->MoveCurrentStackHere((Address)&bootStack);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(kernelStack);
     VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
@@ -206,7 +206,7 @@ void syncMemregionsWithPaging(void)
         if(VirtualMemoryManager::GetInstance()->KernelSpace()->FindRegionEnclosingAddress(i) == NULL)
         {
             Address physicalAddr = CurrentHAL->GetPaging()->GetPhysicalAddress(i);
-            //MAIN_DEBUG_MSG("Virtual address " << hex << i << " pointing to physical " << physicalAddr << " doesn't seem to contain a region.");
+            MAIN_DEBUG_MSG("Virtual address " << hex << i << " pointing to physical " << physicalAddr << " doesn't seem to contain a region.");
             
             CurrentHAL->GetPaging()->UnmapAddress(i);
             VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(physicalAddr);

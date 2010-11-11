@@ -53,8 +53,8 @@ void x86Paging::InitDone()
     //Allocate remaining page tables in kernel land, for easy cloning of address spaces for userspace later
     //TODO: Find a better way to do this. This are 2MB of RAM! :-/
     ARCH_PAGING_DEBUG_MSG("Creating pagetables of uppermost gigabyte for kernel");
-    //for(int i = 769; i < 1024; i++)
-    //    kernel_directory->GetTable(i, true);
+    for(int i = 769; i < 1024; i++)
+        kernel_directory->GetTable(i, true);
 }
 
 Address x86Paging::GetPhysicalAddress(Address virtualaddr)

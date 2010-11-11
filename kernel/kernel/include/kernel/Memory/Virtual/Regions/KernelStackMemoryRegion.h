@@ -12,15 +12,13 @@ namespace Memory
      *  It's mainly used during bootup to move the stack around
      *  All kernel thread stacks are managed in the KernelThreadStackRegion
      */
-    class KernelStackMemoryRegion : public LazyMemoryRegion
+    class KernelStackMemoryRegion : public VirtualMemoryRegion
     {
         friend class VirtualMemorySpace;
     private:
-        size_t initialSize;
-        size_t curSize;
     
     public:
-        KernelStackMemoryRegion(Address RegionStart, size_t MaxRegionSize, size_t InitialSize, const char* RegionName);
+        KernelStackMemoryRegion(Address RegionStart, size_t StackSize, const char* RegionName);
         
         //Remember: Stack grows down!
         Address GetStartAddress() { return startAddress + size; }
