@@ -28,6 +28,8 @@
 // #define EN_PLACEMENT_DEBUG_MSG
 // #define EN_PHYS_BITFIELD_DEBUG_MSG
 // #define EN_GDBSTUB_DEBUG_MSG
+// #define EN_BITFIELD_DEBUG_MSG
+// #define EN_BUDDY_ALLOC_DEBUG_MSG
 
 #define DEBUG_MSG(msg) \
 { \
@@ -156,5 +158,19 @@
 #else
     #define X86EMU_DEBUG_MSG(x)
 #endif
+
+#ifdef EN_BITFIELD_DEBUG_MSG
+    #define BITFIELD_DEBUG_MSG(x)               DEBUG_MSG("BITFIELD: "x)
+#else
+    #define BITFIELD_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_BUDDY_ALLOC_DEBUG_MSG
+    #define BUDDY_ALLOC_DEBUG_MSG(x)            DEBUG_MSG("BUDDY: "x)
+#else
+    #define BUDDY_ALLOC_DEBUG_MSG(x)
+#endif
+
+
 
 #endif

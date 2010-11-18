@@ -43,7 +43,10 @@ void VirtualMemoryRegion::UnmapPages(Address start, size_t length)
     for(Address i = start; i < start + length; i += PAGE_SIZE)
     {
         Address phys = CurrentHAL->GetPaging()->GetPhysicalAddress(i);
-        CurrentHAL->GetPaging()->UnmapAddress(i);
-        VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(phys);
+        if(phys)
+        {
+            CurrentHAL->GetPaging()->UnmapAddress(i);
+            VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(phys);
+        }
     }
 }

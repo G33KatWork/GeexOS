@@ -189,7 +189,7 @@ int x86InterruptDispatcher::interruptToNumber(InterruptingDevice i)
 
 void fault_handler(registers_t regs)
 {
-    DEBUG_MSG("ex: " << regs.int_no);
+    //DEBUG_MSG("ex: " << regs.int_no);
     if(nestedExceptions > MAX_NESTED_EXCEPTIONS) PANIC("Maximum number of nested exceptions reached.");
     nestedExceptions++;
     

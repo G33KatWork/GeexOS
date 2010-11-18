@@ -28,7 +28,9 @@ CXXSOURCES = main.cpp \
 			 Processes/KernelThread.cpp \
 			 Memory/Virtual/Regions/KernelStackMemoryRegion.cpp \
 			 Memory/Virtual/Regions/KernelThreadStackRegion.cpp \
-			 Memory/Slab/SlabAllocator.cpp
+			 Memory/Slab/SlabAllocator.cpp \
+             DataStructures/Bitfield.cpp \
+ 			 Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.cpp
 #			 Memory/Slab/SlabManager.cpp
 
 # List Assembler to be assembled with NASM here

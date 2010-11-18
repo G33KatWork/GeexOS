@@ -29,25 +29,29 @@ namespace Memory
     private:
         Slab() {}
         ~Slab() {}
+        
+        Slab* Next;
     
+        void* Allocate();
     public:
         
     };
     
-    
     class SlabCache
     {
     friend class SlabAllocator;
+    friend class SlabCacheHead;
         
-    private:
+    protected:
         SlabCache() {}
         ~SlabCache() {}
         
-        SlabCache* Next;
+        SlabCache* NextCache;   //pointer to next list item
+        
         Slab* full_list;
         Slab* partial_list;
         Slab* free_list;
-        SlabCache* slab_pointer;    //Pointer to management object, kept off-slab
+        //SlabCache* slab_pointer;    //Pointer to management object, kept off-slab
         
         char name[SLAB_MAX_NAMELEN];
         size_t size;
@@ -55,47 +59,60 @@ namespace Memory
         size_t nr_objects;
         size_t nr_allocated;
         size_t nr_active;
-        bool off_slab;
-    
-    public:
+        //bool off_slab;
         
+        static size_t EstimateNrObjects(size_t order, size_t objSize, size_t* nr, size_t* wastage);
+        static size_t GetObjectCount(size_t* objSize, size_t align, size_t* order, size_t* left);
+        
+        /* grow the cache by one slab */
+        Slab* Grow();
+        
+        /* list management */
+        void AddSlabToList(Slab** listHead, Slab* toAppend);
+        void RemoveSlabFromList(Slab** listHead, Slab* toRemove);
+        
+    public:
+        /* allocate a new object in a Slab inside this SlabCache */
+        void* AllocateObject();
+    };
+    
+    /* The mother of all SlabCaches */
+    class SlabCacheHead : public SlabCache
+    {
+    friend class SlabAllocator;
+    
+    private:
+        SlabCacheHead();
+        ~SlabCacheHead() {}
+        
+        /* to be called internally by SlabAllocator */
+        SlabCache* CreateNewCache(const char* cacheName, size_t objectSize, size_t alignment);
     };
     
     
-    class SlabAllocator/* : PagedMemoryRegion*/
+    class SlabAllocator : LazyMemoryRegion
     {
     private:
-        SlabCache cacheHead;
+        SlabCacheHead cacheHead;
 	
     public:
-        SlabAllocator();
+        SlabAllocator(Address RegionStart, size_t RegionSize);
         ~SlabAllocator() {}
         
-        SlabCache* CreateCache(char* cacheName, size_t objectSize, size_t alignment);
+        SlabCache* CreateCache(const char* cacheName, size_t objectSize, size_t alignment);
         void DestroyCache(SlabCache* cache);
-    
-    private:
-        void InitializeCacheHead();
-        void InitializeCacheSizes();
-        
-        size_t GetObjectCount(size_t* objSize, size_t align, size_t* order, size_t* left);
-        size_t EstimateNrObjects(size_t order, size_t objSize, size_t* nr, size_t* wastage);
-        
-        SlabCache* AllocateCache(SlabCache* slabCache);
-        
-        //TODO: Move this into SlabCache class?
-        Slab* CacheGrow(SlabCache* slabCache);
-        
-        size_t inline GetOrder(size_t size)
-        {
-            size_t order = -1;
-            size = (size - 1) >> (PAGE_SHIFT - 1);
-            do { 
-                size >>= 1;
-                ++order;
-            } while(size);
-            return order;
-        }
     };
 }
+
+size_t static inline GetOrder(size_t size)
+{
+    size_t order = -1;
+    size = (size - 1) >> (PAGE_SHIFT - 1);
+    do { 
+        size >>= 1;
+        ++order;
+    } while(size);
+    return order;
+}
+
 #endif

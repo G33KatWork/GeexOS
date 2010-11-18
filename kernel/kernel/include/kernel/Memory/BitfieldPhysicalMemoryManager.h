@@ -3,6 +3,7 @@
 
 #include <types.h>
 #include <arch/types.h>
+#include <kernel/DataStructures/Bitfield.h>
 
 namespace Memory
 {
@@ -16,12 +17,8 @@ namespace Memory
         bool IsFree(Address physAddr);
         
     private:
-        uint32_t *frames;
+        DataStructures::Bitfield *frames;
         uint32_t nFrames;
-        
-        unsigned int bitmap_get_first_free(void);
-        void bitmap_set_frame(Address physAddr);
-        void bitmap_clear_frame(Address physAddr);
     };
 }
 #endif

@@ -43,6 +43,11 @@ namespace Memory
             flags = RegionFlags;
             Next = NULL;
         }
+
+		virtual ~VirtualMemoryRegion()
+		{
+			UnmapPages(this->startAddress, this->size);
+		}
         
         Address StartAddress() { return startAddress; }
         size_t Size() { return size; }
