@@ -3,38 +3,49 @@
 #include <string.h>
 
 using namespace Memory;
+using namespace Debug;
 
 SlabAllocator::SlabAllocator(Address RegionStart, size_t RegionSize)
-    : LazyMemoryRegion(RegionStart, RegionSize, "SLAB Allocator", ALLOCFLAG_WRITABLE)
+    : BuddyAllocatedMemoryRegion(RegionStart, RegionSize, "SLAB Allocator", PAGE_SHIFT)
 {
     SLAB_DEBUG_MSG("Initializing SLAB Allocator...");
     
-    //cacheHead = SlabCacheHead();
+    cacheHead = new SlabCacheHead(this);
 }
 
-SlabCacheHead::SlabCacheHead()
+SlabCacheHead::SlabCacheHead(SlabAllocator* ParentAllocator)
+    : SlabCache("CacheHead", SLAB_HWCACHE_ALIGN, sizeof(SlabCache), ParentAllocator)
+{ }
+
+void SlabCache::Initialize(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
 {
-    size = sizeof(SlabCache);
-    int align = SLAB_HWCACHE_ALIGN;
+    objSize = Size;
+    int align = Align;
     
     size_t wastage = 0;
-    nr_objects = SlabCache::GetObjectCount(&size, align, &order, &wastage);
-    if(!nr_objects || order > SLAB_MAXORDER)
-        PANIC("Unable to initialize SLAB cache head");
+    objectsPerSlab = SlabCache::GetObjectCount(&objSize, align, &order, &wastage);
+    if(!objectsPerSlab || order > SLAB_MAXORDER)
+        PANIC("Unable to initialize SLAB cache " << Name);
     
-    strcpy(name, "CacheHead");
+    //FIMXE: objSize already with alignment?
+    offSlab = objSize > SLAB_LIMIT;
+    
+    strcpy(name, Name);
+    allocator = ParentAllocator;
     NextCache = NULL;
-    full_list = NULL;
-    partial_list = NULL;
-    free_list = NULL;
-    nr_allocated = 0;
-    nr_active = 0;
+    fullSlabList = NULL;
+    partialSlabList = NULL;
+    freeSlabList = NULL;
+    objectsAllocated = 0;
+    objectsActive = 0;
 }
 
 SlabCache* SlabCacheHead::CreateNewCache(const char* cacheName, size_t objectSize, size_t alignment)
 {
+    SLAB_DEBUG_MSG("CacheHead is creating a new SLABCache " << cacheName << " with object size " << hex << objectSize << " aligned at " << alignment);
+    
     SlabCache* cache = NULL;
-    size_t nr = 0, wastage = 0, newCacheOrder = 0, slab_size = 0;
+    //size_t nr = 0, wastage = 0, newCacheOrder = 0, slab_size = 0;
     
     /* check if name present and not too long */
     if(!cacheName || strlen(cacheName) > SLAB_MAX_NAMELEN)
@@ -52,21 +63,21 @@ SlabCache* SlabCacheHead::CreateNewCache(const char* cacheName, size_t objectSiz
     }
     
     /* calculate object count */
-    nr = SlabCache::GetObjectCount(&objectSize, alignment, &newCacheOrder, &wastage);
-    if(!nr || newCacheOrder > SLAB_MAXORDER)
-        return NULL;
+    //nr = SlabCache::GetObjectCount(&objectSize, alignment, &newCacheOrder, &wastage);
+    //if(!nr || newCacheOrder > SLAB_MAXORDER)
+    //    return NULL;
     
     /* Allocate a new cache as an object in us (the cache head) */
     cache = (SlabCache*)AllocateObject();
+    SLAB_DEBUG_MSG("Initializing new Cache at " << hex << (Address)cache);
+    cache->Initialize(cacheName, alignment, objectSize, this->allocator);
     
-    //TODO: Initialize cache head, initialize it to be empty and add it to slab list in cache head
-    
-    return NULL;
+    return cache;
 }
 
 SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, size_t alignment)
 {
-    return cacheHead.CreateNewCache(cacheName, objectSize, alignment);
+    return cacheHead->CreateNewCache(cacheName, objectSize, alignment);
 }
 
 void* SlabCache::AllocateObject()
@@ -74,12 +85,12 @@ void* SlabCache::AllocateObject()
     Slab* slab = NULL;
     
     /* partially used slabs available? */
-    if(this->partial_list == NULL)
+    if(this->partialSlabList == NULL)
     {
         SLAB_DEBUG_MSG("No more partial free Slabs in SlabCache " << this->name);
         
         //free slabs available?
-        if(this->free_list == NULL)
+        if(this->freeSlabList == NULL)
         {
             SLAB_DEBUG_MSG("No more free Slabs in SlabCache " << this->name << ". Need to grow");
             
@@ -93,30 +104,89 @@ void* SlabCache::AllocateObject()
             
             //since we are directly going to allocate stuff in the slab,
             //remove it from free list and add it to partially used list
-            RemoveSlabFromList(&this->free_list, slab);
-            AddSlabToList(&this->partial_list, slab);
+            RemoveSlabFromList(&this->freeSlabList, slab);
+            AddSlabToList(&this->partialSlabList, slab);
         }
         else    //use first free slab
-            slab = this->free_list;
+            slab = this->freeSlabList;
     }
     else    //use first partial used slab
-        slab = this->partial_list;
+        slab = this->partialSlabList;
     
-    return slab->Allocate();
+    void* allocatedObject = NULL;
+    
+    if(offSlab)
+    {
+        PANIC("Off-slab not supported yet");
+    }
+    else
+        allocatedObject = slab->AllocateOnSlab();
+    
+    if(slab->IsFull())
+    {
+        RemoveSlabFromList(&this->partialSlabList, slab);
+        AddSlabToList(&this->fullSlabList, slab);
+    }
+    
+    return allocatedObject;
 }
 
-void* Slab::Allocate()
+void FreeObject(void* object)
 {
-    return NULL;
+    
+}
+
+void* Slab::AllocateOnSlab()
+{
+    SLAB_DEBUG_MSG("Allocating on-slab object from Slab living at " << hex << (Address)this);
+    
+    if(IsFull())
+    {
+        PANIC("Cannot allocate an object in a full Slab");
+    }
+    
+    void* object = (void*)(objectStart + this->freeIndex * this->cache->GetObjectSize());
+    this->freeIndex = GetFreeArray()[this->freeIndex];
+    
+    this->inUse++;
+    
+    return object;
 }
 
 Slab* SlabCache::Grow()
 {
-    SLAB_DEBUG_MSG("Growing SlabCache " << this->name << " by one Slab");
+    SLAB_DEBUG_MSG("Growing SlabCache " << this->name << " by one Slab with order " << dec << this->order);
     
-    Slab* newSlab = NULL;
-    return newSlab;
-    //TODO: get some new space from region and add new slab to free_list in given slabCache
+    Address newSlab = allocator->AllocateBuddy(this->order);
+    
+    //TODO: Handle off-slab
+    Slab* slab = NULL;
+    
+    if(offSlab)
+    {
+        PANIC("No off-slabs yet");
+    }
+    else
+    {
+        SLAB_DEBUG_MSG("Initializing on-slab Slab at " << hex << newSlab);
+        
+        slab = (Slab*)newSlab;
+        SLAB_DEBUG_MSG("Slab object lives at " << hex << (Address)slab);
+        slab->inUse = 0;
+        slab->freeIndex = 0;
+        slab->cache = this;
+        slab->objectStart = (newSlab + (1 << order << PAGE_SHIFT)) - (objSize * objectsPerSlab);
+        SLAB_DEBUG_MSG("Objects in Slab start at " << hex << slab->objectStart);
+        
+        //size_t freeArraySize = this->objectsPerSlab * sizeof(uint32_t);     //Array of free slabs, each entry is one uint32_t
+        
+        for(uint32_t i = 0; i < objectsPerSlab - 1; i++)
+            slab->GetFreeArray()[i] = i+1;
+        slab->GetFreeArray()[objectsPerSlab - 1] = SLAB_BUF_END;
+    }
+    
+    AddSlabToList(&this->freeSlabList, slab);
+    return slab;
 }
 
 void SlabCache::AddSlabToList(Slab** listHead, Slab* toAppend)
@@ -129,6 +199,13 @@ void SlabCache::AddSlabToList(Slab** listHead, Slab* toAppend)
 void SlabCache::RemoveSlabFromList(Slab** listHead, Slab* toRemove)
 {
    SLAB_DEBUG_MSG("Removing SLAB from Cache " << this->name);
+   
+   if(*listHead == toRemove)
+   {
+       *listHead = NULL;
+       return;
+   }
+   
    for(Slab* curSlab = *listHead; curSlab->Next != NULL; curSlab = curSlab->Next)
    {
        if(curSlab->Next != NULL && curSlab->Next == toRemove)
@@ -190,23 +267,22 @@ size_t SlabCache::GetObjectCount(size_t* objSize, size_t align, size_t* order, s
 size_t SlabCache::EstimateNrObjects(size_t order, size_t objSize, size_t* nr, size_t* wastage)
 {
     int i = 0;
-    size_t extra = 0, base = 0;
-    size_t ctrl_data = 2 * sizeof(void*);
+    size_t headSize = 0;
     size_t total = (1 << order) << PAGE_SHIFT;
     
     if(objSize < SLAB_LIMIT)
     {
-        base = sizeof(SlabCache);
-        extra = sizeof(int);
+        //if cache is on-slab, we need to add the Slab structure
+        headSize = L1_CACHE_ALIGN(sizeof(Slab));
     }
     
-    while((i*objSize + L1_CACHE_ALIGN(base + i*extra + ctrl_data)) <= total)
+    while((i*objSize + headSize) <= total)
         i++;
     
     if(i)
         i--;
     
-    *wastage = total - (i*objSize + L1_CACHE_ALIGN(base + i*extra + ctrl_data));
+    *wastage = total - (i*objSize + headSize);
     *nr = i;
     
     SLAB_DEBUG_MSG("Estimated object count. Order: " << order << " ObjectSize: " << objSize << " Nr: " << i << " Wastage: " << *wastage);

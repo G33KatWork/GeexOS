@@ -181,37 +181,47 @@ int main()
     Scheduler::GetInstance()->DumpThreads(CurrentHAL->GetCurrentDebugOutputDevice());
     
     //Initialize the scheduler
-    Scheduler::GetInstance()->SetTimerManager(tm);
+    //Scheduler::GetInstance()->SetTimerManager(tm);
     
-    BuddyAllocatedMemoryRegion* buddyRegion = new BuddyAllocatedMemoryRegion(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE, "Buddytest", PAGE_SHIFT);
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(buddyRegion);
-    buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    Address allocatedBuddy = buddyRegion->AllocateBuddy(PAGE_SHIFT + 5);
-    MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy);
-    buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    Address allocatedBuddy2 = buddyRegion->AllocateBuddy(PAGE_SHIFT);
-    MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy2);
-    buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    Address allocatedBuddy3 = buddyRegion->AllocateBuddy(PAGE_SHIFT + 2);
-    MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy3);
-    buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    Address allocatedBuddy4 = buddyRegion->AllocateBuddy(PAGE_SHIFT + 15);
-    MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy4);
-    buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    // BuddyAllocatedMemoryRegion* buddyRegion = new BuddyAllocatedMemoryRegion(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE, "Buddytest", PAGE_SHIFT);
+    // VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(buddyRegion);
+    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    // Address allocatedBuddy = buddyRegion->AllocateBuddy(5);
+    // MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy);
+    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    // Address allocatedBuddy2 = buddyRegion->AllocateBuddy(0);
+    // MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy2);
+    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    // Address allocatedBuddy3 = buddyRegion->AllocateBuddy(2);
+    // MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy3);
+    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    // Address allocatedBuddy4 = buddyRegion->AllocateBuddy(15);
+    // MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy4);
+    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    // 
+    // MAIN_DEBUG_MSG("Freeing 2");
+    // buddyRegion->FreeBuddy(allocatedBuddy2, 0);
+    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    // MAIN_DEBUG_MSG("Freeing 1");
+    // buddyRegion->FreeBuddy(allocatedBuddy, 5);
+    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    // MAIN_DEBUG_MSG("Freeing 3");
+    // buddyRegion->FreeBuddy(allocatedBuddy3, 2);
+    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
     
-    MAIN_DEBUG_MSG("Freeing 2");
-    buddyRegion->FreeBuddy(allocatedBuddy2, PAGE_SHIFT);
-    buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    MAIN_DEBUG_MSG("Freeing 1");
-    buddyRegion->FreeBuddy(allocatedBuddy, PAGE_SHIFT + 5);
-    buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    MAIN_DEBUG_MSG("Freeing 3");
-    buddyRegion->FreeBuddy(allocatedBuddy3, PAGE_SHIFT + 2);
-    buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    SlabAllocator* slaballoc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(slaballoc);
+    SlabCache* testCache = slaballoc->CreateCache("Testcache", 100, SLAB_HWCACHE_ALIGN);
+    MAIN_DEBUG_MSG("SlabCache is at " << hex << (Address)testCache);
     
-    //SlabAllocator* slaballoc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
-    //SlabCache* testCache = slaballoc->CreateCache("Testcache", 100, SLAB_HWCACHE_ALIGN);
+    for(int i = 0; i < 40; i++)
+    {
+        void* alloc1 = testCache->AllocateObject();
+        MAIN_DEBUG_MSG("Allocated object at " << hex << (Address)alloc1);
+    }
     
+    slaballoc->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+        
     for(;;) {
         *CurrentHAL->GetCurrentDebugOutputDevice() << "B";
         for(int i = 0; i < 10000000; i++);

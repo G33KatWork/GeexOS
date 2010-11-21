@@ -29,7 +29,7 @@
 // #define EN_PHYS_BITFIELD_DEBUG_MSG
 // #define EN_GDBSTUB_DEBUG_MSG
 // #define EN_BITFIELD_DEBUG_MSG
-// #define EN_BUDDY_ALLOC_DEBUG_MSG
+#define EN_BUDDY_ALLOC_DEBUG_MSG
 
 #define DEBUG_MSG(msg) \
 { \

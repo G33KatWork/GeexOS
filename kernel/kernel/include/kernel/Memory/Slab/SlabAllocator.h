@@ -4,12 +4,12 @@
 #include <arch/types.h>
 #include <types.h>
 #include <arch/HAL.h>
-#include <kernel/Memory/Virtual/Regions/SwappedMemoryRegion.h>
+#include <kernel/Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.h>
 
 #define SLAB_MAX_NAMELEN    40
 #define SLAB_HWCACHE_ALIGN  0x20    //FIXME: make processor independent
 #define SLAB_MAXORDER       5
-#define SLAB_LIMIT          (PAGE_SIZE >> 3)
+#define SLAB_LIMIT          (PAGE_SIZE >> 3)    //if objects are bigger than 1/8th of a page size, they are off-slab
 
 //FIXME: Get a proper place for this helper macro
 #define ALIGN_TO_VAL(val, boundary) (( (val) + (boundary) - 1 ) & ~((boundary) - 1))
@@ -22,6 +22,7 @@ namespace Memory
     class SlabAllocator;
     class SlabCache;
     
+    #define SLAB_BUF_END        (((uint32_t)(~0U))-0)
     
     class Slab
     {
@@ -30,9 +31,19 @@ namespace Memory
         Slab() {}
         ~Slab() {}
         
+        SlabCache* cache;
+        Address objectStart;
+        uint32_t freeIndex;     //Index to next free object in the free-array
+        uint32_t inUse;
+        
+        //Linked list for Slabs in SlabCache
         Slab* Next;
     
-        void* Allocate();
+        void* AllocateOnSlab();
+        bool IsFull() { return this->freeIndex == SLAB_BUF_END; }
+        
+        //the free-array is directly behind this class, so increment this pointer and cast to array pointer
+        inline uint32_t* GetFreeArray() { return (uint32_t*)(this + 1); }
     public:
         
     };
@@ -43,23 +54,26 @@ namespace Memory
     friend class SlabCacheHead;
         
     protected:
-        SlabCache() {}
+        SlabCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator) { this->Initialize(Name, Align, Size, ParentAllocator); }
         ~SlabCache() {}
+        
+        void Initialize(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator);
         
         SlabCache* NextCache;   //pointer to next list item
         
-        Slab* full_list;
-        Slab* partial_list;
-        Slab* free_list;
+        Slab* fullSlabList;
+        Slab* partialSlabList;
+        Slab* freeSlabList;
         //SlabCache* slab_pointer;    //Pointer to management object, kept off-slab
         
+        SlabAllocator* allocator;
         char name[SLAB_MAX_NAMELEN];
-        size_t size;
+        size_t objSize;
         size_t order;
-        size_t nr_objects;
-        size_t nr_allocated;
-        size_t nr_active;
-        //bool off_slab;
+        size_t objectsPerSlab;
+        size_t objectsAllocated;
+        size_t objectsActive;
+        bool offSlab;
         
         static size_t EstimateNrObjects(size_t order, size_t objSize, size_t* nr, size_t* wastage);
         static size_t GetObjectCount(size_t* objSize, size_t align, size_t* order, size_t* left);
@@ -74,6 +88,9 @@ namespace Memory
     public:
         /* allocate a new object in a Slab inside this SlabCache */
         void* AllocateObject();
+        void FreeObject(void* object);
+        
+        inline size_t GetObjectSize() { return objSize; }
     };
     
     /* The mother of all SlabCaches */
@@ -82,7 +99,7 @@ namespace Memory
     friend class SlabAllocator;
     
     private:
-        SlabCacheHead();
+        SlabCacheHead(SlabAllocator* ParentAllocator);
         ~SlabCacheHead() {}
         
         /* to be called internally by SlabAllocator */
@@ -90,10 +107,10 @@ namespace Memory
     };
     
     
-    class SlabAllocator : LazyMemoryRegion
+    class SlabAllocator : public BuddyAllocatedMemoryRegion
     {
     private:
-        SlabCacheHead cacheHead;
+        SlabCacheHead* cacheHead;
 	
     public:
         SlabAllocator(Address RegionStart, size_t RegionSize);
@@ -110,7 +127,7 @@ size_t static inline GetOrder(size_t size)
     size = (size - 1) >> (PAGE_SHIFT - 1);
     do { 
         size >>= 1;
-        ++order;
+        order++;
     } while(size);
     return order;
 }

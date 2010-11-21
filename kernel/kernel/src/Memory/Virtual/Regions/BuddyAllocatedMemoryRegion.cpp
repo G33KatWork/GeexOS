@@ -60,9 +60,8 @@ Address BuddyAllocatedMemoryRegion::AllocateBuddy(size_t order)
 {
     BUDDY_ALLOC_DEBUG_MSG("Allocating buddy with order " << dec << order);
     
-    ASSERT(order >= minOrder, "Order must be greater or equal MinimumOrder of " << dec << minOrder);
-    if(order < minOrder)
-        order = minOrder;
+    //we count the minimum order from 0, so add minOrder here
+    order += minOrder;
     
     ASSERT(order <= maxOrder, "Order must not be greater than maximum order");
     if(order > maxOrder)
@@ -113,9 +112,8 @@ void BuddyAllocatedMemoryRegion::FreeBuddy(Address addr, size_t order)
     if(addr == NULL)
         return;
     
-    ASSERT(order >= minOrder, "Order must be greater or equal MinimumOrder of " << dec << minOrder);
-    if(order < minOrder)
-        order = minOrder;
+    //we count the minimum order from 0, so add minOrder here
+    order += minOrder;
     
     ASSERT(order <= maxOrder, "Order must not be greater than maximum order " << dec << maxOrder);
     if(order > maxOrder)
