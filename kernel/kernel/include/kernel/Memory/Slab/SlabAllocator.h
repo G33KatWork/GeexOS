@@ -25,35 +25,26 @@ namespace Memory
     
     #define SLAB_BUF_END        (((uint32_t)(~0U))-0)
     
-    class Slab : public DataStructures::DoublyLinkedListLinkImpl<Slab>
+    struct Slab : public DataStructures::DoublyLinkedListLinkImpl<Slab>
     {
-        friend class SlabCache;
-    private:
-        Slab() {}
-        ~Slab() {}
-        
         SlabCache* cache;
         Address objectStart;
         uint32_t freeIndex;     //Index to next free object in the free-array
         uint32_t inUse;
-    
-        void* AllocateOnSlab();
+        
         bool IsFull() { return this->freeIndex == SLAB_BUF_END; }
-        
-        //the free-array is directly behind this class, so increment this pointer and cast to array pointer
-        inline uint32_t* GetFreeArray() { return (uint32_t*)(this + 1); }
-    public:
-        
+        bool IsEmpty() { return inUse == 0; }
     };
+    
+    
     
     class SlabCache : public DataStructures::DoublyLinkedListLinkImpl<SlabCache>
     {
-    friend class SlabAllocator;
-    friend class SlabCacheHead;
+    //friend class SlabAllocator;
         
     protected:
         SlabCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator);
-        ~SlabCache() {}
+        virtual ~SlabCache() {}
         
         DataStructures::DoublyLinkedList<Slab> fullSlabList;
         DataStructures::DoublyLinkedList<Slab> partialSlabList;
@@ -64,23 +55,64 @@ namespace Memory
         size_t objSize;
         size_t order;
         size_t objectsPerSlab;
-        size_t objectsAllocated;
-        size_t objectsActive;
-        bool offSlab;
+        //size_t objectsAllocated;
+        //size_t objectsActive;
         
         static size_t EstimateNrObjects(size_t order, size_t objSize, size_t* nr, size_t* wastage);
         static size_t GetObjectCount(size_t* objSize, size_t align, size_t* order, size_t* left);
         
+        Slab* GetNonEmptySlab();
+        
         /* grow the cache by one slab */
-        Slab* Grow();
+        virtual Slab* Grow() = 0;
         
     public:
         /* allocate a new object in a Slab inside this SlabCache */
-        void* AllocateObject();
-        void FreeObject(void* object);
+        virtual void* AllocateObject() = 0;
+        virtual void FreeObject(void* object) = 0;
         
         inline size_t GetObjectSize() { return objSize; }
+        inline const char* GetName() const { return name; }
     };
+    
+    
+    
+    class SmallCache : public SlabCache
+    {
+    private:
+        //the free-array is directly behind the Slab class itself, so increment the pointer and cast to array pointer
+        inline uint32_t* GetFreeArray(Slab* slab) { return (uint32_t*)(slab + 1); }
+        
+    protected:
+        virtual Slab* Grow();
+        
+    public:
+        SmallCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
+            : SlabCache(Name, Align, Size, ParentAllocator)
+        { }
+        ~SmallCache() {}
+        
+        virtual void* AllocateObject();
+        virtual void FreeObject(void* object);
+    };
+    
+    
+    
+    class LargeCache : public SlabCache
+    {
+    protected:
+        virtual Slab* Grow();
+
+    public:
+        LargeCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
+            : SlabCache(Name, Align, Size, ParentAllocator)
+        { }
+        ~LargeCache() {}
+        
+        virtual void* AllocateObject();
+        virtual void FreeObject(void* object);
+    };
+    
     
     
     class SlabAllocator : public BuddyAllocatedMemoryRegion
@@ -97,6 +129,8 @@ namespace Memory
         void DestroyCache(SlabCache* cache);
     };
 }
+
+void InitializeSizeCaches(Memory::SlabAllocator* allocator);
 
 size_t static inline GetOrder(size_t size)
 {

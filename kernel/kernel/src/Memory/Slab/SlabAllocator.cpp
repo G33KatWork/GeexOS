@@ -1,16 +1,49 @@
 #include <kernel/Memory/Slab/SlabAllocator.h>
 #include <kernel/debug.h>
 #include <string.h>
+#include <stdlib.h>
 
 using namespace Memory;
 using namespace Debug;
+
+struct cacheSizes
+{
+    size_t size;
+    SlabCache* cache;
+};
+
+static struct cacheSizes cacheSizes[] ={
+    { 1 << 5, NULL },
+    { 1 << 6, NULL },
+    { 1 << 7, NULL },
+    { 1 << 8, NULL },
+    { 1 << 9, NULL },
+    { 0,      NULL }
+};
+
+void InitializeSizeCaches(SlabAllocator* allocator)
+{
+    for(int i = 0; cacheSizes[i].size; i++)
+    {
+        char cacheName[SLAB_MAX_NAMELEN] = "size-";
+        char sizeStr[10] = {0};
+        itoa(cacheSizes[i].size, sizeStr, 10);
+        strncat(cacheName, sizeStr, SLAB_MAX_NAMELEN);
+        
+        SlabCache* cache = allocator->CreateCache(cacheName, cacheSizes[i].size, 0);
+        if(!cache)
+            PANIC("SlabCache for objects with size " << dec << cacheSizes[i].size << " could not be created");
+        
+        cacheSizes[i].cache = cache;
+    }
+}
 
 SlabAllocator::SlabAllocator(Address RegionStart, size_t RegionSize)
     : BuddyAllocatedMemoryRegion(RegionStart, RegionSize, "SLAB Allocator", PAGE_SHIFT)
 {
     SLAB_DEBUG_MSG("Initializing SLAB Allocator...");
     
-    cacheHead = new SlabCache("CacheHead", SLAB_HWCACHE_ALIGN, sizeof(SlabCache), this);
+    cacheHead = new SmallCache("CacheHead", SLAB_HWCACHE_ALIGN, sizeof(SmallCache), this);
 }
 
 SlabCache::SlabCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
@@ -24,12 +57,12 @@ SlabCache::SlabCache(const char* Name, int Align, int Size, SlabAllocator* Paren
         PANIC("Unable to initialize SLAB cache " << Name);
     
     //FIMXE: objSize already with alignment?
-    offSlab = objSize > SLAB_LIMIT;
+    //offSlab = objSize > SLAB_LIMIT;
     
     strcpy(name, Name);
     allocator = ParentAllocator;
-    objectsAllocated = 0;
-    objectsActive = 0;
+    //objectsAllocated = 0;
+    //objectsActive = 0;
 }
 
 SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, size_t alignment)
@@ -49,7 +82,7 @@ SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, 
     /* check if slab with that name already exists */
     for(SlabCache* curCache = this->cacheList.Head(); curCache != NULL; curCache = this->cacheList.GetNext(curCache))
     {
-        if(!strcmp(curCache->name, cacheName))
+        if(!strcmp(curCache->GetName(), cacheName))
             return NULL;
     }
     
@@ -60,15 +93,21 @@ SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, 
         return NULL;
     }
     
+    //TODO: Handle Off-slab!
     SLAB_DEBUG_MSG("Initializing new Cache at " << hex << (Address)cacheBuffer);
-    cache = new(cacheBuffer) SlabCache(cacheName, alignment, objectSize, this);
+    cache = new(cacheBuffer) SmallCache(cacheName, alignment, objectSize, this);
     
     this->cacheList.Append(cache);
     
     return cache;
 }
 
-void* SlabCache::AllocateObject()
+void SlabAllocator::DestroyCache(SlabCache* cache)
+{
+    
+}
+
+Slab* SlabCache::GetNonEmptySlab()
 {
     Slab* slab = NULL;
     
@@ -92,23 +131,29 @@ void* SlabCache::AllocateObject()
         }
         else    //use first free slab
             slab = this->freeSlabList.Head();
-        
-        //since we are directly going to allocate stuff in the slab,
-        //remove it from free list and add it to partially used list
-        this->freeSlabList.Remove(slab);
-        this->partialSlabList.Prepend(slab);
     }
     else    //use first partial used slab
         slab = this->partialSlabList.Head();
     
-    void* allocatedObject = NULL;
+    return slab;
+}
+
+void* SmallCache::AllocateObject()
+{
+    Slab* slab = this->GetNonEmptySlab();
     
-    if(offSlab)
+    if(slab->IsEmpty())
     {
-        PANIC("Off-slab not supported yet");
+        this->freeSlabList.Remove(slab);
+        this->partialSlabList.Prepend(slab);
     }
-    else
-        allocatedObject = slab->AllocateOnSlab();
+    
+    SLAB_DEBUG_MSG("Allocating on-slab object from Slab living at " << hex << (Address)slab);
+    
+    void* allocatedObject = (void*)(slab->objectStart + slab->freeIndex * this->objSize);
+    slab->freeIndex = this->GetFreeArray(slab)[slab->freeIndex];
+    
+    slab->inUse++;
     
     if(slab->IsFull())
     {
@@ -120,62 +165,75 @@ void* SlabCache::AllocateObject()
     return allocatedObject;
 }
 
-void FreeObject(void* object)
+void SmallCache::FreeObject(void* object)
 {
+    SLAB_DEBUG_MSG("Freeing object at " << hex << (Address)object << " in SmallCache " << name);
     
-}
-
-void* Slab::AllocateOnSlab()
-{
-    SLAB_DEBUG_MSG("Allocating on-slab object from Slab living at " << hex << (Address)this);
+    //get slab belonging to object
+    Slab* slab = (Slab*)(((Address)object) & PAGEALIGN_MASK);
+    SLAB_DEBUG_MSG("Slab seems to be at " << hex << (Address)slab);
     
-    if(IsFull())
+    if(slab->IsFull())
     {
-        PANIC("Cannot allocate an object in a full Slab");
+        this->fullSlabList.Remove(slab);
+        this->partialSlabList.Prepend(slab);
     }
     
-    void* object = (void*)(objectStart + this->freeIndex * this->cache->GetObjectSize());
-    this->freeIndex = GetFreeArray()[this->freeIndex];
+    uint32_t objectIndex = (((Address)object) - slab->objectStart) / this->objSize;
+    SLAB_DEBUG_MSG("Index of object seems to be " << dec << objectIndex);
     
-    this->inUse++;
+    GetFreeArray(slab)[objectIndex] = slab->freeIndex;
+    slab->freeIndex = objectIndex;
+    slab->inUse--;
     
-    return object;
+    if(slab->IsEmpty())
+    {
+        this->partialSlabList.Remove(slab);
+        this->freeSlabList.Prepend(slab);
+    }
 }
 
-Slab* SlabCache::Grow()
+Slab* SmallCache::Grow()
 {
     SLAB_DEBUG_MSG("Growing SlabCache " << this->name << " by one Slab with order " << dec << this->order);
     
     Address newSlab = allocator->AllocateBuddy(this->order);
     
-    //TODO: Handle off-slab
-    Slab* slab = NULL;
+    SLAB_DEBUG_MSG("Initializing on-slab Slab at " << hex << newSlab);
     
-    if(offSlab)
-    {
-        PANIC("No off-slabs yet");
-    }
-    else
-    {
-        SLAB_DEBUG_MSG("Initializing on-slab Slab at " << hex << newSlab);
-        
-        slab = new((void*)newSlab) Slab();
-        SLAB_DEBUG_MSG("Slab object lives at " << hex << (Address)slab);
-        slab->inUse = 0;
-        slab->freeIndex = 0;
-        slab->cache = this;
-        slab->objectStart = (newSlab + (1 << order << PAGE_SHIFT)) - (objSize * objectsPerSlab);
-        SLAB_DEBUG_MSG("Objects in Slab start at " << hex << slab->objectStart);
-        
-        //size_t freeArraySize = this->objectsPerSlab * sizeof(uint32_t);     //Array of free slabs, each entry is one uint32_t
-        
-        for(uint32_t i = 0; i < objectsPerSlab - 1; i++)
-            slab->GetFreeArray()[i] = i+1;
-        slab->GetFreeArray()[objectsPerSlab - 1] = SLAB_BUF_END;
-    }
+    Slab* slab = new((void*)newSlab) Slab();
+    SLAB_DEBUG_MSG("Slab object lives at " << hex << (Address)slab);
+    slab->inUse = 0;
+    slab->freeIndex = 0;
+    slab->cache = this;
+    slab->objectStart = (newSlab + (1 << order << PAGE_SHIFT)) - (objSize * objectsPerSlab);
+    SLAB_DEBUG_MSG("Objects in Slab start at " << hex << slab->objectStart);
+    
+    //size_t freeArraySize = this->objectsPerSlab * sizeof(uint32_t);     //Array of free slabs, each entry is one uint32_t
+    
+    for(uint32_t i = 0; i < objectsPerSlab - 1; i++)
+        this->GetFreeArray(slab)[i] = i+1;
+    this->GetFreeArray(slab)[objectsPerSlab - 1] = SLAB_BUF_END;
     
     this->freeSlabList.Prepend(slab);
     return slab;
+}
+
+
+
+void* LargeCache::AllocateObject()
+{
+    return NULL;
+}
+
+void LargeCache::FreeObject(void* object)
+{
+    
+}
+
+Slab* LargeCache::Grow()
+{
+    return NULL;
 }
 
 

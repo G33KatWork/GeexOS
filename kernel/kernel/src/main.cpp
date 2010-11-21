@@ -211,6 +211,7 @@ int main()
     
     SlabAllocator* slaballoc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(slaballoc);
+    InitializeSizeCaches(slaballoc);
     SlabCache* testCache = slaballoc->CreateCache("Testcache", 100, SLAB_HWCACHE_ALIGN);
     MAIN_DEBUG_MSG("SlabCache is at " << hex << (Address)testCache);
     
@@ -218,6 +219,8 @@ int main()
     {
         void* alloc1 = testCache->AllocateObject();
         MAIN_DEBUG_MSG("Allocated object at " << hex << (Address)alloc1);
+        if(i % 10 == 0)
+            testCache->FreeObject(alloc1);
     }
     
     slaballoc->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
