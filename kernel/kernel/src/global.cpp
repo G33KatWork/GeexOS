@@ -57,6 +57,16 @@ void  operator delete[](void *p)
     
 }
 
+void *operator new(size_t UNUSED(size), void* buffer)
+{
+    return buffer;
+}
+
+void *operator new[](size_t UNUSED(size), void* buffer)
+{
+    return buffer;
+}
+
 void *operator new(size_t size, bool pageAllocation)
 {
     return placementAlloc.Allocate(size, pageAllocation);

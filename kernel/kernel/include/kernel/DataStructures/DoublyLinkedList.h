@@ -6,56 +6,194 @@
 
 namespace DataStructures
 {
-    struct ListItem
+    /* This is a container class which just holds the two link pointers */
+    template<typename Element>
+    class DoublyLinkedListLink
     {
-        struct ListItem *next, *previous;
+    public:
+        Element* next;
+        Element* previous;
     };
     
+    /* This class is used to implement the linked list.
+       The object which should reside in the linked list
+       has to inherit from this class. */
+    template<typename Element>
+    class DoublyLinkedListLinkImpl
+    {
+    private:
+        typedef DoublyLinkedListLink<Element> DLL_Link;
+        DLL_Link listlink;
+    
+    public:
+        DLL_Link* GetLink() { return &listlink; }
+        const DLL_Link* GetLink() const { return &listlink; }
+    };
+    
+    /* The list itself */
+    template<typename Element>
     class DoublyLinkedList
     {
     private:
-        struct ListItem listHead;
+        typedef DoublyLinkedList<Element>       List;
+        typedef DoublyLinkedListLink<Element>   Link;
         
-        static void addInternal(struct ListItem *newItem, struct ListItem *previous, struct ListItem *next)
-        {
-            next->previous = newItem;
-        	newItem->next = next;
-        	newItem->previous = previous;
-        	previous->next = newItem;
-        }
-    
+        Element* head;
+        Element* tail;
+        
     public:
-        DoublyLinkedList()
-        {
-            listHead.next = &listHead;
-            listHead.previous = &listHead;
-        }
+        DoublyLinkedList() : head(NULL), tail(NULL) {}
+        ~DoublyLinkedList() {}
         
-        ~DoublyLinkedList(){}
+        inline bool IsEmpty() const { return head == NULL; }
+        inline Element* Head() const { return head; }
+        inline Element* Tail() const { return tail; }
         
-        void AddInFront(struct ListItem* newItem)
-        {
-            addInternal(newItem, &listHead, listHead.next);
-        }
+        inline void Append(Element* newElement);
+        inline void Prepend(Element* newElement);
         
-        void AddToTail(struct ListItem* newItem)
-        {
-            addInternal(newItem, listHead.previous, &listHead);
-        }
+        inline void InsertBefore(Element* before, Element* newElement);
+        inline void InsertAfter(Element* after, Element* newElement);
         
-        void Remove(struct ListItem* toRemove)
-        {
-            toRemove->next->previous = toRemove->previous;
-            toRemove->previous->next = toRemove->next;
-            toRemove->next = NULL;
-            toRemove->previous = NULL;
-        }
+        inline void Remove(Element* element);
         
-        bool IsEmpty()
-        {
-            return listHead.next == &listHead;
-        }
+        inline Element* GetPrevious(Element* element) const;
+        inline Element* GetNext(Element* element) const;
+        
+        inline size_t ElementCount() const;
     };
+    
+    template<typename Element>
+    void DoublyLinkedList<Element>::Append(Element* newElement)
+    {
+        ASSERT(newElement != NULL, "Element to insert in list may not be NULL");
+        if(newElement == NULL)
+            return;
+            
+        Link* elementLink = newElement->GetLink();
+        elementLink->previous = this->tail;
+        elementLink->next = NULL;
+        
+        if(this->tail != NULL)
+            this->tail->GetLink()->next = newElement;
+        else
+            this->head = newElement;
+        
+        this->tail = newElement;
+    }
+    
+    template<typename Element>
+    void DoublyLinkedList<Element>::Prepend(Element* newElement)
+    {
+        ASSERT(newElement != NULL, "Element to insert in list may not be NULL");
+        if(newElement == NULL)
+            return;
+        
+        Link* elementLink = newElement->GetLink();
+        elementLink->previous = NULL;
+        elementLink->next = this->head;
+        
+        if(this->head != NULL)
+            this->head->GetLink()->previous = newElement;
+        else
+            this->tail = newElement;
+        
+        this->head = newElement;
+    }
+    
+    template<typename Element>
+    void DoublyLinkedList<Element>::InsertBefore(Element* before, Element* newElement)
+    {
+        ASSERT(newElement != NULL, "Element to insert in list may not be NULL");
+        if(newElement == NULL)
+            return;
+        
+        ASSERT(before != NULL, "Element to insert before in list may not be NULL");
+        if(before == NULL)
+            return;
+        
+        Link* linkBefore = before->GetLink();
+        Link* linkElement = newElement->GetLink();
+        
+        linkElement->next = before;
+        linkElement->previous = linkBefore->previous;
+        linkBefore->previous = newElement;
+        
+        if(linkElement->previous != NULL)
+            linkElement->previous->GetLink()->next = newElement;
+        else
+            this->head = newElement;
+    }
+    
+    template<typename Element>
+    void DoublyLinkedList<Element>::InsertAfter(Element* after, Element* newElement)
+    {
+        ASSERT(newElement != NULL, "Element to insert in list may not be NULL");
+        if(newElement == NULL)
+            return;
+        
+        ASSERT(after != NULL, "Element to insert after in list may not be NULL");
+        if(after == NULL)
+            return;
+        
+        Link* linkAfter = after->GetLink();
+        Link* linkElement = newElement->GetLink();
+        
+        linkElement->next = linkAfter->next;
+        linkElement->previous = after;
+        linkAfter->next = newElement;
+        
+        if(linkElement->next != NULL)
+            linkElement->next->GetLink()->previous = newElement;
+        else
+            this->tail = newElement;
+    }
+    
+    template<typename Element>
+    void DoublyLinkedList<Element>::Remove(Element* element)
+    {
+        if(element != NULL)
+        {
+            Link* linkElement = element->GetLink();
+            
+            if(linkElement->previous != NULL)
+                linkElement->previous->GetLink()->next = linkElement->next;
+            else
+                this->head = linkElement->next;
+            
+            if(linkElement->next != NULL)
+                linkElement->next->GetLink()->previous = linkElement->previous;
+            else
+                this->tail = linkElement->previous;
+        }
+    }
+    
+    template<typename Element>
+    Element* DoublyLinkedList<Element>::GetPrevious(Element* element) const
+    {
+        Element* result = NULL;
+            if(element != NULL)
+                result = element->GetLink()->previous;
+        return result;
+    }
+    
+    template<typename Element>
+    Element* DoublyLinkedList<Element>::GetNext(Element* element) const
+    {
+        Element* result = NULL;
+            if(element != NULL)
+                result = element->GetLink()->next;
+        return result;
+    }
+    
+    template<typename Element>
+    size_t DoublyLinkedList<Element>::ElementCount() const
+    {
+        size_t count = 0;
+        for(Element* element = Head(); element != NULL; element = GextNext(element))
+            count++;
+        return count;
+    }
 }
 
 #endif

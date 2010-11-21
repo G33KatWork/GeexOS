@@ -29,10 +29,16 @@ extern void doPanic();
 void panic_assert(const char *file, unsigned int line, const char *condition, const char *desc);
 
 //Standard heap allocation
+//First this is the placement allocator
+//and later this calls the slab allocator
 void *operator new(size_t size);
 void *operator new[](size_t size);
 void  operator delete(void *p);
 void  operator delete[](void *p);
+
+//Allocation for objects in a preallocated buffer
+void *operator new(size_t size, void* buffer);
+void *operator new[](size_t size, void* buffer);
 
 //Operators for (de-)allocating page aligned 4KB memory regions needed by Paging mechanism.
 //Be sure to deallocate this memory with the appropriate delete afterwards!

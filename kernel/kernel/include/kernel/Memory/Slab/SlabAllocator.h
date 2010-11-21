@@ -5,6 +5,7 @@
 #include <types.h>
 #include <arch/HAL.h>
 #include <kernel/Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.h>
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 #define SLAB_MAX_NAMELEN    40
 #define SLAB_HWCACHE_ALIGN  0x20    //FIXME: make processor independent
@@ -24,7 +25,7 @@ namespace Memory
     
     #define SLAB_BUF_END        (((uint32_t)(~0U))-0)
     
-    class Slab
+    class Slab : public DataStructures::DoublyLinkedListLinkImpl<Slab>
     {
         friend class SlabCache;
     private:
@@ -35,9 +36,6 @@ namespace Memory
         Address objectStart;
         uint32_t freeIndex;     //Index to next free object in the free-array
         uint32_t inUse;
-        
-        //Linked list for Slabs in SlabCache
-        Slab* Next;
     
         void* AllocateOnSlab();
         bool IsFull() { return this->freeIndex == SLAB_BUF_END; }
@@ -48,23 +46,18 @@ namespace Memory
         
     };
     
-    class SlabCache
+    class SlabCache : public DataStructures::DoublyLinkedListLinkImpl<SlabCache>
     {
     friend class SlabAllocator;
     friend class SlabCacheHead;
         
     protected:
-        SlabCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator) { this->Initialize(Name, Align, Size, ParentAllocator); }
+        SlabCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator);
         ~SlabCache() {}
         
-        void Initialize(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator);
-        
-        SlabCache* NextCache;   //pointer to next list item
-        
-        Slab* fullSlabList;
-        Slab* partialSlabList;
-        Slab* freeSlabList;
-        //SlabCache* slab_pointer;    //Pointer to management object, kept off-slab
+        DataStructures::DoublyLinkedList<Slab> fullSlabList;
+        DataStructures::DoublyLinkedList<Slab> partialSlabList;
+        DataStructures::DoublyLinkedList<Slab> freeSlabList;
         
         SlabAllocator* allocator;
         char name[SLAB_MAX_NAMELEN];
@@ -81,10 +74,6 @@ namespace Memory
         /* grow the cache by one slab */
         Slab* Grow();
         
-        /* list management */
-        void AddSlabToList(Slab** listHead, Slab* toAppend);
-        void RemoveSlabFromList(Slab** listHead, Slab* toRemove);
-        
     public:
         /* allocate a new object in a Slab inside this SlabCache */
         void* AllocateObject();
@@ -93,24 +82,12 @@ namespace Memory
         inline size_t GetObjectSize() { return objSize; }
     };
     
-    /* The mother of all SlabCaches */
-    class SlabCacheHead : public SlabCache
-    {
-    friend class SlabAllocator;
-    
-    private:
-        SlabCacheHead(SlabAllocator* ParentAllocator);
-        ~SlabCacheHead() {}
-        
-        /* to be called internally by SlabAllocator */
-        SlabCache* CreateNewCache(const char* cacheName, size_t objectSize, size_t alignment);
-    };
-    
     
     class SlabAllocator : public BuddyAllocatedMemoryRegion
     {
     private:
-        SlabCacheHead* cacheHead;
+        SlabCache* cacheHead;
+        DataStructures::DoublyLinkedList<SlabCache> cacheList;
 	
     public:
         SlabAllocator(Address RegionStart, size_t RegionSize);

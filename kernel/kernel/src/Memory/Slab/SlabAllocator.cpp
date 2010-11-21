@@ -10,14 +10,10 @@ SlabAllocator::SlabAllocator(Address RegionStart, size_t RegionSize)
 {
     SLAB_DEBUG_MSG("Initializing SLAB Allocator...");
     
-    cacheHead = new SlabCacheHead(this);
+    cacheHead = new SlabCache("CacheHead", SLAB_HWCACHE_ALIGN, sizeof(SlabCache), this);
 }
 
-SlabCacheHead::SlabCacheHead(SlabAllocator* ParentAllocator)
-    : SlabCache("CacheHead", SLAB_HWCACHE_ALIGN, sizeof(SlabCache), ParentAllocator)
-{ }
-
-void SlabCache::Initialize(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
+SlabCache::SlabCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
 {
     objSize = Size;
     int align = Align;
@@ -32,20 +28,15 @@ void SlabCache::Initialize(const char* Name, int Align, int Size, SlabAllocator*
     
     strcpy(name, Name);
     allocator = ParentAllocator;
-    NextCache = NULL;
-    fullSlabList = NULL;
-    partialSlabList = NULL;
-    freeSlabList = NULL;
     objectsAllocated = 0;
     objectsActive = 0;
 }
 
-SlabCache* SlabCacheHead::CreateNewCache(const char* cacheName, size_t objectSize, size_t alignment)
+SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, size_t alignment)
 {
-    SLAB_DEBUG_MSG("CacheHead is creating a new SLABCache " << cacheName << " with object size " << hex << objectSize << " aligned at " << alignment);
-    
     SlabCache* cache = NULL;
-    //size_t nr = 0, wastage = 0, newCacheOrder = 0, slab_size = 0;
+    
+    SLAB_DEBUG_MSG("Creating a new SLABCache " << cacheName << " with object size " << hex << objectSize << " aligned at " << alignment);
     
     /* check if name present and not too long */
     if(!cacheName || strlen(cacheName) > SLAB_MAX_NAMELEN)
@@ -56,28 +47,25 @@ SlabCache* SlabCacheHead::CreateNewCache(const char* cacheName, size_t objectSiz
         return NULL;
     
     /* check if slab with that name already exists */
-    for(SlabCache* curCache = this->NextCache; curCache != NULL; curCache = curCache->NextCache)
+    for(SlabCache* curCache = this->cacheList.Head(); curCache != NULL; curCache = this->cacheList.GetNext(curCache))
     {
         if(!strcmp(curCache->name, cacheName))
             return NULL;
     }
     
-    /* calculate object count */
-    //nr = SlabCache::GetObjectCount(&objectSize, alignment, &newCacheOrder, &wastage);
-    //if(!nr || newCacheOrder > SLAB_MAXORDER)
-    //    return NULL;
+    void* cacheBuffer = cacheHead->AllocateObject();
+    if(cacheBuffer == NULL)
+    {
+        SLAB_DEBUG_MSG("Error creating new SlabCache " << cacheName);
+        return NULL;
+    }
     
-    /* Allocate a new cache as an object in us (the cache head) */
-    cache = (SlabCache*)AllocateObject();
-    SLAB_DEBUG_MSG("Initializing new Cache at " << hex << (Address)cache);
-    cache->Initialize(cacheName, alignment, objectSize, this->allocator);
+    SLAB_DEBUG_MSG("Initializing new Cache at " << hex << (Address)cacheBuffer);
+    cache = new(cacheBuffer) SlabCache(cacheName, alignment, objectSize, this);
+    
+    this->cacheList.Append(cache);
     
     return cache;
-}
-
-SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, size_t alignment)
-{
-    return cacheHead->CreateNewCache(cacheName, objectSize, alignment);
 }
 
 void* SlabCache::AllocateObject()
@@ -85,12 +73,12 @@ void* SlabCache::AllocateObject()
     Slab* slab = NULL;
     
     /* partially used slabs available? */
-    if(this->partialSlabList == NULL)
+    if(this->partialSlabList.IsEmpty())
     {
         SLAB_DEBUG_MSG("No more partial free Slabs in SlabCache " << this->name);
         
         //free slabs available?
-        if(this->freeSlabList == NULL)
+        if(this->freeSlabList.IsEmpty())
         {
             SLAB_DEBUG_MSG("No more free Slabs in SlabCache " << this->name << ". Need to grow");
             
@@ -101,17 +89,17 @@ void* SlabCache::AllocateObject()
                 SLAB_DEBUG_MSG("Error while growing SlabCache " << this->name);
                 return NULL;
             }
-            
-            //since we are directly going to allocate stuff in the slab,
-            //remove it from free list and add it to partially used list
-            RemoveSlabFromList(&this->freeSlabList, slab);
-            AddSlabToList(&this->partialSlabList, slab);
         }
         else    //use first free slab
-            slab = this->freeSlabList;
+            slab = this->freeSlabList.Head();
+        
+        //since we are directly going to allocate stuff in the slab,
+        //remove it from free list and add it to partially used list
+        this->freeSlabList.Remove(slab);
+        this->partialSlabList.Prepend(slab);
     }
     else    //use first partial used slab
-        slab = this->partialSlabList;
+        slab = this->partialSlabList.Head();
     
     void* allocatedObject = NULL;
     
@@ -124,8 +112,9 @@ void* SlabCache::AllocateObject()
     
     if(slab->IsFull())
     {
-        RemoveSlabFromList(&this->partialSlabList, slab);
-        AddSlabToList(&this->fullSlabList, slab);
+        SLAB_DEBUG_MSG("Slab is now full, moving into full-list");
+        this->partialSlabList.Remove(slab);
+        this->fullSlabList.Prepend(slab);
     }
     
     return allocatedObject;
@@ -170,7 +159,7 @@ Slab* SlabCache::Grow()
     {
         SLAB_DEBUG_MSG("Initializing on-slab Slab at " << hex << newSlab);
         
-        slab = (Slab*)newSlab;
+        slab = new((void*)newSlab) Slab();
         SLAB_DEBUG_MSG("Slab object lives at " << hex << (Address)slab);
         slab->inUse = 0;
         slab->freeIndex = 0;
@@ -185,39 +174,9 @@ Slab* SlabCache::Grow()
         slab->GetFreeArray()[objectsPerSlab - 1] = SLAB_BUF_END;
     }
     
-    AddSlabToList(&this->freeSlabList, slab);
+    this->freeSlabList.Prepend(slab);
     return slab;
 }
-
-void SlabCache::AddSlabToList(Slab** listHead, Slab* toAppend)
-{
-   SLAB_DEBUG_MSG("Adding SLAB to Cache " << this->name);
-   toAppend->Next = *listHead;
-   *listHead = toAppend;
-}
-
-void SlabCache::RemoveSlabFromList(Slab** listHead, Slab* toRemove)
-{
-   SLAB_DEBUG_MSG("Removing SLAB from Cache " << this->name);
-   
-   if(*listHead == toRemove)
-   {
-       *listHead = NULL;
-       return;
-   }
-   
-   for(Slab* curSlab = *listHead; curSlab->Next != NULL; curSlab = curSlab->Next)
-   {
-       if(curSlab->Next != NULL && curSlab->Next == toRemove)
-       {
-           curSlab->Next = curSlab->Next->Next;
-           return;
-       }
-   }
-   
-   SLAB_DEBUG_MSG("Slab to remove not found in list");
-}
-
 
 
 
