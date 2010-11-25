@@ -12,7 +12,10 @@
 //undef, if not wanted
 #define EN_DEBUG_MSG_MAIN
 // #define EN_HAL_DEBUG_MSG
-#define EN_SLAB_DEBUG_MSG
+#define EN_SLAB_ALLOCATOR_DEBUG_MSG
+#define EN_SLAB_CACHE_DEBUG_MSG
+#define EN_SLAB_LARGE_DEBUG_MSG
+#define EN_SLAB_SMALL_DEBUG_MSG
 // #define EN_HAL_ACPI_DEBUG_MSG
 // #define EN_IO_MEMORY_MANAGER_DEBUG_MSG
 // #define EN_SCHEDULER_DEBUG_MSG
@@ -57,10 +60,28 @@
     #define HAL_DEBUG_MSG(x)
 #endif
 
-#ifdef EN_SLAB_DEBUG_MSG
-    #define SLAB_DEBUG_MSG(x)                    DEBUG_MSG("SLAB: "x)
+#ifdef EN_SLAB_ALLOCATOR_DEBUG_MSG
+    #define SLAB_ALLOCATOR_DEBUG_MSG(x)         DEBUG_MSG("SLAB ALLOC: "x)
 #else
-    #define SLAB_DEBUG_MSG(x)
+    #define SLAB_ALLOCATOR_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_SLAB_CACHE_DEBUG_MSG
+    #define SLAB_CACHE_DEBUG_MSG(x)             DEBUG_MSG("SLAB CACHE: "x)
+#else
+    #define SLAB_CACHE_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_SLAB_LARGE_DEBUG_MSG
+    #define SLAB_LARGE_DEBUG_MSG(x)             DEBUG_MSG("LARGE CACHE: "x)
+#else
+    #define SLAB_LARGE_DEBUG_MSG(x)
+#endif
+
+#ifdef EN_SLAB_SMALL_DEBUG_MSG
+    #define SLAB_SMALL_DEBUG_MSG(x)             DEBUG_MSG("SMALL CACHE: "x)
+#else
+    #define SLAB_SMALL_DEBUG_MSG(x)
 #endif
 
 #ifdef EN_HAL_ACPI_DEBUG_MSG

@@ -37,7 +37,7 @@ namespace Memory
                     size_t retKey = LowerBoundary(key, 1 << PAGE_SHIFT << parent->GetOrder());
                     retKey = retKey >> parent->order >> PAGE_SHIFT;
                     
-                    SLAB_DEBUG_MSG("HashTable calculated key: " << Debug::hex << retKey << " from " << key);
+                    SLAB_LARGE_DEBUG_MSG("HashTable calculated key: " << Debug::hex << retKey << " from " << key);
                     return retKey;
                 }
                 size_t Hash(HashedSlab* value) const { return HashKey(value->objectStart); }
@@ -49,8 +49,8 @@ namespace Memory
         
             struct SlabHashTableAllocator
             {
-                void* Allocate(size_t size) { SLAB_DEBUG_MSG("Allocating for HashTable: " << Debug::dec << size); return AllocateFromSizeSlabs(size); }
-                void Free(void* address) { SLAB_DEBUG_MSG("Deallocating for HashTable: " << Debug::dec << (Address)address); return FreeFromSizeSlabs(address); }
+                void* Allocate(size_t size) { SLAB_LARGE_DEBUG_MSG("Allocating for HashTable: " << Debug::dec << size); return AllocateFromSizeSlabs(size); }
+                void Free(void* address) { SLAB_LARGE_DEBUG_MSG("Deallocating for HashTable: " << Debug::dec << (Address)address); return FreeFromSizeSlabs(address); }
             };
         
             typedef DataStructures::BHashTable<HashTableDefinition, false, false, SlabHashTableAllocator>   HashTable;

@@ -42,7 +42,7 @@ void Memory::Slab::InitializeSizeCaches(SlabAllocator* allocator)
 
 void* Memory::Slab::AllocateFromSizeSlabs(size_t size)
 {
-    SLAB_DEBUG_MSG("Allocating object from size caches for object size " << dec << size);
+    SLAB_ALLOCATOR_DEBUG_MSG("Allocating object from size caches for object size " << dec << size);
     
     //Need to save a pointer to the SlabCache for freeing later
     //FIXME: Is this hacky?
@@ -78,7 +78,7 @@ void Memory::Slab::FreeFromSizeSlabs(void* address)
 SlabAllocator::SlabAllocator(Address RegionStart, size_t RegionSize)
     : BuddyAllocatedMemoryRegion(RegionStart, RegionSize, "SLAB Allocator", PAGE_SHIFT)
 {
-    SLAB_DEBUG_MSG("Initializing SLAB Allocator...");
+    SLAB_ALLOCATOR_DEBUG_MSG("Initializing SLAB Allocator...");
     
     cacheHead = new SmallCache("CacheHead", SLAB_HWCACHE_ALIGN, sizeof(SmallCache), this);
 }
@@ -87,7 +87,7 @@ SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, 
 {
     SlabCache* cache = NULL;
     
-    SLAB_DEBUG_MSG("Creating a new SLABCache " << cacheName << " with object size " << hex << objectSize << " aligned at " << alignment);
+    SLAB_ALLOCATOR_DEBUG_MSG("Creating a new SLABCache " << cacheName << " with object size " << hex << objectSize << " aligned at " << alignment);
     
     /* check if name present and not too long */
     if(!cacheName || strlen(cacheName) > SLAB_MAX_NAMELEN)
@@ -111,11 +111,11 @@ SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, 
         void* largeCacheBuffer = AllocateFromSizeSlabs(sizeof(LargeCache));
         if(largeCacheBuffer == NULL)
         {
-            SLAB_DEBUG_MSG("Error creating new LarheSlabCache " << cacheName);
+            SLAB_ALLOCATOR_DEBUG_MSG("Error creating new LarheSlabCache " << cacheName);
             return NULL;
         }
         
-        SLAB_DEBUG_MSG("Initializing new LargeCache at " << hex << (Address)largeCacheBuffer);
+        SLAB_ALLOCATOR_DEBUG_MSG("Initializing new LargeCache at " << hex << (Address)largeCacheBuffer);
         cache = new(largeCacheBuffer) LargeCache(cacheName, alignment, objectSize, this);
         
         this->cacheList.Append(cache);
@@ -125,11 +125,11 @@ SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, 
         void* cacheBuffer = cacheHead->AllocateObject();
         if(cacheBuffer == NULL)
         {
-            SLAB_DEBUG_MSG("Error creating new SmallSlabCache " << cacheName);
+            SLAB_ALLOCATOR_DEBUG_MSG("Error creating new SmallSlabCache " << cacheName);
             return NULL;
         }
         
-        SLAB_DEBUG_MSG("Initializing new SmallCache at " << hex << (Address)cacheBuffer);
+        SLAB_ALLOCATOR_DEBUG_MSG("Initializing new SmallCache at " << hex << (Address)cacheBuffer);
         cache = new(cacheBuffer) SmallCache(cacheName, alignment, objectSize, this);
 
         this->cacheList.Append(cache);

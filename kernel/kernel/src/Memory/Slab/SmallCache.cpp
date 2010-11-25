@@ -17,7 +17,7 @@ void* SmallCache::AllocateObject()
         this->partialSlabList.Prepend(slab);
     }
     
-    SLAB_DEBUG_MSG("Allocating on-slab object from Slab living at " << hex << (Address)slab);
+    SLAB_SMALL_DEBUG_MSG("Allocating on-slab object from Slab living at " << hex << (Address)slab);
     
     void* allocatedObject = (void*)(slab->objectStart + slab->freeIndex * this->objSize);
     slab->freeIndex = this->GetFreeArray(slab)[slab->freeIndex];
@@ -26,7 +26,7 @@ void* SmallCache::AllocateObject()
     
     if(slab->IsFull())
     {
-        SLAB_DEBUG_MSG("Slab is now full, moving into full-list");
+        SLAB_SMALL_DEBUG_MSG("Slab is now full, moving into full-list");
         this->partialSlabList.Remove(slab);
         this->fullSlabList.Prepend(slab);
     }
@@ -36,11 +36,11 @@ void* SmallCache::AllocateObject()
 
 void SmallCache::FreeObject(void* object)
 {
-    SLAB_DEBUG_MSG("Freeing object at " << hex << (Address)object << " in SmallCache " << name);
+    SLAB_SMALL_DEBUG_MSG("Freeing object at " << hex << (Address)object << " in SmallCache " << name);
     
     //get slab belonging to object
     Slab* slab = (Slab*)(((Address)object) & PAGEALIGN_MASK);
-    SLAB_DEBUG_MSG("Slab seems to be at " << hex << (Address)slab);
+    SLAB_SMALL_DEBUG_MSG("Slab seems to be at " << hex << (Address)slab);
     
     if(slab->IsFull())
     {
@@ -49,7 +49,7 @@ void SmallCache::FreeObject(void* object)
     }
     
     uint32_t objectIndex = (((Address)object) - slab->objectStart) / this->objSize;
-    SLAB_DEBUG_MSG("Index of object seems to be " << dec << objectIndex);
+    SLAB_SMALL_DEBUG_MSG("Index of object seems to be " << dec << objectIndex);
     
     GetFreeArray(slab)[objectIndex] = slab->freeIndex;
     slab->freeIndex = objectIndex;
@@ -64,19 +64,19 @@ void SmallCache::FreeObject(void* object)
 
 Slab* SmallCache::Grow()
 {
-    SLAB_DEBUG_MSG("Growing SmallCache " << this->name << " by one Slab with order " << dec << this->order);
+    SLAB_SMALL_DEBUG_MSG("Growing SmallCache " << this->name << " by one Slab with order " << dec << this->order);
     
     Address newSlab = allocator->AllocateBuddy(this->order);
     
-    SLAB_DEBUG_MSG("Initializing on-slab Slab at " << hex << newSlab);
+    SLAB_SMALL_DEBUG_MSG("Initializing on-slab Slab at " << hex << newSlab);
     
     Slab* slab = new((void*)newSlab) Slab();
-    SLAB_DEBUG_MSG("Slab object lives at " << hex << (Address)slab);
+    SLAB_SMALL_DEBUG_MSG("Slab object lives at " << hex << (Address)slab);
     slab->inUse = 0;
     slab->freeIndex = 0;
     slab->cache = this;
     slab->objectStart = (newSlab + (1 << order << PAGE_SHIFT)) - (objSize * objectsPerSlab);
-    SLAB_DEBUG_MSG("Objects in Slab start at " << hex << slab->objectStart);
+    SLAB_SMALL_DEBUG_MSG("Objects in Slab start at " << hex << slab->objectStart);
     
     for(uint32_t i = 0; i < objectsPerSlab - 1; i++)
         this->GetFreeArray(slab)[i] = i+1;
