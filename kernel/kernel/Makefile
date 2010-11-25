@@ -29,6 +29,9 @@ CXXSOURCES = main.cpp \
 			 Memory/Virtual/Regions/KernelStackMemoryRegion.cpp \
 			 Memory/Virtual/Regions/KernelThreadStackRegion.cpp \
 			 Memory/Slab/SlabAllocator.cpp \
+			 Memory/Slab/LargeCache.cpp \
+			 Memory/Slab/SmallCache.cpp \
+			 Memory/Slab/SlabCache.cpp \
              DataStructures/Bitfield.cpp \
  			 Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.cpp
 #			 Memory/Slab/SlabManager.cpp

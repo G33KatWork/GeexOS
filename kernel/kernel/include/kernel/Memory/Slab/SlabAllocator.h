@@ -3,134 +3,33 @@
 
 #include <arch/types.h>
 #include <types.h>
-#include <arch/HAL.h>
 #include <kernel/Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.h>
+#include <kernel/Memory/Slab/SlabCache.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
-
-#define SLAB_MAX_NAMELEN    40
-#define SLAB_HWCACHE_ALIGN  0x20    //FIXME: make processor independent
-#define SLAB_MAXORDER       5
-#define SLAB_LIMIT          (PAGE_SIZE >> 3)    //if objects are bigger than 1/8th of a page size, they are off-slab
-
-//FIXME: Get a proper place for this helper macro
-#define ALIGN_TO_VAL(val, boundary) (( (val) + (boundary) - 1 ) & ~((boundary) - 1))
-#define SMP_CACHE_BYTES 0x20
-#define SMP_CACHE_ALIGN SMP_CACHE_BYTES
-#define L1_CACHE_ALIGN(val)  ( ( (val) + SMP_CACHE_ALIGN - 1) & ~(SMP_CACHE_ALIGN -1 ) )
 
 namespace Memory
 {
-    class SlabAllocator;
-    class SlabCache;
-    
-    #define SLAB_BUF_END        (((uint32_t)(~0U))-0)
-    
-    struct Slab : public DataStructures::DoublyLinkedListLinkImpl<Slab>
+    namespace Slab
     {
-        SlabCache* cache;
-        Address objectStart;
-        uint32_t freeIndex;     //Index to next free object in the free-array
-        uint32_t inUse;
-        
-        bool IsFull() { return this->freeIndex == SLAB_BUF_END; }
-        bool IsEmpty() { return inUse == 0; }
-    };
-    
-    
-    
-    class SlabCache : public DataStructures::DoublyLinkedListLinkImpl<SlabCache>
-    {
-    //friend class SlabAllocator;
-        
-    protected:
-        SlabCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator);
-        virtual ~SlabCache() {}
-        
-        DataStructures::DoublyLinkedList<Slab> fullSlabList;
-        DataStructures::DoublyLinkedList<Slab> partialSlabList;
-        DataStructures::DoublyLinkedList<Slab> freeSlabList;
-        
-        SlabAllocator* allocator;
-        char name[SLAB_MAX_NAMELEN];
-        size_t objSize;
-        size_t order;
-        size_t objectsPerSlab;
-        //size_t objectsAllocated;
-        //size_t objectsActive;
-        
-        static size_t EstimateNrObjects(size_t order, size_t objSize, size_t* nr, size_t* wastage);
-        static size_t GetObjectCount(size_t* objSize, size_t align, size_t* order, size_t* left);
-        
-        Slab* GetNonEmptySlab();
-        
-        /* grow the cache by one slab */
-        virtual Slab* Grow() = 0;
-        
-    public:
-        /* allocate a new object in a Slab inside this SlabCache */
-        virtual void* AllocateObject() = 0;
-        virtual void FreeObject(void* object) = 0;
-        
-        inline size_t GetObjectSize() { return objSize; }
-        inline const char* GetName() const { return name; }
-    };
-    
-    
-    
-    class SmallCache : public SlabCache
-    {
-    private:
-        //the free-array is directly behind the Slab class itself, so increment the pointer and cast to array pointer
-        inline uint32_t* GetFreeArray(Slab* slab) { return (uint32_t*)(slab + 1); }
-        
-    protected:
-        virtual Slab* Grow();
-        
-    public:
-        SmallCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
-            : SlabCache(Name, Align, Size, ParentAllocator)
-        { }
-        ~SmallCache() {}
-        
-        virtual void* AllocateObject();
-        virtual void FreeObject(void* object);
-    };
-    
-    
-    
-    class LargeCache : public SlabCache
-    {
-    protected:
-        virtual Slab* Grow();
-
-    public:
-        LargeCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
-            : SlabCache(Name, Align, Size, ParentAllocator)
-        { }
-        ~LargeCache() {}
-        
-        virtual void* AllocateObject();
-        virtual void FreeObject(void* object);
-    };
-    
-    
-    
-    class SlabAllocator : public BuddyAllocatedMemoryRegion
-    {
-    private:
-        SlabCache* cacheHead;
-        DataStructures::DoublyLinkedList<SlabCache> cacheList;
+        class SlabAllocator : public BuddyAllocatedMemoryRegion
+        {
+        private:
+            SlabCache* cacheHead;
+            DataStructures::DoublyLinkedList<SlabCache> cacheList;
 	
-    public:
-        SlabAllocator(Address RegionStart, size_t RegionSize);
-        ~SlabAllocator() {}
+        public:
+            SlabAllocator(Address RegionStart, size_t RegionSize);
+            ~SlabAllocator() {}
         
-        SlabCache* CreateCache(const char* cacheName, size_t objectSize, size_t alignment);
-        void DestroyCache(SlabCache* cache);
-    };
+            SlabCache* CreateCache(const char* cacheName, size_t objectSize, size_t alignment);
+            void DestroyCache(SlabCache* cache);
+        };
+        
+        void* AllocateFromSizeSlabs(size_t size);
+        void FreeFromSizeSlabs(void* address);
+        void InitializeSizeCaches(SlabAllocator* allocator);
+    }
 }
-
-void InitializeSizeCaches(Memory::SlabAllocator* allocator);
 
 size_t static inline GetOrder(size_t size)
 {

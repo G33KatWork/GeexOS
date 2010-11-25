@@ -28,6 +28,7 @@ using namespace Kernel;
 using namespace Memory;
 using namespace Processes;
 using namespace Time;
+using namespace Memory::Slab;
 
 void syncMemregionsWithPaging(void);
 
@@ -212,7 +213,7 @@ int main()
     SlabAllocator* slaballoc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(slaballoc);
     InitializeSizeCaches(slaballoc);
-    SlabCache* testCache = slaballoc->CreateCache("Testcache", 100, SLAB_HWCACHE_ALIGN);
+    /*SlabCache* testCache = slaballoc->CreateCache("Testcache", 100, SLAB_HWCACHE_ALIGN);
     MAIN_DEBUG_MSG("SlabCache is at " << hex << (Address)testCache);
     
     for(int i = 0; i < 40; i++)
@@ -222,6 +223,16 @@ int main()
         if(i % 10 == 0)
             testCache->FreeObject(alloc1);
     }
+    
+    void* sizeObject = AllocateFromSizeSlabs(28);
+    MAIN_DEBUG_MSG("size object is at " << hex << (Address)sizeObject);
+    void* sizeObject2 = AllocateFromSizeSlabs(29);
+    MAIN_DEBUG_MSG("size object 2 is at " << hex << (Address)sizeObject2);*/
+    
+    SlabCache* largeCache = slaballoc->CreateCache("Large Testcache", 0x201, 0);
+    MAIN_DEBUG_MSG("Large SlabCache is at " << hex << (Address)largeCache);
+    void* largealloc1 = largeCache->AllocateObject();
+    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc1);
     
     slaballoc->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
         

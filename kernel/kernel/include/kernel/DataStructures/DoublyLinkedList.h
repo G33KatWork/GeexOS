@@ -4,6 +4,9 @@
 #include <types.h>
 #include <kernel/global.h>
 
+//TODO: Implement iterators
+// Iterator with methods: HashNext(), Next() and Rewind()
+
 namespace DataStructures
 {
     /* This is a container class which just holds the two link pointers */
@@ -39,15 +42,15 @@ namespace DataStructures
         typedef DoublyLinkedListLink<Element>   Link;
         
         Element* head;
-        Element* tail;
+        Element* end;
         
     public:
-        DoublyLinkedList() : head(NULL), tail(NULL) {}
+        DoublyLinkedList() : head(NULL), end(NULL) {}
         ~DoublyLinkedList() {}
         
         inline bool IsEmpty() const { return head == NULL; }
         inline Element* Head() const { return head; }
-        inline Element* Tail() const { return tail; }
+        inline Element* End() const { return end; }
         
         inline void Append(Element* newElement);
         inline void Prepend(Element* newElement);
@@ -71,15 +74,15 @@ namespace DataStructures
             return;
             
         Link* elementLink = newElement->GetLink();
-        elementLink->previous = this->tail;
+        elementLink->previous = this->end;
         elementLink->next = NULL;
         
-        if(this->tail != NULL)
-            this->tail->GetLink()->next = newElement;
+        if(this->end != NULL)
+            this->end->GetLink()->next = newElement;
         else
             this->head = newElement;
         
-        this->tail = newElement;
+        this->end = newElement;
     }
     
     template<typename Element>
@@ -96,7 +99,7 @@ namespace DataStructures
         if(this->head != NULL)
             this->head->GetLink()->previous = newElement;
         else
-            this->tail = newElement;
+            this->end = newElement;
         
         this->head = newElement;
     }
@@ -146,7 +149,7 @@ namespace DataStructures
         if(linkElement->next != NULL)
             linkElement->next->GetLink()->previous = newElement;
         else
-            this->tail = newElement;
+            this->end = newElement;
     }
     
     template<typename Element>
@@ -164,7 +167,7 @@ namespace DataStructures
             if(linkElement->next != NULL)
                 linkElement->next->GetLink()->previous = linkElement->previous;
             else
-                this->tail = linkElement->previous;
+                this->end = linkElement->previous;
         }
     }
     

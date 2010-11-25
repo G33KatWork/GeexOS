@@ -2,6 +2,8 @@
 #include <string.h>
 #include <kernel/global.h>
 
+//FIXME: Use shift and AND operations here -> faster
+//Perhaps compiler does this already?
 #define INDEX_FROM_BIT(a) (a/(8*4))
 #define OFFSET_FROM_BIT(a) (a%(8*4))
 
