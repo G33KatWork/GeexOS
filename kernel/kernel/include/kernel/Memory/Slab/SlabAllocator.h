@@ -23,6 +23,8 @@ namespace Memory
         
             SlabCache* CreateCache(const char* cacheName, size_t objectSize, size_t alignment);
             void DestroyCache(SlabCache* cache);
+            
+            void FreeUnusedMemory();
         };
         
         void* AllocateFromSizeSlabs(size_t size);

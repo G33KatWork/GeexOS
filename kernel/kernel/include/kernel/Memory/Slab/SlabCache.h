@@ -13,10 +13,11 @@ namespace Memory
         class SlabAllocator;
         
         class SlabCache : public DataStructures::DoublyLinkedListLinkImpl<SlabCache>
-        {        
+        {   
+        friend class SlabAllocator;
+            
         protected:
             SlabCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator);
-            virtual ~SlabCache() {}
         
             DataStructures::DoublyLinkedList<Slab> fullSlabList;
             DataStructures::DoublyLinkedList<Slab> partialSlabList;
@@ -37,12 +38,26 @@ namespace Memory
         
             /* grow the cache by one slab */
             virtual Slab* Grow() = 0;
-        
+            
+            /* destroys the cache. to be fully implemented by child classes */
+            /* this should also free the SlabCache instance itself. all contained objects are invalid afterwards */
+            virtual void Destroy();
+            
         public:
+            
             /* allocate a new object in a Slab inside this SlabCache */
             virtual void* AllocateObject() = 0;
+            
+            /* free an object in a Slab inside this SlabCache */
             virtual void FreeObject(void* object) = 0;
-        
+            
+            /* release a given Slab back to the buddy allocator */
+            /* it does not remove the Slab from any list inside this cache! */
+            virtual void ReleaseSlab(Slab* slab) = 0;
+            
+            /* releases all Slabs in the freelist to the buddy allocator */
+            void ReleaseUnusedMemory();
+            
             inline size_t GetObjectSize() { return objSize; }
             inline size_t GetOrder() { return order; }
             inline const char* GetName() const { return name; }

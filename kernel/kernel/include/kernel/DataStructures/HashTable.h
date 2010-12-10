@@ -67,7 +67,7 @@ namespace DataStructures
             if(curTableSize == 0)
                 return NULL;
             
-            size_t index = definition.HashKey(key) & curTableSize - 1;
+            size_t index = definition.HashKey(key) & (curTableSize - 1);
             ValueType* slot = storage[index];
             
             while(slot)

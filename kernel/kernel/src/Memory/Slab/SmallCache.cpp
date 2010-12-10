@@ -11,6 +11,8 @@ void* SmallCache::AllocateObject()
 {
     Slab* slab = this->GetNonEmptySlab();
     
+    ASSERT(slab->magic_valid == SLAB_MAGIC_VALID, "Slabs magic value doesn't indicate it's valid");
+    
     if(slab->IsEmpty())
     {
         this->freeSlabList.Remove(slab);
@@ -42,6 +44,8 @@ void SmallCache::FreeObject(void* object)
     Slab* slab = (Slab*)(((Address)object) & PAGEALIGN_MASK);
     SLAB_SMALL_DEBUG_MSG("Slab seems to be at " << hex << (Address)slab);
     
+    ASSERT(slab->magic_valid == SLAB_MAGIC_VALID, "Slabs magic value doesn't indicate it's valid");
+    
     if(slab->IsFull())
     {
         this->fullSlabList.Remove(slab);
@@ -62,6 +66,16 @@ void SmallCache::FreeObject(void* object)
     }
 }
 
+void SmallCache::ReleaseSlab(Slab* slab)
+{
+    SLAB_SMALL_DEBUG_MSG("Releasing Slab at " << hex <<(Address)slab << " from " << this->name);
+    
+    ASSERT(slab->magic_valid == SLAB_MAGIC_VALID, "Slabs magic value doesn't indicate it's valid");
+    slab->magic_valid = 0x0;
+    
+    this->allocator->FreeBuddy((Address)slab, this->order);
+}
+
 Slab* SmallCache::Grow()
 {
     SLAB_SMALL_DEBUG_MSG("Growing SmallCache " << this->name << " by one Slab with order " << dec << this->order);
@@ -75,6 +89,7 @@ Slab* SmallCache::Grow()
     slab->inUse = 0;
     slab->freeIndex = 0;
     slab->cache = this;
+    slab->magic_valid = SLAB_MAGIC_VALID;
     slab->objectStart = (newSlab + (1 << order << PAGE_SHIFT)) - (objSize * objectsPerSlab);
     SLAB_SMALL_DEBUG_MSG("Objects in Slab start at " << hex << slab->objectStart);
     

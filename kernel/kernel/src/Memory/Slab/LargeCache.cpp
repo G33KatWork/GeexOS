@@ -6,9 +6,19 @@
 using namespace Memory::Slab;
 using namespace Debug;
 
+void LargeCache::Destroy()
+{
+    SlabCache::Destroy();
+    
+    SLAB_LARGE_DEBUG_MSG("Destroying Hashtable");
+    hashTable.~BHashTable();
+}
+
 void* LargeCache::AllocateObject()
 {
     HashedSlab* slab = (HashedSlab*)this->GetNonEmptySlab();
+    
+    ASSERT(slab->magic_valid == SLAB_MAGIC_VALID, "Slabs magic value doesn't indicate it's valid");
     
     if(slab->IsEmpty())
     {
@@ -35,7 +45,37 @@ void* LargeCache::AllocateObject()
 
 void LargeCache::FreeObject(void* object)
 {
+    SLAB_LARGE_DEBUG_MSG("Freeing object at " << hex << (Address)object << " in LargeCache " << name);
     
+    //get slab belonging to object
+    HashedSlab* slab = hashTable.Lookup(LowerBoundary((Address)object, 1 << PAGE_SHIFT << this->order));
+    SLAB_SMALL_DEBUG_MSG("Slab seems to be at " << hex << (Address)slab);
+    
+    ASSERT(slab->magic_valid == SLAB_MAGIC_VALID, "Slabs magic value doesn't indicate it's valid");
+    
+    if(!slab)
+        PANIC("Trying to free object which doesn't belong to this LargeCache with name " << name);
+    
+    if(slab->IsFull())
+    {
+        this->fullSlabList.Remove(slab);
+        this->partialSlabList.Prepend(slab);
+    }
+    
+    uint32_t objectIndex = (((Address)object) - slab->objectStart) / this->objSize;
+    SLAB_LARGE_DEBUG_MSG("Index of object seems to be " << dec << objectIndex);
+    
+    GetFreeArray(slab)[objectIndex] = slab->freeIndex;
+    slab->freeIndex = objectIndex;
+    slab->inUse--;
+    
+    if(slab->IsEmpty())
+    {
+        this->partialSlabList.Remove(slab);
+        this->freeSlabList.Prepend(slab);
+    }
+    
+    ResizeHashTableIfNeeded();
 }
 
 Slab* LargeCache::Grow()
@@ -51,6 +91,7 @@ Slab* LargeCache::Grow()
     slab->inUse = 0;
     slab->freeIndex = 0;
     slab->cache = this;
+    slab->magic_valid = SLAB_MAGIC_VALID;
     slab->objectStart = allocator->AllocateBuddy(this->order);
     slab->freeArray = (uint32_t*)AllocateFromSizeSlabs(objectsPerSlab * sizeof(uint32_t));
     SLAB_LARGE_DEBUG_MSG("Objects in Slab start at " << hex << slab->objectStart);
@@ -66,6 +107,20 @@ Slab* LargeCache::Grow()
     ResizeHashTableIfNeeded();
     
     return slab;
+}
+
+void LargeCache::ReleaseSlab(Slab* slab)
+{
+    SLAB_LARGE_DEBUG_MSG("Releasing HashedSlab at " << hex <<(Address)slab << " from " << this->name);
+    
+    ASSERT(slab->magic_valid == SLAB_MAGIC_VALID, "Slabs magic value doesn't indicate it's valid");
+    slab->magic_valid = 0x0;
+    
+    this->hashTable.Remove((HashedSlab*)slab);
+    FreeFromSizeSlabs(((HashedSlab*)slab)->freeArray);
+    this->allocator->FreeBuddy(slab->objectStart, this->order);
+    
+    this->ResizeHashTableIfNeeded();
 }
 
 void LargeCache::ResizeHashTableIfNeeded()

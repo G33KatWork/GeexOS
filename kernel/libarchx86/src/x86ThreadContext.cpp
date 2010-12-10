@@ -20,6 +20,7 @@ void x86ThreadContext::initializeForKernelmode(Address InitialIP, Address Initia
     threadInfo.gs = GDT_KERNEL_DATA;
     threadInfo.ss = GDT_KERNEL_DATA;
     
+    //FIXME: Don't read eflags, but set them here with kernelmode and enabled interrupts
     threadInfo.eflags = readEflags();
     
     SetPageDirectory(PageDirectory);

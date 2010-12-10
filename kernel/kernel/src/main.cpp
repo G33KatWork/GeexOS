@@ -233,6 +233,31 @@ int main()
     MAIN_DEBUG_MSG("Large SlabCache is at " << hex << (Address)largeCache);
     void* largealloc1 = largeCache->AllocateObject();
     MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc1);
+    void* largealloc2 = largeCache->AllocateObject();
+    MAIN_DEBUG_MSG("3arge allocated object at " << hex << (Address)largealloc2);
+    void* largealloc3 = largeCache->AllocateObject();
+    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc3);
+    void* largealloc4 = largeCache->AllocateObject();
+    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc4);
+    void* largealloc5 = largeCache->AllocateObject();
+    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc5);
+    void* largealloc6 = largeCache->AllocateObject();
+    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc6);
+    void* largealloc7 = largeCache->AllocateObject();
+    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc7);
+    void* largealloc8 = largeCache->AllocateObject();
+    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc8);
+    largeCache->FreeObject(largealloc2);
+    largeCache->FreeObject(largealloc1);
+    largeCache->FreeObject(largealloc3);
+    largeCache->FreeObject(largealloc7);
+    largeCache->FreeObject(largealloc4);
+    largeCache->FreeObject(largealloc5);
+    largeCache->FreeObject(largealloc6);
+    largeCache->FreeObject(largealloc8);
+    slaballoc->DestroyCache(largeCache);
+    
+    slaballoc->FreeUnusedMemory();
     
     slaballoc->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
         

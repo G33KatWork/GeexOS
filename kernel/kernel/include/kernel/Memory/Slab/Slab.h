@@ -13,6 +13,8 @@
 //End marker of free-list
 #define SLAB_BUF_END        (((uint32_t)(~0U))-0)
 
+#define SLAB_MAGIC_VALID    (0xDEADCAFE)
+
 namespace Memory
 {
     namespace Slab
@@ -25,6 +27,7 @@ namespace Memory
             Address objectStart;
             uint32_t freeIndex;     //Index to next free object in the free-array
             uint32_t inUse;
+            uint32_t magic_valid;   //magic value to indicate this is a valid slab to operate on
         
             bool IsFull() { return this->freeIndex == SLAB_BUF_END; }
             bool IsEmpty() { return inUse == 0; }

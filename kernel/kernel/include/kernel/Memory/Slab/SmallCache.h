@@ -37,10 +37,11 @@ namespace Memory
             SmallCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
                 : SlabCache(Name, Align, Size, ParentAllocator)
             { }
-            ~SmallCache() {}
         
             virtual void* AllocateObject();
             virtual void FreeObject(void* object);
+            
+            virtual void ReleaseSlab(Slab* slab);
         };
     }
 }

@@ -100,6 +100,33 @@ size_t SlabCache::GetObjectCount(size_t* objSize, size_t align, size_t* order, s
     return nr;
 }
 
+void SlabCache::Destroy()
+{
+    SLAB_CACHE_DEBUG_MSG("Destroying LargeCache at " << hex << (Address)this << " with name " << name);
+    
+    SLAB_CACHE_DEBUG_MSG("Returning free slabs to buddy allocator");
+    for(Slab* curSlab = this->freeSlabList.Head(); curSlab != NULL; curSlab = this->freeSlabList.GetNext(curSlab))
+        this->ReleaseSlab(curSlab);
+    
+    SLAB_CACHE_DEBUG_MSG("Returning partial slabs to buddy allocator");
+    for(Slab* curSlab = this->partialSlabList.Head(); curSlab != NULL; curSlab = this->partialSlabList.GetNext(curSlab))
+        this->ReleaseSlab(curSlab);
+    
+    SLAB_CACHE_DEBUG_MSG("Returning full slabs to buddy allocator");
+    for(Slab* curSlab = this->fullSlabList.Head(); curSlab != NULL; curSlab = this->fullSlabList.GetNext(curSlab))
+        this->ReleaseSlab(curSlab);
+}
+
+void SlabCache::ReleaseUnusedMemory()
+{
+    SLAB_CACHE_DEBUG_MSG("Returning free slabs to buddy allocator from slab " << this->name);
+    for(Slab* curSlab = this->freeSlabList.Head(); curSlab != NULL; curSlab = this->freeSlabList.Head())
+    {  
+        this->freeSlabList.Remove(curSlab);
+        this->ReleaseSlab(curSlab);
+    }
+}
+
 /* Calculate the number of objects which fit in one Slab in given order with management information and alignment */
 size_t SlabCache::EstimateNrObjects(size_t order, size_t objSize, size_t* nr, size_t* wastage)
 {

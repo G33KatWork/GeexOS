@@ -140,5 +140,13 @@ SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, 
 
 void SlabAllocator::DestroyCache(SlabCache* cache)
 {
-    
+    this->cacheList.Remove(cache);
+    cache->Destroy();
+}
+
+void SlabAllocator::FreeUnusedMemory()
+{
+    SLAB_ALLOCATOR_DEBUG_MSG("Releasing unused memory");
+    for(SlabCache* curCache = this->cacheList.Head(); curCache != NULL; curCache = this->cacheList.GetNext(curCache))
+        curCache->ReleaseUnusedMemory();
 }

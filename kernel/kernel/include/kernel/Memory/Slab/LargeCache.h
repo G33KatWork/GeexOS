@@ -60,17 +60,17 @@ namespace Memory
     
         protected:
             virtual Slab* Grow();
+            virtual void Destroy();
 
         public:
             LargeCache(const char* Name, int Align, int Size, SlabAllocator* ParentAllocator)
                 : SlabCache(Name, Align, Size, ParentAllocator), hashTable(HashTableDefinition(this))
-            {
-                //TODO: Init hashTable
-            }
-            ~LargeCache() {}
+            { }
         
             virtual void* AllocateObject();
             virtual void FreeObject(void* object);
+            
+            virtual void ReleaseSlab(Slab* slab);
     
         private:
             void ResizeHashTableIfNeeded();
