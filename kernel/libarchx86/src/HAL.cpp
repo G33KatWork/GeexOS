@@ -114,8 +114,8 @@ void x86HAL::InitializationDone()
     
     HAL_DEBUG_MSG("Arch initialization done...");
 
-    Debug::VBEDebugOutput* vbe = new Debug::VBEDebugOutput();
-    vbe->Test();
+    /*Debug::VBEDebugOutput* vbe = new Debug::VBEDebugOutput();
+    vbe->Test();*/ 
 }
 
 void x86HAL::SetupArchMemRegions()
@@ -163,6 +163,10 @@ void x86HAL::SetupArchMemRegions()
             HAL_DEBUG_MSG("Reserved region mapped to virtual " << hex << iomemregion->StartAddress());
         }
     }
+    
+    //FIXME: move to something like HAL:InitWithFullMemoryInitialization()?
+    acpiParser = new ACPIParser();
+    acpiParser->Parse();
 }
     
 void x86HAL::EnableInterrupts()

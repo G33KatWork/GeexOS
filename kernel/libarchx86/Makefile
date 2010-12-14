@@ -19,7 +19,11 @@ CXXSOURCES = HAL.cpp \
 			 x86BootEnvironment.cpp \
 			 TextmodeDebugOutput.cpp \
 			 SerialDebugOutput.cpp \
-			 VBEDebugOutput.cpp
+			 VBEDebugOutput.cpp \
+			 ACPIParser.cpp \
+			 ACPI/ACPITable.cpp \
+			 ACPI/RSDP.cpp \
+			 ACPI/RSDT.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = start.S interruptStubs.S SchedulingHelper.S gdt_flush.S

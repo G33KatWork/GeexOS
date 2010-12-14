@@ -2,7 +2,6 @@
 #include <arch/HAL.h>
 #include <kernel/debug.h>
 #include <string.h>
-#include <kernel/Memory/IO/IOMemoryManager.h>
 #include <arch/AddressLayout.h>
 
 using namespace Arch;

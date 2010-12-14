@@ -3,6 +3,7 @@
 
 #include <halinterface/HAL.h>
 #include <arch/internal/PIT.h>
+#include <arch/internal/ACPIParser.h>
 #include <arch/x86ThreadContext.h>
 #include <arch/internal/SchedulingHelper.h>
 #include <arch/x86BootEnvironment.h>
@@ -50,6 +51,7 @@ namespace Arch
         Debug::BaseDebugOutputDevice* graphicalDebug;
         Debug::BaseDebugOutputDevice* serialDebug;
         Debug::DebugOutputDeviceType currentDebugDevice;
+        ACPIParser* acpiParser;
         
         ClockSource clk;
         PIT* pit;
