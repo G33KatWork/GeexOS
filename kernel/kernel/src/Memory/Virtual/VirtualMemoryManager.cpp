@@ -27,8 +27,7 @@ VirtualMemoryManager::VirtualMemoryManager()
     kernelStack(NULL),
     kernelElf(NULL),
     kernelThreadStacks(NULL),
-    slabAllocator(NULL),
-    SpaceListHead(NULL)
+    slabAllocator(NULL)
 {}
 
 void VirtualMemoryManager::Init(size_t MemorySize)
@@ -44,32 +43,19 @@ void VirtualMemoryManager::AddSpace(VirtualMemorySpace* space)
 {
     VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Adding VirtualMemorySpace " << space->name);
     
-    space->Next = SpaceListHead;
-    SpaceListHead = space;
+    memorySpaceList.Append(space);
 }
 
 void VirtualMemoryManager::RemoveSpace(VirtualMemorySpace* space)
 {
     VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Removing VirtualMemorySpace " << space->name);
     
-    if(SpaceListHead == space)
-    {
-        SpaceListHead = space->Next;
-        return;
-    }
-    
-    VirtualMemorySpace* curItem = SpaceListHead;
-    
-    while(curItem->Next != space && curItem->Next != NULL)
-        	curItem = curItem->Next;
-    
-    if(curItem->Next == space)
-        curItem->Next = curItem->Next->Next;
+    memorySpaceList.Remove(space);
 }
 
 VirtualMemorySpace* VirtualMemoryManager::FindSpaceByName(const char* spaceName)
 {
-    for(VirtualMemorySpace* curSpace = SpaceListHead; curSpace != NULL; curSpace = curSpace->Next)
+    for(VirtualMemorySpace* curSpace = memorySpaceList.Head(); curSpace != NULL; curSpace = memorySpaceList.GetNext(curSpace))
     {
         if(!strcmp(curSpace->name, spaceName))
             return curSpace;

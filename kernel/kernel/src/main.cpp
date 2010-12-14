@@ -172,7 +172,7 @@ int main()
     MAIN_DEBUG_MSG("Interrupts enabled...");
     
     //Initialize the scheduler
-    //Scheduler::GetInstance()->SetTimerManager(tm);
+    Scheduler::GetInstance()->SetTimerManager(tm);
     
     SlabCache* largeCache = slaballoc->CreateCache("Large Testcache", 0x201, 0);
     MAIN_DEBUG_MSG("Large SlabCache is at " << hex << (Address)largeCache);

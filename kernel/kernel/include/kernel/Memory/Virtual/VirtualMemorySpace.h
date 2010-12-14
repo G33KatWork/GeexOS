@@ -6,6 +6,7 @@
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
 #include <halinterface/BaseDebugOutputDevice.h>
 #include <halinterface/BasePaging.h>
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Memory
 {
@@ -15,7 +16,7 @@ namespace Memory
 	 *	This class holds several memory regions, which form the virtual
 	 *	address space
 	 */
-	class VirtualMemorySpace
+	class VirtualMemorySpace : public DataStructures::DoublyLinkedListLinkImpl<VirtualMemorySpace>
 	{
     friend class VirtualMemoryManager;
         
@@ -23,7 +24,6 @@ namespace Memory
         VirtualMemorySpace(VirtualMemoryManager* ParentManager, const char* SpaceName, Arch::BasePageDirectory* pageDir)
         {
             RegionListHead = NULL;
-            Next = NULL;
             name = SpaceName;
             manager = ParentManager;
             pageDirectory = pageDir;
@@ -55,8 +55,6 @@ namespace Memory
         
 		//FIXME: For performance reasons we do not really want to use a list here. AVL-Tree? Red-Black-Tree? Anyone?
 		VirtualMemoryRegion* RegionListHead;
-		
-		VirtualMemorySpace *Next;
 		
         Arch::BasePageDirectory* pageDirectory;
 		

@@ -8,6 +8,7 @@
 #include <kernel/utils/ElfInformation.h>
 #include <kernel/Memory/Virtual/Regions/KernelThreadStackRegion.h>
 #include <kernel/Memory/Slab/SlabAllocator.h>
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Memory
 {
@@ -59,7 +60,7 @@ namespace Memory
         KernelThreadStackMemoryRegion* kernelThreadStacks;
         Slab::SlabAllocator* slabAllocator;
         
-        VirtualMemorySpace* SpaceListHead;
+       DataStructures::DoublyLinkedList<VirtualMemorySpace> memorySpaceList;
     };
 }
 #endif
