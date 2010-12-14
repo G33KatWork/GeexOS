@@ -13,12 +13,14 @@
 #include <arch/ExceptionHandler/FatalExceptionHandler.h>
 #include <arch/ExceptionHandler/PageFaultHandler.h>
 #include <arch/x86BootEnvironment.h>
+#include <kernel/Memory/IO/IOMemoryManager.h>
 
 #include <arch/VBEDebugOutput.h>
 
 using namespace Arch;
 using namespace Memory;
 using namespace Debug;
+using namespace Memory;
 
 //Create an instance of our HAL for easy access from anywhere
 x86HAL aNewHAL = x86HAL();
@@ -133,6 +135,34 @@ void x86HAL::SetupArchMemRegions()
                                                         2*PAGE_SIZE,
                                                         "Video memory",
                                                         ALLOCFLAG_WRITABLE);*/
+    
+    x86BootEnvironment* m = (x86BootEnvironment*)GetBootEnvironment();
+    
+    HAL_DEBUG_MSG("The following " << dec << m->GetMemregionCount() << " memory regions were given from the bootloader:");
+    HAL_DEBUG_MSG("Address\t\tLength\t\tType");
+    for(unsigned int i = 0; i < m->GetMemregionCount(); i++)
+    {
+        multiboot_memory_region_t region = m->GetMemregions()[i];
+        HAL_DEBUG_MSG("" << hex << (Address)region.addr << "\t\t" << (Address)region.len << "\t\t" << region.type);
+
+        //check if we need to reserve this region
+        //that's the case if the type is not 0x1 and it's not the bios region which we resevered above
+        if(region.type != 0x1 && region.addr > ((BIOS_ADDRESS + BIOS_SIZE) - KERNEL_BASE))
+        {
+            Address curAddress = (Address)region.addr;
+            Address curLength = (Address)region.len;
+            HAL_DEBUG_MSG("Reserving area at " << hex << curAddress);
+            while(curLength != 0)
+            {
+                VirtualMemoryManager::GetInstance()->PhysicalAllocator()->MarkAsUsed(curAddress);
+                curAddress += PAGE_SIZE;
+                curLength -= PAGE_SIZE;
+            }
+
+            IOMemoryRegion* iomemregion = VirtualMemoryManager::GetInstance()->IOMemory()->MapPhysical(region.addr, region.len, "MMAP Reserved");
+            HAL_DEBUG_MSG("Reserved region mapped to virtual " << hex << iomemregion->StartAddress());
+        }
+    }
 }
     
 void x86HAL::EnableInterrupts()

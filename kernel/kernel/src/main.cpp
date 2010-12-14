@@ -110,6 +110,7 @@ int main()
     //Create Arch-specific memory regions in kernel space
     //On x86: Framebuffer for textmode and lowest 64K for BIOS
     CurrentHAL->SetupArchMemRegions();
+    VirtualMemoryManager::GetInstance()->IOMemory()->DumpRegions(CurrentHAL->GetCurrentDebugOutputDevice());
     
     //Create defined Stack and move boot stack to new position
     KernelStackMemoryRegion* kernelStack = new KernelStackMemoryRegion(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, "Main kernel stack");

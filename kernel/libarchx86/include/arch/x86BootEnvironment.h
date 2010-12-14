@@ -151,6 +151,9 @@ namespace Arch
         virtual uint32_t GetELFSize() { return info.elf_size; }
         virtual uint32_t GetELFAddress() { return info.elf_addr; }
         virtual uint32_t GetELFshndx() { return info.elf_shndx; }
+        
+        uint32_t GetMemregionCount() { return info.mmap_length / sizeof(multiboot_memory_region_t); }
+        multiboot_memory_region_t* GetMemregions() { return memregions; }
     
     private:
         bool IsElf() { return info.flags & MULTIBOOT_FLAG_ELF; }

@@ -21,32 +21,19 @@ void IOMemoryManager::AddRegion(IOMemoryRegion* region)
 {
     IO_MEMORY_MANAGER_DEBUG_MSG("Adding IOMemoryRegion " << region->name);
 
-    region->Next = RegionListHead;
-    RegionListHead = region;
+    regionList.Append(region);
 }
 
 /*void IOMemoryManager::RemoveRegion(IOMemoryRegion* region)
 {
     IO_MEMORY_MANAGER_DEBUG_MSG("Removing IOMemoryRegion " << region->name);
 
-    if(RegionListHead == region)
-    {
-        RegionListHead = region->Next;
-        return;
-    }
-
-    IOMemoryRegion* curItem = RegionListHead;
-
-    while(curItem->Next != region && curItem->Next != NULL)
-        	curItem = curItem->Next;
-
-    if(curItem->Next == region)
-        curItem->Next = curItem->Next->Next;
+    regionList.Remove(region);
 }*/
 
 IOMemoryRegion* IOMemoryManager::FindRegionByName(const char* regionName)
 {
-    for(IOMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
+    for(IOMemoryRegion* curRegion = regionList.Head(); curRegion != NULL; curRegion = regionList.GetNext(curRegion))
     {
         if(!strcmp(curRegion->Name(), regionName))
             return curRegion;
@@ -57,7 +44,7 @@ IOMemoryRegion* IOMemoryManager::FindRegionByName(const char* regionName)
 
 IOMemoryRegion* IOMemoryManager::FindRegionEnclosingPhysicalAddress(Address physicalAddress)
 {
-    for(IOMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
+    for(IOMemoryRegion* curRegion = regionList.Head(); curRegion != NULL; curRegion = regionList.GetNext(curRegion))
     {
         if(physicalAddress >= curRegion->startAddressPhysical && physicalAddress < (curRegion->startAddressPhysical + curRegion->size))
             return curRegion;
@@ -68,7 +55,7 @@ IOMemoryRegion* IOMemoryManager::FindRegionEnclosingPhysicalAddress(Address phys
 
 IOMemoryRegion* IOMemoryManager::FindRegionEnclosingVirtualAddress(Address virtualAddress)
 {
-    for(IOMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
+    for(IOMemoryRegion* curRegion = regionList.Head(); curRegion != NULL; curRegion = regionList.GetNext(curRegion))
     {
         if(virtualAddress >= curRegion->startAddress && virtualAddress < (curRegion->startAddress + curRegion->size))
             return curRegion;
@@ -148,7 +135,7 @@ IOMemoryRegion* IOMemoryManager::Allocate(Address virtualAddress, Address physic
 
 void IOMemoryManager::DumpRegions(BaseDebugOutputDevice* c)
 {
-    for(IOMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
+    for(IOMemoryRegion* curRegion = regionList.Head(); curRegion != NULL; curRegion = regionList.GetNext(curRegion))
     {
         *c << "IOMEMSPACE: " << "\tName: " << curRegion->name << endl;
         *c << "IOMEMSPACE: " << "\tVirtualStartAddress: " << hex << (unsigned int)curRegion->startAddress << endl;

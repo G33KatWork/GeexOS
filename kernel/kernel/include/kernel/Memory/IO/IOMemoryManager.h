@@ -4,6 +4,7 @@
 #include <types.h>
 #include <kernel/Memory/IO/IOMemoryRegion.h>
 #include <halinterface/BaseDebugOutputDevice.h>
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Memory
 {
@@ -29,7 +30,7 @@ namespace Memory
         Address iomemStart;
         size_t iomemSize;
         
-        IOMemoryRegion* RegionListHead;
+        DataStructures::DoublyLinkedList<IOMemoryRegion> regionList;
         
         IOMemoryRegion* Allocate(Address virtualAddress, Address physicalAddress, size_t size, const char* regionName);
     };

@@ -8,6 +8,7 @@
 #include <kernel/utils/ElfInformation.h>
 #include <kernel/Memory/Virtual/Regions/KernelThreadStackRegion.h>
 #include <kernel/Memory/Slab/SlabAllocator.h>
+#include <kernel/Memory/IO/IOMemoryManager.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Memory

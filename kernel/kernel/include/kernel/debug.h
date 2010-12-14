@@ -11,13 +11,13 @@
 //Debugging of several submodules
 //undef, if not wanted
 #define EN_DEBUG_MSG_MAIN
-// #define EN_HAL_DEBUG_MSG
+#define EN_HAL_DEBUG_MSG
 #define EN_SLAB_ALLOCATOR_DEBUG_MSG
-#define EN_SLAB_CACHE_DEBUG_MSG
-#define EN_SLAB_LARGE_DEBUG_MSG
-#define EN_SLAB_SMALL_DEBUG_MSG
+// #define EN_SLAB_CACHE_DEBUG_MSG
+// #define EN_SLAB_LARGE_DEBUG_MSG
+// #define EN_SLAB_SMALL_DEBUG_MSG
 // #define EN_HAL_ACPI_DEBUG_MSG
-// #define EN_IO_MEMORY_MANAGER_DEBUG_MSG
+#define EN_IO_MEMORY_MANAGER_DEBUG_MSG
 // #define EN_SCHEDULER_DEBUG_MSG
 // #define EN_TIMER_MGR_DEBUG_MSG
 // #define EN_ELF_INFORMATION_DEBUG_MSG
@@ -32,7 +32,7 @@
 // #define EN_PHYS_BITFIELD_DEBUG_MSG
 // #define EN_GDBSTUB_DEBUG_MSG
 // #define EN_BITFIELD_DEBUG_MSG
-#define EN_BUDDY_ALLOC_DEBUG_MSG
+// #define EN_BUDDY_ALLOC_DEBUG_MSG
 
 #define DEBUG_MSG(msg) \
 { \

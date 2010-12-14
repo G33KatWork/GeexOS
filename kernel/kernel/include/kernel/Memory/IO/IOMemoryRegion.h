@@ -3,10 +3,11 @@
 
 #include <types.h>
 #include <arch/types.h>
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Memory
 {
-    class IOMemoryRegion
+    class IOMemoryRegion : public DataStructures::DoublyLinkedListLinkImpl<IOMemoryRegion>
     {
     friend class IOMemoryManager;
         
@@ -29,8 +30,6 @@ namespace Memory
         Address startAddressPhysical;
         size_t size;
         const char* name;
-        
-        IOMemoryRegion *Next;
     };
 }
 #endif
