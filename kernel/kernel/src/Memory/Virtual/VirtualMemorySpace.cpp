@@ -100,7 +100,7 @@ void VirtualMemorySpace::AnnounceRegionWithPreallocatedMemory(Address address, s
 
 VirtualMemoryRegion* VirtualMemorySpace::FindRegionByName(const char* regionName)
 {
-    for(VirtualMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
+    for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {
         if(!strcmp(curRegion->Name(), regionName))
             return curRegion;
@@ -111,7 +111,7 @@ VirtualMemoryRegion* VirtualMemorySpace::FindRegionByName(const char* regionName
 
 VirtualMemoryRegion* VirtualMemorySpace::FindRegionByStartAddress(Address start)
 {
-    for(VirtualMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
+    for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {
         if(curRegion->startAddress == start)
             return curRegion;
@@ -122,7 +122,7 @@ VirtualMemoryRegion* VirtualMemorySpace::FindRegionByStartAddress(Address start)
 
 VirtualMemoryRegion* VirtualMemorySpace::FindRegionEnclosingAddress(Address addr)
 {
-    for(VirtualMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
+    for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {
         if(addr >= curRegion->startAddress && addr < (curRegion->startAddress + curRegion->size))
             return curRegion;
@@ -133,7 +133,7 @@ VirtualMemoryRegion* VirtualMemorySpace::FindRegionEnclosingAddress(Address addr
 
 void VirtualMemorySpace::DumpRegions(BaseDebugOutputDevice* c)
 {
-    for(VirtualMemoryRegion* curRegion = RegionListHead; curRegion != NULL; curRegion = curRegion->Next)
+    for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {
         *c << "VMEMSPACE: " << "\tName: " << curRegion->name << endl;
         *c << "VMEMSPACE: " << "\tStartAddress: " << hex << (unsigned int)curRegion->startAddress << endl;
@@ -146,27 +146,14 @@ void VirtualMemorySpace::AddRegionToList(VirtualMemoryRegion* region)
 {
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Adding VirtualMemoryRegion " << region->name << " to VirtualMemorySpace " << name);
     
-    region->Next = RegionListHead;
-    RegionListHead = region;
+    memoryRegionList.Append(region);
 }
 
 void VirtualMemorySpace::RemoveRegionFromList(VirtualMemoryRegion* region)
 {
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Removing VirtualMemoryRegion " << region->name << " from VirtualMemorySpace" << name);
     
-    if(RegionListHead == region)
-    {
-        RegionListHead = region->Next;
-        return;
-    }
-    
-    VirtualMemoryRegion* curItem = RegionListHead;
-    
-    while(curItem->Next != region && curItem->Next != NULL)
-        	curItem = curItem->Next;
-    
-    if(curItem->Next == region)
-        curItem->Next = curItem->Next->Next;
+    memoryRegionList.Remove(region);
 }
 
 

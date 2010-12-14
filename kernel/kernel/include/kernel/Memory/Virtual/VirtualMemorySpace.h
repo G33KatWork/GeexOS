@@ -23,7 +23,6 @@ namespace Memory
 	public:
         VirtualMemorySpace(VirtualMemoryManager* ParentManager, const char* SpaceName, Arch::BasePageDirectory* pageDir)
         {
-            RegionListHead = NULL;
             name = SpaceName;
             manager = ParentManager;
             pageDirectory = pageDir;
@@ -54,7 +53,7 @@ namespace Memory
         const char* name;
         
 		//FIXME: For performance reasons we do not really want to use a list here. AVL-Tree? Red-Black-Tree? Anyone?
-		VirtualMemoryRegion* RegionListHead;
+		DataStructures::DoublyLinkedList<VirtualMemoryRegion> memoryRegionList;
 		
         Arch::BasePageDirectory* pageDirectory;
 		

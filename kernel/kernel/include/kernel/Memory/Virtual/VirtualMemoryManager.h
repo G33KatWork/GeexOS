@@ -60,7 +60,7 @@ namespace Memory
         KernelThreadStackMemoryRegion* kernelThreadStacks;
         Slab::SlabAllocator* slabAllocator;
         
-       DataStructures::DoublyLinkedList<VirtualMemorySpace> memorySpaceList;
+        DataStructures::DoublyLinkedList<VirtualMemorySpace> memorySpaceList;
     };
 }
 #endif

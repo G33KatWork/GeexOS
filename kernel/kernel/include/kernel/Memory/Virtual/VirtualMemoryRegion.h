@@ -5,6 +5,7 @@
 #include <arch/types.h>
 #include <kernel/global.h>
 #include <arch/HAL.h>
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Memory
 {
@@ -27,7 +28,7 @@ namespace Memory
     /*
      * This class defines a region inside a virtual memory space
      */
-    class VirtualMemoryRegion
+    class VirtualMemoryRegion : public DataStructures::DoublyLinkedListLinkImpl<VirtualMemoryRegion>
     {
     friend class VirtualMemorySpace;
         
@@ -41,7 +42,6 @@ namespace Memory
             size = RegionSize;
             name = RegionName;
             flags = RegionFlags;
-            Next = NULL;
         }
 
 		virtual ~VirtualMemoryRegion()
@@ -72,9 +72,6 @@ namespace Memory
         Address startAddress;
         size_t size;
         const char* name;
-    
-    private:
-        VirtualMemoryRegion *Next;
     };
 }
 #endif
