@@ -9,18 +9,26 @@ using namespace Arch;
 using namespace Memory;
 using namespace Debug;
 
-VirtualMemoryManager* VirtualMemoryManager::instance = NULL;
+/* We initialize the VirtualMemoryManager statically, because otherwise the new
+ * operator would again call GetInstance() to see if the slab allocator was
+ * initialized. And again, and again, and again. And everything breaks due to
+ * an overflown stack.
+ */
 
-VirtualMemoryManager* VirtualMemoryManager::GetInstance()
-{
-    if(instance == NULL)
-        instance = new VirtualMemoryManager();
+VirtualMemoryManager VirtualMemoryManager::instance = VirtualMemoryManager();
 
-    return instance;
-}
+VirtualMemoryManager* VirtualMemoryManager::GetInstance() { return &instance; }
 
 VirtualMemoryManager::VirtualMemoryManager()
-    : kernelStack(NULL)
+    : phys(NULL),
+    iomanager(NULL),
+    currentSpace(NULL),
+    kernelSpace(NULL),
+    kernelStack(NULL),
+    kernelElf(NULL),
+    kernelThreadStacks(NULL),
+    slabAllocator(NULL),
+    SpaceListHead(NULL)
 {}
 
 void VirtualMemoryManager::Init(size_t MemorySize)

@@ -70,14 +70,14 @@ void Scheduler::AddThread(Thread* thread)
 
 void Scheduler::Schedule(registers_t* oldState)
 {
+    if(tm == NULL) return;
+    //check if we have a timer manager
+    ASSERT(tm != NULL, "TimerManager is NULL");
+    
     SCHEDULER_DEBUG_MSG("Entering scheduler");
     CurrentHAL->DisableInterrupts();
     
     currentThread->SaveThreadContext(oldState);
-    
-    if(tm == NULL) return;
-    //check if we have a timer manager
-    ASSERT(tm != NULL, "TimerManager is NULL");
     
     Thread *next;
     if(currentThread->next == NULL)

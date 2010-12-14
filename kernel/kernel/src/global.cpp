@@ -31,41 +31,20 @@ void panic_assert(const char *file, unsigned int line, const char *condition, co
     CurrentHAL->GetCurrentDebugOutputDevice()->SetForeground(Red);
     *CurrentHAL->GetCurrentDebugOutputDevice() << "[PANIC] Kernel Panic: Assertion failed at " << file << ":" << dec << line << " (" << condition << ") " << desc << endl;
     
-    if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
-        VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();
+    /*if(VirtualMemoryManager::GetInstance()->KernelStack() != NULL)
+        VirtualMemoryManager::GetInstance()->KernelStack()->PrintStacktrace();*/
     
     CurrentHAL->HaltMachine();
 }
 
-void *operator new(size_t size)
-{
-    return placementAlloc.Allocate(size, false);
-}
+void *operator new(size_t size) { return kmalloc(size); }
+void *operator new[](size_t size) { return kmalloc(size); }
 
-void *operator new[](size_t size)
-{
-    return placementAlloc.Allocate(size, false);
-}
+void operator delete(void *p) { kfree(p); }
+void operator delete[](void *p) { kfree(p); }
 
-void  operator delete(void *p)
-{
-    
-}
-
-void  operator delete[](void *p)
-{
-    
-}
-
-void *operator new(size_t UNUSED(size), void* buffer)
-{
-    return buffer;
-}
-
-void *operator new[](size_t UNUSED(size), void* buffer)
-{
-    return buffer;
-}
+void *operator new(size_t UNUSED(size), void* buffer) { return buffer; }
+void *operator new[](size_t UNUSED(size), void* buffer) { return buffer; }
 
 void *operator new(size_t size, bool pageAllocation)
 {
@@ -79,12 +58,21 @@ void operator delete(void *p, bool UNUSED(pageAllocation))
 
 void* kmalloc(size_t size)
 {
-    return placementAlloc.Allocate(size, false);
+    if(VirtualMemoryManager::GetInstance()->SlabAllocator() != NULL)
+        return Slab::AllocateFromSizeSlabs(size);
+    else    
+        return placementAlloc.Allocate(size, false);
 }
 
 void kfree(void* p)
 {
+    Address addr = (Address)p;
     
+    if(addr >= VirtualMemoryManager::GetInstance()->SlabAllocator()->StartAddress() &&
+       addr < VirtualMemoryManager::GetInstance()->SlabAllocator()->StartAddress() + VirtualMemoryManager::GetInstance()->SlabAllocator()->Size())
+        Slab::FreeFromSizeSlabs(p);
+    else
+        PANIC("It seems that you are trying to free an object at " << hex << addr << " not residing in the slab allocator. Not good!");
 }
 
 unsigned int getPlacementPointer()

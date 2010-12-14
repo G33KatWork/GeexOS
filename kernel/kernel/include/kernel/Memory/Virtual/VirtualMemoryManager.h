@@ -7,6 +7,7 @@
 #include <kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.h>
 #include <kernel/utils/ElfInformation.h>
 #include <kernel/Memory/Virtual/Regions/KernelThreadStackRegion.h>
+#include <kernel/Memory/Slab/SlabAllocator.h>
 
 namespace Memory
 {
@@ -41,9 +42,11 @@ namespace Memory
         void KernelElf(ElfInformation* NewKernelElf) { kernelElf = NewKernelElf; }
         KernelThreadStackMemoryRegion* KernelThreadStacks() { return kernelThreadStacks; }
         void KernelThreadStacks(KernelThreadStackMemoryRegion* NewKernelThreadStacks) { kernelThreadStacks = NewKernelThreadStacks; }
+        Slab::SlabAllocator* SlabAllocator() { return slabAllocator; }
+        void SlabAllocator(Slab::SlabAllocator* NewSlabAllocator) { slabAllocator = NewSlabAllocator; }
         
     private:
-        static VirtualMemoryManager* instance;
+        static VirtualMemoryManager instance;
         
         BitfieldPhysicalMemoryManager* phys;
         
@@ -54,6 +57,7 @@ namespace Memory
         KernelStackMemoryRegion* kernelStack;
         ElfInformation* kernelElf;
         KernelThreadStackMemoryRegion* kernelThreadStacks;
+        Slab::SlabAllocator* slabAllocator;
         
         VirtualMemorySpace* SpaceListHead;
     };

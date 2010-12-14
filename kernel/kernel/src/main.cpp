@@ -121,33 +121,20 @@ int main()
     
     syncMemregionsWithPaging();
     
+    //Initialize Slab Allocator for kernel
+    SlabAllocator* slaballoc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(slaballoc);
+    InitializeSizeCaches(slaballoc);
+    VirtualMemoryManager::GetInstance()->SlabAllocator(slaballoc);
+    MAIN_DEBUG_MSG("Slab allocator created...");
+    
     MAIN_DEBUG_MSG("Kernel commandline: " << CurrentHAL->GetBootEnvironment()->GetKernelCommandline());
+    MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
     //Init timer
     TimerManager *tm = new TimerManager(CurrentHAL->GetHardwareClockSource());
     CurrentHAL->GetInterruptDispatcher()->RegisterInterruptHandler(BaseInterruptDispatcher::IRDEV_TIMER, new TimerHandler(tm, Scheduler::GetInstance()));
     MAIN_DEBUG_MSG("Timer initialized...");
-    
-    CurrentHAL->EnableInterrupts();
-    MAIN_DEBUG_MSG("Interrupts enabled...");
-    
-    /*char line[20];
-    SerialConsole *ser = new SerialConsole(SERIAL_COM2);
-    ser->ReadLine(line, 20);
-    kdbg << "Read line: " << line;    
-    int hexbla = ser->ReadHex();
-    kdbg << hex << "read: " << hexbla << endl;
-    int foo = ser->ReadDec();
-    kdbg << dec << "read: " << foo << endl;*/
-    
-    //Make it crash
-    /*int* a = (int*)0x100000;
-    *a = 0x41414141;*/
-    
-    //irqD->RegisterHandler(IRQ_KEYBOARD, new KeyboardHandler());
-    //Arch::UnmaskIRQ(IRQ_KEYBOARD);
-    
-    MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
     VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(CurrentHAL->GetCurrentDebugOutputDevice());
     
@@ -181,53 +168,11 @@ int main()
     
     Scheduler::GetInstance()->DumpThreads(CurrentHAL->GetCurrentDebugOutputDevice());
     
+    CurrentHAL->EnableInterrupts();
+    MAIN_DEBUG_MSG("Interrupts enabled...");
+    
     //Initialize the scheduler
     //Scheduler::GetInstance()->SetTimerManager(tm);
-    
-    // BuddyAllocatedMemoryRegion* buddyRegion = new BuddyAllocatedMemoryRegion(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE, "Buddytest", PAGE_SHIFT);
-    // VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(buddyRegion);
-    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    // Address allocatedBuddy = buddyRegion->AllocateBuddy(5);
-    // MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy);
-    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    // Address allocatedBuddy2 = buddyRegion->AllocateBuddy(0);
-    // MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy2);
-    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    // Address allocatedBuddy3 = buddyRegion->AllocateBuddy(2);
-    // MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy3);
-    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    // Address allocatedBuddy4 = buddyRegion->AllocateBuddy(15);
-    // MAIN_DEBUG_MSG("Allocated buddy " << Debug::hex << allocatedBuddy4);
-    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    // 
-    // MAIN_DEBUG_MSG("Freeing 2");
-    // buddyRegion->FreeBuddy(allocatedBuddy2, 0);
-    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    // MAIN_DEBUG_MSG("Freeing 1");
-    // buddyRegion->FreeBuddy(allocatedBuddy, 5);
-    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    // MAIN_DEBUG_MSG("Freeing 3");
-    // buddyRegion->FreeBuddy(allocatedBuddy3, 2);
-    // buddyRegion->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-    
-    SlabAllocator* slaballoc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(slaballoc);
-    InitializeSizeCaches(slaballoc);
-    /*SlabCache* testCache = slaballoc->CreateCache("Testcache", 100, SLAB_HWCACHE_ALIGN);
-    MAIN_DEBUG_MSG("SlabCache is at " << hex << (Address)testCache);
-    
-    for(int i = 0; i < 40; i++)
-    {
-        void* alloc1 = testCache->AllocateObject();
-        MAIN_DEBUG_MSG("Allocated object at " << hex << (Address)alloc1);
-        if(i % 10 == 0)
-            testCache->FreeObject(alloc1);
-    }
-    
-    void* sizeObject = AllocateFromSizeSlabs(28);
-    MAIN_DEBUG_MSG("size object is at " << hex << (Address)sizeObject);
-    void* sizeObject2 = AllocateFromSizeSlabs(29);
-    MAIN_DEBUG_MSG("size object 2 is at " << hex << (Address)sizeObject2);*/
     
     SlabCache* largeCache = slaballoc->CreateCache("Large Testcache", 0x201, 0);
     MAIN_DEBUG_MSG("Large SlabCache is at " << hex << (Address)largeCache);
