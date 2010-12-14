@@ -1,21 +1,17 @@
 #include <kernel/global.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/Time/TimerManager.h>
-#include <kernel/DataStructures/List.h>
 
 using namespace Time;
-using namespace DataStructures;
-
-#include <kernel/debug.h>
 using namespace Debug;
 
-void TimerManager::prepareClock(unsigned long ns)
+void TimerManager::prepareClock(unsigned long us)
 {
     if(clockSource->type == CLKTYPE_PERIODIC)
         return;
     
-    tickLen = ns;
-    clockSource->prepare(ns);
+    tickLen = us;
+    clockSource->prepare(us);
 }
 
 void TimerManager::SetClockSource(ClockSource *newSource)
@@ -29,13 +25,13 @@ void TimerManager::SetClockSource(ClockSource *newSource)
     
     if(clockSource->type == CLKTYPE_PERIODIC)
     {
-        tickLen = clockSource->tickLength;
+        tickLen = clockSource->tickLengthInUS;
         clockSource->enable();
     }
     else
     {
         clockSource->enable();
-        prepareClock(clockSource->tickLength);
+        prepareClock(clockSource->tickLengthInUS);
     }
 }
 
@@ -45,11 +41,8 @@ bool TimerManager::HandleTick(ClockSource *source)
     
     if(source != clockSource)
         PANIC("Unexpected clock source!");
-    //kdbg << "TickTack" << endl;
-    int i = 0;
-    Timer *t = currentTimers->getAt(i);
-    //kdbg << (t == NULL ? "t = NULL" : " t != NULL") << endl;
     
+    Timer *t = currentTimers.Head();
     while(t != NULL)
     {
         if(tickLen < t->GetLength())
@@ -57,13 +50,16 @@ bool TimerManager::HandleTick(ClockSource *source)
             t->SetLength(t->GetLength() - tickLen); //decrement time until timer expires
             TIMER_MGR_DEBUG_MSG("Drecemented remaining time of timer to " << dec << (unsigned int)t->GetLength());
             
-            i++;
-            t = currentTimers->getAt(i);
+            t = currentTimers.GetNext(t);
             continue;
         }
         
         //if we get here, the timer has already expired
-        currentTimers->remove(t);
+        
+        //remove current timer, since it is expired
+        Timer* nextLoopTimer = currentTimers.GetNext(t);
+        currentTimers.Remove(t);
+        
         t->SetLength(0);
         bool ret = t->timerExpired();
         TIMER_MGR_DEBUG_MSG("A timer expired");
@@ -71,8 +67,7 @@ bool TimerManager::HandleTick(ClockSource *source)
         if(!needScheduling)
             needScheduling = ret;
         
-        //get next timer from list
-        t = currentTimers->getAt(i);
+        t = nextLoopTimer;
     }
     
     prepareClock(tickLen);
@@ -89,10 +84,10 @@ void TimerManager::StartTimer(Timer* t, unsigned long length)
 {
     TIMER_MGR_DEBUG_MSG("A new timer with length of " << length << " was started");
     t->SetLength(length);
-    currentTimers->append(t);
+    currentTimers.Append(t);
 }
 
 void TimerManager::StopTimer(Timer* t)
 {
-    currentTimers->remove(t);
+    currentTimers.Remove(t);
 }

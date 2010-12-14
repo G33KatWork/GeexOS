@@ -17,7 +17,12 @@ bool Timer::timerExpired()
         
         case FUNCTION:
             if(function != NULL)
-                ret = function();
+                ret = function(this);
+            break;
+        
+        case OOPCALLBACK:
+            if(object != NULL)
+                ret = object->TimerExpired(this);
             break;
     }
     

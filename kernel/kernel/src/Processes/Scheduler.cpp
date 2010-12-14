@@ -8,15 +8,17 @@ using namespace Arch;
 using namespace Time;
 using namespace Debug;
 
-#define     SCHED_TIMER_FREQUENCY       10000000
-#define     SCHED_THREAD_TIMESLICE      10000000
+/// Length of timeslice a thread gets until reschedulung occurs in microeconds
+#define     SCHED_THREAD_TIMESLICE      1000000
 
-//FIXME: Make timer timers work again by fixing the List in TimerManager not being a memory eating monster
-
-/*static bool scheduleTimerHandler(void)
+bool Scheduler::TimerExpired(Timer* t)
 {
-    Thread* curThread = Scheduler::GetInstance()->GetCurrentThread();
-    curThread->SetTimeslice(curThread->GetTimeslice() - SCHED_TIMER_FREQUENCY);
+    //Readd timer
+    tm->StartTimer(t, SCHED_THREAD_TIMESLICE);
+    
+    //Update timeslice of current process
+    Thread* curThread = this->GetCurrentThread();
+    curThread->SetTimeslice(curThread->GetTimeslice() - CurrentHAL->GetHardwareClockSource()->tickLengthInUS);
     
     SCHEDULER_DEBUG_MSG("Timeslice of current thread: " << dec << curThread->GetTimeslice());
     
@@ -24,7 +26,7 @@ using namespace Debug;
         return true; //force scheduling
     else
         return false;
-}*/
+}
 
 Scheduler* Scheduler::instance = NULL;
 
@@ -45,7 +47,7 @@ Scheduler::Scheduler()
     listHead = kernelThread;
     currentThread = kernelThread;
     
-    //schedulingTimer = new Timer(FUNCTION, scheduleTimerHandler, NULL);
+    schedulingTimer = new Timer(OOPCALLBACK, NULL, NULL, this);
     
     tm = NULL;
     nextId = 1;
@@ -58,8 +60,8 @@ Scheduler::Scheduler()
 void Scheduler::SetTimerManager(TimerManager* t)
 {
     tm = t;
-    //currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
-    //tm->StartTimer(schedulingTimer, SCHED_TIMER_FREQUENCY);
+    currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
+    tm->StartTimer(schedulingTimer, SCHED_THREAD_TIMESLICE);
 }
 
 void Scheduler::AddThread(Thread* thread)
@@ -88,8 +90,7 @@ void Scheduler::Schedule(registers_t* oldState)
 	SCHEDULER_DEBUG_MSG("Picking thread " << next->GetName());
 	currentThread = next;
     
-    //currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
-    //tm->StartTimer(schedulingTimer, SCHED_TIMER_FREQUENCY);
+    currentThread->SetTimeslice(SCHED_THREAD_TIMESLICE);
     
     //printThreadInfo(currentThread->threadInfo);
     
@@ -105,7 +106,7 @@ void Scheduler::DumpThreads(BaseDebugOutputDevice* c)
         *c << "SCHEDULER: " << "\tInstruction Pointer: " << hex << curThread->GetInstructionPointer() << endl;
         *c << "SCHEDULER: " << "\tStack Pointer: " << curThread->GetStackPointer() << endl;
         *c << "SCHEDULER: " << "\tBase Pointer: " << curThread->GetFramePointer() << endl;
-        //*c << "SCHEDULER: " << "\tTimeslice: " << dec << curThread->GetTimeslice() << endl;
+        *c << "SCHEDULER: " << "\tTimeslice: " << dec << curThread->GetTimeslice() << endl;
         
         *c << endl;
     }

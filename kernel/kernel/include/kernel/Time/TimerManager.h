@@ -3,26 +3,22 @@
 
 #include <halinterface/ClockSource.h>
 #include <kernel/Time/Timer.h>
-#include <kernel/DataStructures/List.h>
-
-using namespace Arch;
-using namespace DataStructures;
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Time
 {
     class TimerManager {
     private:
-        ClockSource *clockSource;
+        Arch::ClockSource *clockSource;
         unsigned long tickLen;
-        List<Timer*> *currentTimers;
+        DataStructures::DoublyLinkedList<Timer> currentTimers;
         
-        void prepareClock(unsigned long ns);
+        void prepareClock(unsigned long us);
         
     public:
         TimerManager(ClockSource* source)
         {
             clockSource = NULL;
-            currentTimers = new List<Timer*>();
             SetClockSource(source);
         }
         

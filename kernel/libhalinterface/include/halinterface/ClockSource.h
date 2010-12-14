@@ -13,9 +13,9 @@ namespace Arch
     struct clock_source
     {
         const char *name;
-        unsigned long tickLength;
+        unsigned long tickLengthInUS;
         ClockType type;
-        void (*prepare)(uint64_t ns);
+        void (*prepare)(uint64_t us);
         void (*enable)(void);
         void (*disable)(void);
     };

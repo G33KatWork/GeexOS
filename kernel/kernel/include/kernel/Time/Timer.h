@@ -3,34 +3,43 @@
 
 #include <halinterface/ClockSource.h>
 #include <kernel/Processes/Thread.h>
-
-using namespace Arch;
-using namespace Processes;
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Time
 {
+    class Timer;
+    
     enum TimerAction {
         PREEMPT,
         WAKEUP,
-        FUNCTION
+        FUNCTION,
+        OOPCALLBACK
     };
     
-    typedef bool (*TimerFunction)(void);
+    class ITimerCallback {
+    public:
+        virtual bool TimerExpired(Timer* t) = 0;
+    };
     
-    class Timer {
+    typedef bool (*TimerFunction)(Timer* timer);
+    
+    class Timer : public DataStructures::DoublyLinkedListLinkImpl<Timer>
+    {
     private:
         unsigned long length;
         TimerAction action;
         TimerFunction function;
-        Thread *thread;
+        Processes::Thread *thread;
+        ITimerCallback *object;
         
     public:
-        Timer(TimerAction act, TimerFunction func, Thread *t)
+        Timer(TimerAction act, TimerFunction func, Processes::Thread *t, ITimerCallback* callbackObject)
         {
             this->length = 0;
             this->function = func;
             this->thread = t;
             this->action = act;
+            this->object = callbackObject;
         }
         
         bool timerExpired();

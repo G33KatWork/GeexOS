@@ -41,7 +41,7 @@ x86HAL::x86HAL()
     //can't assign directly to clk, why?
     ClockSource clk_tmp = {
         "PIT",
-        1000000,  //ticklength in ns: 1000ms = 1000000ns
+        1000000,  //ticklength in us //FIXME: timer frequency is wrong
         CLKTYPE_PERIODIC,
         NULL,
         PIT::Enable,
@@ -74,7 +74,7 @@ void x86HAL::Initialize()
     InitializePIC();
     HAL_DEBUG_MSG("PIC initialized...");
     
-    pit = new PIT(1000); //1000Hz
+    pit = new PIT(1000); //1000Hz = 1ms
     HAL_DEBUG_MSG("PIT initialized...");
     
     ird = new x86InterruptDispatcher();

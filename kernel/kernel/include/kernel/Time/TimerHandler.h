@@ -25,8 +25,15 @@ public:
     
     void Execute(registers_t* regs)
     {
-        //if(this->tm->HandleTick(&Arch::ClockSource))
+        if(this->tm->HandleTick(CurrentHAL->GetHardwareClockSource()))
+        {
+            //DEBUG_MSG("Scheduling");
             s->Schedule(regs);
+        }
+        else
+        {
+            //DEBUG_MSG("Not Scheduling");
+        }
     }
 };
 

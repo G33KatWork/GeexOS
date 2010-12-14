@@ -12,7 +12,7 @@ using namespace Time;
 
 namespace Processes
 {
-    class Scheduler
+    class Scheduler : public ITimerCallback
     {
     public:
         /// Returns the singleton instance
@@ -40,6 +40,9 @@ namespace Processes
         /// Enqueues a thread into the running queue
         void AddThread(Thread* thread);
         
+        /// Implementation of ITimerCallback for timer expiry
+        virtual bool TimerExpired(Timer* t);
+        
     private:
         static Scheduler* instance;
         
@@ -47,7 +50,7 @@ namespace Processes
         Thread* currentThread;
         Thread* kernelThread;
         
-        //Timer* schedulingTimer;
+        Timer* schedulingTimer;
         TimerManager* tm;
         
         unsigned int nextId;
