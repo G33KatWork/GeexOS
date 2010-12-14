@@ -17,4 +17,5 @@ kernel/kernel/obj
 kernel/libarchx86/obj
 kernel/libkcpp/obj
 kernel/libhalinterface/obj
+doc/html
 

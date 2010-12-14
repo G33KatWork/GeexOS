@@ -87,6 +87,11 @@ vmware: all
 	$(call cmd_msg,VMWARE,floppy.img)
 	$(Q)/Library/Application\ Support/VMware\ Fusion/vmrun -T fusion start resources/vmware.vmx $(QOUTPUT)
 
+# generate doxygen documentation
+doxygen: doxygen.conf
+	$(call cmd_msg,DOXYGEN,$<)
+	$(Q)cat $< | doxygen - $(QOUTPUT)
+
 # Cleaning
 clean:
 	$(call call_submake,kernel,clean)
@@ -105,5 +110,5 @@ distclean: clean
 	$(call call_submake,toolchain,distclean)
 	$(call call_submake,toolchain,toolchain-clean)
 
-.PHONY: all kernel servers drivers applications clean distclean qemu qemudebug bochs bochsdebug
+.PHONY: all kernel servers drivers applications clean distclean qemu qemudebug bochs bochsdebug doxygen
 

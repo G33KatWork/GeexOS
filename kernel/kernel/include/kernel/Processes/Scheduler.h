@@ -15,15 +15,29 @@ namespace Processes
     class Scheduler
     {
     public:
+        /// Returns the singleton instance
         static Scheduler* GetInstance();
         
+        /**
+         * Reschedules a thread.
+         * This function should only be called by an interrupt handler
+        **/
         void Schedule(registers_t* oldState);
+        
+        /**
+         * Sets the timer manager to be used by the scheduler
+         * The scheduler creates a timer inside this manager. If it expires,
+         * it is calls the Schedule() method to select a new thread to run
+        **/
         void SetTimerManager(TimerManager* t);
         
+        /// Returns a pointer to the current running thread
         Thread* GetCurrentThread() { return currentThread; }
         
+        /// Prints a list of all enqueued threads on the given output device
         void DumpThreads(Debug::BaseDebugOutputDevice* c);
         
+        /// Enqueues a thread into the running queue
         void AddThread(Thread* thread);
         
     private:
