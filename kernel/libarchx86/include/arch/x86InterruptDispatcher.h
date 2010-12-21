@@ -33,8 +33,8 @@ namespace Arch
         virtual void Execute(registers_t *regs);
     
     private:
-        int exceptionToNumber(Exception e);
-        int interruptToNumber(InterruptingDevice i);
+        int exceptionToVector(Exception e);
+        int interruptToVector(InterruptingDevice i);
         
         InterruptServiceRoutine* isrs[I86_IDT_MAX_ENTRY_COUNT];
     };

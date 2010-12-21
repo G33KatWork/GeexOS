@@ -12,6 +12,7 @@ Thread::Thread(unsigned int threadId, Address initialIP, Address initialSP, Addr
     name = threadName;
     state = THREAD_RUNNING;
     usermode = umode;
+    timeslice = 0;
     
     if(umode)
         threadContext = ThreadContext::BuildForUsermode(initialIP, initialSP, initialBP, pd);

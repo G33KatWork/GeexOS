@@ -37,19 +37,11 @@ x86HAL::x86HAL()
     serialDebug = NULL;
     textDebug = NULL;
     graphicalDebug = NULL;
+    pit = NULL;
+    pic = NULL;
+    lapic = NULL;
     nullDebug = NullDebugOutputDevice();
     currentDebugDevice = None;
-    
-    //can't assign directly to clk, why?
-    ClockSource clk_tmp = {
-        "PIT",
-        1000000,  //ticklength in us //FIXME: timer frequency is wrong
-        CLKTYPE_PERIODIC,
-        NULL,
-        PIT::Enable,
-        PIT::Disable
-    };
-    clk = clk_tmp;
 }
 
 void x86HAL::Initialize()
@@ -72,12 +64,6 @@ void x86HAL::Initialize()
     idt_setup();
     idt_install();
     HAL_DEBUG_MSG("IDT installed...");
-    
-    InitializePIC();
-    HAL_DEBUG_MSG("PIC initialized...");
-    
-    pit = new PIT(1000); //1000Hz = 1ms
-    HAL_DEBUG_MSG("PIT initialized...");
     
     ird = new x86InterruptDispatcher();
     FatalExceptionHandler* fatalHandler = new FatalExceptionHandler();
@@ -116,6 +102,54 @@ void x86HAL::InitializationDone()
 
     /*Debug::VBEDebugOutput* vbe = new Debug::VBEDebugOutput();
     vbe->Test();*/ 
+}
+
+void x86HAL::InitializationAfterMemoryAvailable()
+{
+    HAL_DEBUG_MSG("Arch initialization after memory initialization...");
+    
+    acpiParser = new ACPIParser();
+    acpiParser->Parse();
+    
+    //TODO: Init LAPIC if available
+    //TODO: Init HPET or LAPIC timer if available
+    //TODO: Init IOAPIC
+    
+    //FIXME: Replace PIC with IOAPIC
+    pic = new PIC();
+    pic->Initialize();
+    HAL_DEBUG_MSG("PIC initialized...");
+    
+    //The old PIT interrupt should be masked inside the PIC here
+    //so, if we configure the LAPIC as a timer, it is never enabled
+    //and doesn't interfere with the LAPIC timer which, for now, uses the same vector as the PIT
+    
+    //The LAPIC timer can only be used, if the EOI is correctly delivered to the LAPIC.
+    //We need a whole new interrupt manager, which holds information about all currently
+    //usable vectors and handles all the local processors and system wide interrupt controllers
+    /*if(LAPIC::IsAvailable())
+    {
+        HAL_DEBUG_MSG("LAPIC is available. Configuring...");
+        
+        lapic = new LAPIC();
+        
+        // Map LAPIC into IO Memory
+        lapic->MapIntoIOMemory();
+        
+        lapic->Initialize();
+        lapic->DetermineBusFrequency();
+        
+        lapic->SetTickLengthUs(1000);
+        HAL_DEBUG_MSG("LAPIC with ID ID " << Debug::dec << lapic->GetID() << " initialized...");
+    }
+    else*/
+    {
+        HAL_DEBUG_MSG("LAPIC is not available. Falling back to PIT Timer.");
+        
+        pit = new PIT();
+        pit->SetTickLengthUs(1000);     //1000us = 1ms
+        HAL_DEBUG_MSG("PIT initialized...");
+    }
 }
 
 void x86HAL::SetupArchMemRegions()
@@ -163,10 +197,6 @@ void x86HAL::SetupArchMemRegions()
             HAL_DEBUG_MSG("Reserved region mapped to virtual " << hex << iomemregion->StartAddress());
         }
     }
-    
-    //FIXME: move to something like HAL:InitWithFullMemoryInitialization()?
-    acpiParser = new ACPIParser();
-    acpiParser->Parse();
 }
     
 void x86HAL::EnableInterrupts()
@@ -203,9 +233,13 @@ BasePaging* x86HAL::GetPaging()
     return paging;
 }
 
-ClockSource* x86HAL::GetHardwareClockSource() 
+BaseTimer* x86HAL::GetHardwareClockSource()
 {
-    return &clk;
+    //TODO: fix this for SMP systems, since every cpu can has its own timer
+    if(lapic != NULL)
+        return lapic;
+        
+    return pit;
 }
 
 Debug::BaseDebugOutputDevice* x86HAL::GetCurrentDebugOutputDevice()

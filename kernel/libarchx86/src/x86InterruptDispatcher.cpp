@@ -16,7 +16,7 @@ x86InterruptDispatcher::x86InterruptDispatcher()
 
 bool x86InterruptDispatcher::RegisterInterruptHandler(InterruptingDevice i, InterruptServiceRoutine* isr)
 {
-    int intno = interruptToNumber(i);
+    int intno = interruptToVector(i);
     if(intno == -1)
         return false;
     
@@ -26,7 +26,7 @@ bool x86InterruptDispatcher::RegisterInterruptHandler(InterruptingDevice i, Inte
 
 bool x86InterruptDispatcher::UnregisterInterruptHandler(InterruptingDevice i)
 {
-    int intno = interruptToNumber(i);
+    int intno = interruptToVector(i);
     if(intno == -1)
         return false;
     
@@ -36,7 +36,7 @@ bool x86InterruptDispatcher::UnregisterInterruptHandler(InterruptingDevice i)
 
 bool x86InterruptDispatcher::RegisterExceptionHandler(Exception e, InterruptServiceRoutine* isr)
 {
-    int intno = exceptionToNumber(e);
+    int intno = exceptionToVector(e);
     if(intno == -1)
         return false;
     
@@ -46,7 +46,7 @@ bool x86InterruptDispatcher::RegisterExceptionHandler(Exception e, InterruptServ
 
 bool x86InterruptDispatcher::UnregisterExceptionHandler(Exception e)
 {
-    int intno = exceptionToNumber(e);
+    int intno = exceptionToVector(e);
     if(intno == -1)
         return false;
     
@@ -56,26 +56,28 @@ bool x86InterruptDispatcher::UnregisterExceptionHandler(Exception e)
 
 void x86InterruptDispatcher::MaskInterrupt(InterruptingDevice i)
 {
-    int intno = interruptToNumber(i);
+    int intno = interruptToVector(i);
     if(intno == -1)
         return;
     
-    MaskIRQ(intno);
+    CurrentHAL->GetCurrentInterruptController()->MaskVector(intno);
 }
 
 void x86InterruptDispatcher::UnmaskInterrupt(InterruptingDevice i)
 {
-    int intno = interruptToNumber(i);
+    int intno = interruptToVector(i);
     if(intno == -1)
         return;
     
-    UnmaskIRQ(intno);
+    CurrentHAL->GetCurrentInterruptController()->UnmaskVector(intno);
 }
 
 void x86InterruptDispatcher::Execute(registers_t *regs)
 {
-    NotifyPIC(regs->int_no);
-
+    //FIXME: check if this is a local interrupt and notify the local APIC instead of the general interrupt controller
+    if(regs->int_no > 16)
+        CurrentHAL->GetCurrentInterruptController()->EndOfInterrupt(regs->int_no);
+    
     /*ARCH_INTERRUPTS_DEBUG_MSG("Executing interrupt");
     ARCH_INTERRUPTS_DEBUG_MSG("Register state:");
     ARCH_INTERRUPTS_DEBUG_MSG("EIP: " << hex << regs->eip);
@@ -102,6 +104,7 @@ void x86InterruptDispatcher::Execute(registers_t *regs)
     }
     else
     {
+        DEBUG_MSG("unhandled " << regs->int_no);
         if(regs->int_no < 32)
         {
             ARCH_INTERRUPTS_DEBUG_MSG("Unhandled fault: " << dec << regs->int_no);
@@ -113,7 +116,7 @@ void x86InterruptDispatcher::Execute(registers_t *regs)
     }
 }
 
-int x86InterruptDispatcher::exceptionToNumber(Exception e)
+int x86InterruptDispatcher::exceptionToVector(Exception e)
 {
     switch(e)
     {
@@ -154,7 +157,7 @@ int x86InterruptDispatcher::exceptionToNumber(Exception e)
     }
 }
 
-int x86InterruptDispatcher::interruptToNumber(InterruptingDevice i)
+int x86InterruptDispatcher::interruptToVector(InterruptingDevice i)
 {
     switch(i)
     {

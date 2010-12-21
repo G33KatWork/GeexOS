@@ -70,11 +70,7 @@ using namespace Arch;
 #define I86_PIC_ICW4_SFNM_NESTEDMODE	0x10		//10000
 #define I86_PIC_ICW4_SFNM_NOTNESTED		0			//a binary 2 (futurama joke hehe ;)
 
-
-static unsigned char master_mask = 0xFF;
-static unsigned char slave_mask = 0xFF;
-
-void Arch::InitializePIC()
+void PIC::Initialize()
 {
     uint8_t icw = 0;
 	
@@ -107,51 +103,51 @@ void Arch::InitializePIC()
     outb(I86_PIC2_REG_IMR, slave_mask);
 }
 
-void Arch::NotifyPIC(int intNo)
+void PIC::MaskVector(uint8_t vectorNumber)
 {
-    if (intNo > 48 || intNo < 32)
+    if (vectorNumber > 48 || vectorNumber < 32)
+		return;
+		
+	vectorNumber -= 32;
+	
+	if(vectorNumber >= 40)     //Slave
+	{    
+	    slave_mask |= 1 << (vectorNumber - 8);
+        outb(I86_PIC2_REG_IMR, slave_mask);
+	}
+	else                //Master
+	{
+	    master_mask |= 1 << vectorNumber;
+        outb(I86_PIC1_REG_IMR, master_mask);
+	}
+}
+
+void PIC::UnmaskVector(uint8_t vectorNumber)
+{
+    if (vectorNumber > 48 || vectorNumber < 32)
+		return;
+	
+    vectorNumber -= 32;
+	
+	if(vectorNumber >= 40)     //Slave
+	{    
+	    slave_mask &= ~(1 << (vectorNumber - 8));
+        outb(I86_PIC2_REG_IMR, slave_mask);
+	}
+	else                //Master
+	{
+	    master_mask &= ~(1 << vectorNumber);
+        outb(I86_PIC1_REG_IMR, master_mask);
+	}
+}
+
+void PIC::EndOfInterrupt(uint8_t vectorNumber)
+{
+    if (vectorNumber > 48 || vectorNumber < 32)
 		return;
 
-	if (intNo >= 40)	//Slave
+	if (vectorNumber >= 40)	//Slave
 		outb(I86_PIC2_REG_COMMAND, I86_PIC_OCW2_MASK_EOI);
 
 	outb(I86_PIC1_REG_COMMAND, I86_PIC_OCW2_MASK_EOI);
-}
-
-void Arch::UnmaskIRQ(int intNo)
-{
-    if (intNo > 48 || intNo < 32)
-		return;
-	
-    intNo -= 32;
-	
-	if(intNo >= 40)     //Slave
-	{    
-	    slave_mask &= ~(1 << (intNo - 8));
-        outb(I86_PIC2_REG_IMR, slave_mask);
-	}
-	else                //Master
-	{
-	    master_mask &= ~(1 << intNo);
-        outb(I86_PIC1_REG_IMR, master_mask);
-	}
-}
-
-void Arch::MaskIRQ(int intNo)
-{
-    if (intNo > 48 || intNo < 32)
-		return;
-		
-	intNo -= 32;
-	
-	if(intNo >= 40)     //Slave
-	{    
-	    slave_mask |= 1 << (intNo - 8);
-        outb(I86_PIC2_REG_IMR, slave_mask);
-	}
-	else                //Master
-	{
-	    master_mask |= 1 << intNo;
-        outb(I86_PIC1_REG_IMR, master_mask);
-	}
 }

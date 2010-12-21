@@ -3,12 +3,15 @@
 
 #include <halinterface/HAL.h>
 #include <arch/internal/PIT.h>
+#include <arch/internal/PIC.h>
+#include <arch/internal/LAPIC.h>
 #include <arch/internal/ACPIParser.h>
 #include <arch/x86ThreadContext.h>
 #include <arch/internal/SchedulingHelper.h>
 #include <arch/x86BootEnvironment.h>
 #include <arch/TextmodeDebugOutput.h>
 #include <arch/SerialDebugOutput.h>
+#include <halinterface/BaseInterruptController.h>
 
 namespace Arch
 {
@@ -20,6 +23,7 @@ namespace Arch
         
         virtual void Initialize();
         virtual void InitializationDone();
+        virtual void InitializationAfterMemoryAvailable();
         
         virtual void SetupArchMemRegions();
         
@@ -27,12 +31,12 @@ namespace Arch
         virtual void DisableInterrupts();
         
         virtual void GetCPUVendor(char* buf);
-    
+        
         virtual void HaltMachine();
         
         virtual BaseInterruptDispatcher* GetInterruptDispatcher();
         virtual BasePaging* GetPaging();
-        virtual ClockSource* GetHardwareClockSource();
+        virtual BaseTimer* GetHardwareClockSource();
         virtual BootEnvironment* GetBootEnvironment() { return bootenv; }
         virtual Debug::BaseDebugOutputDevice* GetCurrentDebugOutputDevice();
         virtual void SetCurrentDebugOutputDeviceType(Debug::DebugOutputDeviceType type);
@@ -41,6 +45,8 @@ namespace Arch
         virtual void SetStackPointer(Address NewPointer) { writeStackPointer(NewPointer); }
         virtual Address GetFramePointer() { return readBasePointer(); }
         virtual void SetFramePointer(Address NewPointer) { writeBasePointer(NewPointer); }
+    
+        virtual BaseInterruptController* GetCurrentInterruptController() { return pic; }
     
     private:
         BaseInterruptDispatcher* ird;
@@ -53,8 +59,9 @@ namespace Arch
         Debug::DebugOutputDeviceType currentDebugDevice;
         ACPIParser* acpiParser;
         
-        ClockSource clk;
         PIT* pit;
+        LAPIC* lapic;
+        PIC* pic;
     };
     
     //Export the ThreadContext type

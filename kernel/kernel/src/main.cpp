@@ -129,6 +129,12 @@ int main()
     VirtualMemoryManager::GetInstance()->SlabAllocator(slaballoc);
     MAIN_DEBUG_MSG("Slab allocator created...");
     
+    CurrentHAL->InitializationAfterMemoryAvailable();
+    
+    //Interrupts are now available
+    CurrentHAL->EnableInterrupts();
+    MAIN_DEBUG_MSG("Interrupts enabled...");
+    
     MAIN_DEBUG_MSG("Kernel commandline: " << CurrentHAL->GetBootEnvironment()->GetKernelCommandline());
     MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
     
@@ -168,9 +174,6 @@ int main()
     //Scheduler::GetInstance()->AddThread(thread4);
     
     Scheduler::GetInstance()->DumpThreads(CurrentHAL->GetCurrentDebugOutputDevice());
-    
-    CurrentHAL->EnableInterrupts();
-    MAIN_DEBUG_MSG("Interrupts enabled...");
     
     //Initialize the scheduler
     Scheduler::GetInstance()->SetTimerManager(tm);

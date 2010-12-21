@@ -51,28 +51,48 @@
 
 using namespace Arch;
 
-PIT::PIT(uint32_t frequency)
+
+void PIT::SetTickLengthUs(unsigned long us)
 {
-    uint32_t divider = 1193180 / frequency;
+    curTickLen = us;
+    uint32_t reloadVal = 1193180 * (us / 1000.0 / 1000.0);
 	
 	//Operational Command Word
 	uint8_t ocw=0;
-	ocw = (ocw & ~I86_PIT_OCW_MASK_MODE) | I86_PIT_OCW_MODE_SQUAREWAVEGEN;
-	ocw = (ocw & ~I86_PIT_OCW_MASK_RL) | I86_PIT_OCW_RL_DATA;
-	ocw = (ocw & ~I86_PIT_OCW_MASK_COUNTER) | I86_PIT_OCW_COUNTER_0;
+	ocw = (ocw & ~I86_PIT_OCW_MASK_MODE) | I86_PIT_OCW_MODE_SQUAREWAVEGEN;  //swithc mode to squarewave generation
+	ocw = (ocw & ~I86_PIT_OCW_MASK_RL) | I86_PIT_OCW_RL_DATA;               //access low and high byte
+	ocw = (ocw & ~I86_PIT_OCW_MASK_COUNTER) | I86_PIT_OCW_COUNTER_0;        //select channel 0
 	outb (I86_PIT_REG_COMMAND, ocw);
 	
 	//Set frequency
-	outb (I86_PIT_REG_COUNTER0, divider & 0xff);
-	outb (I86_PIT_REG_COUNTER0, (divider >> 8) & 0xff);
+	//essentially we just set the 16 bit reload counter
+	outb (I86_PIT_REG_COUNTER0, reloadVal & 0xff);
+	outb (I86_PIT_REG_COUNTER0, (reloadVal >> 8) & 0xff);
 }
 
-void PIT::Disable()
+void PIT::WaitForTick()
 {
-    CurrentHAL->GetInterruptDispatcher()->MaskInterrupt(BaseInterruptDispatcher::IRDEV_TIMER);
+    uint16_t curCount, prevCount;
+    curCount = GetCurrentCount();
+    do {
+        prevCount = curCount;
+        curCount = GetCurrentCount();
+        
+        // check for errornous results on Intel Neptune/Mercury/Aries Chipset 8237IB
+        // if the read value differs too much from the previous value, we just read it again
+        if(prevCount >= curCount)
+            curCount = GetCurrentCount();
+            
+    } while(prevCount >= curCount);
 }
 
-void PIT::Enable()
+uint16_t PIT::GetCurrentCount()
 {
-    CurrentHAL->GetInterruptDispatcher()->UnmaskInterrupt(BaseInterruptDispatcher::IRDEV_TIMER);
+    uint16_t count;
+    //latch the current count value of channel 0
+    outb(I86_PIT_REG_COMMAND, I86_PIT_OCW_COUNTER_0 | I86_PIT_OCW_RL_LATCH);
+    //get the count value
+    count = inb(I86_PIT_REG_COUNTER0);
+    count |= inb(I86_PIT_REG_COUNTER0) << 8;
+    return count;
 }

@@ -9,7 +9,7 @@ using namespace Time;
 using namespace Debug;
 
 /// Length of timeslice a thread gets until reschedulung occurs in microeconds
-#define     SCHED_THREAD_TIMESLICE      1000000
+#define     SCHED_THREAD_TIMESLICE      10000
 
 bool Scheduler::TimerExpired(Timer* t)
 {
@@ -18,7 +18,7 @@ bool Scheduler::TimerExpired(Timer* t)
     
     //Update timeslice of current process
     Thread* curThread = this->GetCurrentThread();
-    curThread->SetTimeslice(curThread->GetTimeslice() - CurrentHAL->GetHardwareClockSource()->tickLengthInUS);
+    curThread->SetTimeslice(curThread->GetTimeslice() - CurrentHAL->GetHardwareClockSource()->GetTickLengthUs());
     
     SCHEDULER_DEBUG_MSG("Timeslice of current thread: " << dec << curThread->GetTimeslice());
     

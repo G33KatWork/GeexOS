@@ -1,7 +1,7 @@
 #ifndef _TIMER_MANAGER_H
 #define _TIMER_MANAGER_H
 
-#include <halinterface/ClockSource.h>
+#include <halinterface/BaseTimer.h>
 #include <kernel/Time/Timer.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
 
@@ -9,22 +9,22 @@ namespace Time
 {
     class TimerManager {
     private:
-        Arch::ClockSource *clockSource;
+        Arch::BaseTimer *hardwareTimer;
         unsigned long tickLen;
         DataStructures::DoublyLinkedList<Timer> currentTimers;
         
-        void prepareClock(unsigned long us);
+        void prepareClock();
         
     public:
-        TimerManager(ClockSource* source)
+        TimerManager(Arch::BaseTimer* source)
         {
-            clockSource = NULL;
+            hardwareTimer = NULL;
             SetClockSource(source);
         }
         
-        void SetClockSource(ClockSource *newSource);
+        void SetClockSource(Arch::BaseTimer* newSource);
         
-        bool HandleTick(ClockSource *source);
+        bool HandleTick(Arch::BaseTimer* source);
         void StartTimer(Timer* t, unsigned long length);
         void StopTimer(Timer* t);
     };

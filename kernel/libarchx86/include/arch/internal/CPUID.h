@@ -86,7 +86,6 @@ namespace Arch
         asm volatile("cpuid":"=a"(*(dest+4)),"=b"(*(dest)), "=c"(*(dest+2)),"=d"(*(dest+1)):"0"(in));
         return h;
     }
-
 }
 
 #endif

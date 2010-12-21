@@ -2,50 +2,47 @@
 #include <kernel/Time/Timer.h>
 #include <kernel/Time/TimerManager.h>
 
+using namespace Arch;
 using namespace Time;
 using namespace Debug;
 
-void TimerManager::prepareClock(unsigned long us)
+void TimerManager::prepareClock()
 {
-    if(clockSource->type == CLKTYPE_PERIODIC)
+    if(hardwareTimer->GetClockType() == CLKTYPE_PERIODIC)
         return;
     
-    tickLen = us;
-    clockSource->prepare(us);
+    hardwareTimer->PrepareOneSot();
 }
 
-void TimerManager::SetClockSource(ClockSource *newSource)
+void TimerManager::SetClockSource(Arch::BaseTimer* newSource)
 {
-    if(clockSource != NULL)
-    {
-        clockSource->disable();
-    }
+    if(hardwareTimer != NULL)
+        hardwareTimer->DisableInterrupt();
     
-    clockSource = newSource;
+    hardwareTimer = newSource;
     
-    if(clockSource->type == CLKTYPE_PERIODIC)
-    {
-        tickLen = clockSource->tickLengthInUS;
-        clockSource->enable();
-    }
+    tickLen = hardwareTimer->GetTickLengthUs();
+    
+    if(hardwareTimer->GetClockType() == CLKTYPE_PERIODIC)
+        hardwareTimer->EnableInterrupt();
     else
     {
-        clockSource->enable();
-        prepareClock(clockSource->tickLengthInUS);
+        hardwareTimer->EnableInterrupt();
+        prepareClock();
     }
 }
 
-bool TimerManager::HandleTick(ClockSource *source)
+bool TimerManager::HandleTick(Arch::BaseTimer* source)
 {
     bool needScheduling = false;
     
-    if(source != clockSource)
+    if(source != hardwareTimer)
         PANIC("Unexpected clock source!");
     
     Timer *t = currentTimers.Head();
     while(t != NULL)
     {
-        if(tickLen < t->GetLength())
+        if(tickLen < t->GetLength() * 1000)  //convert miliseconds from timer to microsenconds (*1000)
         {
             t->SetLength(t->GetLength() - tickLen); //decrement time until timer expires
             TIMER_MGR_DEBUG_MSG("Drecemented remaining time of timer to " << dec << (unsigned int)t->GetLength());
@@ -70,7 +67,7 @@ bool TimerManager::HandleTick(ClockSource *source)
         t = nextLoopTimer;
     }
     
-    prepareClock(tickLen);
+    prepareClock();
     
     #ifdef EN_TIMER_MGR_DEBUG_MSG
     if(needScheduling)

@@ -100,12 +100,12 @@ namespace Arch
 			uint8_t LocalAPICLINT;
 		} LocalAPICNMIStructure;
 		
-		typedef struct LocalAPICOverrideStructure_
+		typedef struct LocalAPICAddressOverrideStructure_
 		{
 			APICStructureHeader APICHeader;
 			uint16_t reserved;
 			uint64_t LocalAPICAddress;
-		} LocalAPICOverrideStructure;
+		} LocalAPICAddressOverrideStructure;
 		
 		typedef struct IOSAPICStructure_
 		{

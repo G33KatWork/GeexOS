@@ -5,7 +5,7 @@
 
 namespace Arch
 {
-    enum ClockType {
+    /*enum ClockType {
         CLKTYPE_PERIODIC,
         CLKTYPE_ONESHOT
     };
@@ -20,7 +20,7 @@ namespace Arch
         void (*disable)(void);
     };
 
-    typedef struct clock_source ClockSource;
+    typedef struct clock_source ClockSource;*/
 }
 
 #endif

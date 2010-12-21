@@ -49,58 +49,71 @@ namespace Arch
     /**
      * ISRs for Exceptions (IRQs 0 to 31) (see interrupt.S)
     **/
-    extern "C" void isr0(void);
-    extern "C" void isr1(void);
-    extern "C" void isr2(void);
-    extern "C" void isr3(void);
-    extern "C" void isr4(void);
-    extern "C" void isr5(void);
-    extern "C" void isr6(void);
-    extern "C" void isr7(void);
-    extern "C" void isr8(void);
-    extern "C" void isr9(void);
-    extern "C" void isr10(void);
-    extern "C" void isr11(void);
-    extern "C" void isr12(void);
-    extern "C" void isr13(void);
-    extern "C" void isr14(void);
-    extern "C" void isr15(void);
-    extern "C" void isr16(void);
-    extern "C" void isr17(void);
-    extern "C" void isr18(void);
-    extern "C" void isr19(void);
-    extern "C" void isr20(void);
-    extern "C" void isr21(void);
-    extern "C" void isr22(void);
-    extern "C" void isr23(void);
-    extern "C" void isr24(void);
-    extern "C" void isr25(void);
-    extern "C" void isr26(void);
-    extern "C" void isr27(void);
-    extern "C" void isr28(void);
-    extern "C" void isr29(void);
-    extern "C" void isr30(void);
-    extern "C" void isr31(void);
+    extern "C" void exception0(void);
+    extern "C" void exception1(void);
+    extern "C" void exception2(void);
+    extern "C" void exception3(void);
+    extern "C" void exception4(void);
+    extern "C" void exception5(void);
+    extern "C" void exception6(void);
+    extern "C" void exception7(void);
+    extern "C" void exception8(void);
+    extern "C" void exception9(void);
+    extern "C" void exception10(void);
+    extern "C" void exception11(void);
+    extern "C" void exception12(void);
+    extern "C" void exception13(void);
+    extern "C" void exception14(void);
+    extern "C" void exception15(void);
+    extern "C" void exception16(void);
+    extern "C" void exception17(void);
+    extern "C" void exception18(void);
+    extern "C" void exception19(void);
+    extern "C" void exception20(void);
+    extern "C" void exception21(void);
+    extern "C" void exception22(void);
+    extern "C" void exception23(void);
+    extern "C" void exception24(void);
+    extern "C" void exception25(void);
+    extern "C" void exception26(void);
+    extern "C" void exception27(void);
+    extern "C" void exception28(void);
+    extern "C" void exception29(void);
+    extern "C" void exception30(void);
+    extern "C" void exception31(void);
 
     /**
-     * ISRs for Hardware-IRQs (IRQs 32 to 47) (see interrupt.S)
+     * exceptions for Hardware-IRQs (IRQs 32 to 47) (see interrupt.S)
     **/
-    extern "C" void irq0(void);
-    extern "C" void irq1(void);
-    extern "C" void irq2(void);
-    extern "C" void irq3(void);
-    extern "C" void irq4(void);
-    extern "C" void irq5(void);
-    extern "C" void irq6(void);
-    extern "C" void irq7(void);
-    extern "C" void irq8(void);
-    extern "C" void irq9(void);
-    extern "C" void irq10(void);
-    extern "C" void irq11(void);
-    extern "C" void irq12(void);
-    extern "C" void irq13(void);
-    extern "C" void irq14(void);
-    extern "C" void irq15(void);
+    extern "C" void irq32(void);
+    extern "C" void irq33(void);
+    extern "C" void irq34(void);
+    extern "C" void irq35(void);
+    extern "C" void irq36(void);
+    extern "C" void irq37(void);
+    extern "C" void irq38(void);
+    extern "C" void irq39(void);
+    extern "C" void irq40(void);
+    extern "C" void irq41(void);
+    extern "C" void irq42(void);
+    extern "C" void irq43(void);
+    extern "C" void irq44(void);
+    extern "C" void irq45(void);
+    extern "C" void irq46(void);
+    extern "C" void irq47(void);
+    extern "C" void irq48(void);
+    extern "C" void irq49(void);
+    extern "C" void irq50(void);
+    extern "C" void irq51(void);
+    extern "C" void irq52(void);
+    extern "C" void irq53(void);
+    extern "C" void irq54(void);
+    extern "C" void irq55(void);
+    extern "C" void irq56(void);
+    extern "C" void irq57(void);
+    extern "C" void irq58(void);
+    extern "C" void irq59(void);
+    extern "C" void irq60(void);
 }
 
 #endif

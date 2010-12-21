@@ -114,6 +114,51 @@ void ACPIParser::Parse()
                     HAL_ACPI_DEBUG_MSG("IOAPIC ID is " << hex << ioapic->IOAPICID);
                     HAL_ACPI_DEBUG_MSG("IOAPIC Base address is " << hex << ioapic->IOAPICAddress);
                 }
+                else if(type == INTERRUPTSOURCEOVERRIDE)
+                {
+                    HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type INTERRUPTSOURCEOVERRIDE");
+                    InterruptSourceOverrideStructure* intSrcOverride = (InterruptSourceOverrideStructure*)apicStruct;
+                }
+                else if(type == NMISOURCE)
+                {
+                    HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type NMISOURCE");
+                    NMIInterruptSourceStructure* nmiIntSrc = (NMIInterruptSourceStructure*)apicStruct;
+                }
+                else if(type == LOCALAPICNMI)
+                {
+                    HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALAPICNMI");
+                    LocalAPICNMIStructure* localNmi = (LocalAPICNMIStructure*)apicStruct;
+                }
+                else if(type == LOCALAPICADDRESSOVERRIDE)
+                {
+                    HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALAPICADDRESSOVERRIDE");
+                    LocalAPICAddressOverrideStructure* lapic = (LocalAPICAddressOverrideStructure*)apicStruct;
+                }
+                else if(type == IOSAPIC)
+                {
+                    HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type IOSAPIC");
+                    IOSAPICStructure* iosapic = (IOSAPICStructure*)apicStruct;
+                }
+                else if(type == LOCALSAPIC)
+                {
+                    HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALSAPIC");
+                    LocalSAPICStructure* lsapic = (LocalSAPICStructure*)apicStruct;
+                }
+                else if(type == PLATFORMINTERRUPTSOURCES)
+                {
+                    HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type PLATFORMINTERRUPTSOURCES");
+                    PlatformInterruptSourceStructure* platIntSrc = (PlatformInterruptSourceStructure*)apicStruct;
+                }
+                else if(type == LOCALX2APIC)
+                {
+                    HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALX2APIC");
+                    ProcessorLocalX2APICStructure* x2xapic = (ProcessorLocalX2APICStructure*)apicStruct;
+                }
+                else if(type == LOCALX2APICNMI)
+                {
+                    HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALX2APICNMI");
+                    LocalX2APICNMIStructure* lx2apicNmi = (LocalX2APICNMIStructure*)apicStruct;
+                }
             }
         }
     }

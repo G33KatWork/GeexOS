@@ -25,6 +25,7 @@ public:
     
     void Execute(registers_t* regs)
     {
+        //DEBUG_MSG("tick");
         if(this->tm->HandleTick(CurrentHAL->GetHardwareClockSource()))
         {
             //DEBUG_MSG("Scheduling");
