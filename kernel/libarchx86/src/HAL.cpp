@@ -39,9 +39,10 @@ x86HAL::x86HAL()
     graphicalDebug = NULL;
     pit = NULL;
     pic = NULL;
-    lapic = NULL;
+    ioapic = NULL;
     nullDebug = NullDebugOutputDevice();
     currentDebugDevice = None;
+    bootstrapProcessor = NULL;
 }
 
 void x86HAL::Initialize()
@@ -124,27 +125,27 @@ void x86HAL::InitializationAfterMemoryAvailable()
     //so, if we configure the LAPIC as a timer, it is never enabled
     //and doesn't interfere with the LAPIC timer which, for now, uses the same vector as the PIT
     
-    //The LAPIC timer can only be used, if the EOI is correctly delivered to the LAPIC.
-    //We need a whole new interrupt manager, which holds information about all currently
-    //usable vectors and handles all the local processors and system wide interrupt controllers
-    /*if(LAPIC::IsAvailable())
+    if(LAPIC::IsAvailable())
     {
         HAL_DEBUG_MSG("LAPIC is available. Configuring...");
         
-        lapic = new LAPIC();
+        LAPIC* lapic = new LAPIC();
         
         // Map LAPIC into IO Memory
         lapic->MapIntoIOMemory();
         
         lapic->Initialize();
+        bootstrapProcessor = new x86Processor(lapic->GetID(), lapic);
+        
         lapic->DetermineBusFrequency();
         
         lapic->SetTickLengthUs(1000);
         HAL_DEBUG_MSG("LAPIC with ID ID " << Debug::dec << lapic->GetID() << " initialized...");
     }
-    else*/
+    else
     {
         HAL_DEBUG_MSG("LAPIC is not available. Falling back to PIT Timer.");
+        bootstrapProcessor = new x86Processor(0, NULL);
         
         pit = new PIT();
         pit->SetTickLengthUs(1000);     //1000us = 1ms
@@ -235,9 +236,8 @@ BasePaging* x86HAL::GetPaging()
 
 BaseTimer* x86HAL::GetHardwareClockSource()
 {
-    //TODO: fix this for SMP systems, since every cpu can has its own timer
-    if(lapic != NULL)
-        return lapic;
+    if(((x86Processor*)GetCurrentProcessor())->GetLAPIC() != NULL)
+        return ((x86Processor*)GetCurrentProcessor())->GetLAPIC();
         
     return pit;
 }

@@ -101,60 +101,60 @@ void ACPIParser::Parse()
                 uint8_t type;
                 APICStructureHeader* apicStruct = madt->GetAPICStruct(i, &type);
                 
-                if(type == LOCALAPIC)
+                if(type == MADT_LOCALAPIC)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALAPIC");
                     LocalAPICStructure* lapic = (LocalAPICStructure*)apicStruct;
                     HAL_ACPI_DEBUG_MSG("LAPIC Processor ID is " << hex << lapic->ProcessorID);
                 }
-                else if(type == IOAPIC)
+                else if(type == MADT_IOAPIC)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type IOAPIC");
                     IOAPICStructure* ioapic = (IOAPICStructure*)apicStruct;
                     HAL_ACPI_DEBUG_MSG("IOAPIC ID is " << hex << ioapic->IOAPICID);
                     HAL_ACPI_DEBUG_MSG("IOAPIC Base address is " << hex << ioapic->IOAPICAddress);
                 }
-                else if(type == INTERRUPTSOURCEOVERRIDE)
+                else if(type == MADT_INTERRUPTSOURCEOVERRIDE)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type INTERRUPTSOURCEOVERRIDE");
                     InterruptSourceOverrideStructure* intSrcOverride = (InterruptSourceOverrideStructure*)apicStruct;
                 }
-                else if(type == NMISOURCE)
+                else if(type == MADT_NMISOURCE)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type NMISOURCE");
                     NMIInterruptSourceStructure* nmiIntSrc = (NMIInterruptSourceStructure*)apicStruct;
                 }
-                else if(type == LOCALAPICNMI)
+                else if(type == MADT_LOCALAPICNMI)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALAPICNMI");
                     LocalAPICNMIStructure* localNmi = (LocalAPICNMIStructure*)apicStruct;
                 }
-                else if(type == LOCALAPICADDRESSOVERRIDE)
+                else if(type == MADT_LOCALAPICADDRESSOVERRIDE)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALAPICADDRESSOVERRIDE");
                     LocalAPICAddressOverrideStructure* lapic = (LocalAPICAddressOverrideStructure*)apicStruct;
                 }
-                else if(type == IOSAPIC)
+                else if(type == MADT_IOSAPIC)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type IOSAPIC");
                     IOSAPICStructure* iosapic = (IOSAPICStructure*)apicStruct;
                 }
-                else if(type == LOCALSAPIC)
+                else if(type == MADT_LOCALSAPIC)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALSAPIC");
                     LocalSAPICStructure* lsapic = (LocalSAPICStructure*)apicStruct;
                 }
-                else if(type == PLATFORMINTERRUPTSOURCES)
+                else if(type == MADT_PLATFORMINTERRUPTSOURCES)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type PLATFORMINTERRUPTSOURCES");
                     PlatformInterruptSourceStructure* platIntSrc = (PlatformInterruptSourceStructure*)apicStruct;
                 }
-                else if(type == LOCALX2APIC)
+                else if(type == MADT_LOCALX2APIC)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALX2APIC");
                     ProcessorLocalX2APICStructure* x2xapic = (ProcessorLocalX2APICStructure*)apicStruct;
                 }
-                else if(type == LOCALX2APICNMI)
+                else if(type == MADT_LOCALX2APICNMI)
                 {
                     HAL_ACPI_DEBUG_MSG("APIC Struct " << dec << i << " is of type LOCALX2APICNMI");
                     LocalX2APICNMIStructure* lx2apicNmi = (LocalX2APICNMIStructure*)apicStruct;

@@ -4,6 +4,7 @@
 #include <arch/types.h>
 
 #include <halinterface/BaseTimer.h>
+#include <kernel/global.h>
 
 #define     LAPIC_ENABLE                0x100
 
@@ -104,10 +105,10 @@ namespace Arch
         virtual void DisableInterrupt() { MaskLocalVector(LAPIC_LVT_TIMER); }
         
     private:
-        Address GetBaseAddress();
+        Address GetVirtBaseAddress();
         
-        inline uint32_t LAPICRead(Address offset) { return *(volatile uint32_t *)((char*)GetBaseAddress() + offset); }
-        inline void LAPICWrite(Address offset, uint32_t data) { *(volatile uint32_t *)((char *)GetBaseAddress() + offset) = data; }
+        inline uint32_t LAPICRead(Address offset) { return *(volatile uint32_t *)((char*)GetVirtBaseAddress() + offset); }
+        inline void LAPICWrite(Address offset, uint32_t data) { *(volatile uint32_t *)((char *)GetVirtBaseAddress() + offset) = data; }
         
         unsigned long curTickLen;
         

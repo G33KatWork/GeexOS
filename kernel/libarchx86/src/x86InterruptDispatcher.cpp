@@ -7,6 +7,10 @@
 using namespace Arch;
 using namespace Debug;
 
+#define     ARCH_X86_EXCEPTION_BASE         0
+#define     ARCH_X86_INTERRUPT_BASE         0x20
+#define     ARCH_X86_LOCAL_INTERRUPT_BASE   0xfb
+
 int nestedExceptions = 0;
 
 x86InterruptDispatcher::x86InterruptDispatcher()
@@ -60,7 +64,8 @@ void x86InterruptDispatcher::MaskInterrupt(InterruptingDevice i)
     if(intno == -1)
         return;
     
-    CurrentHAL->GetCurrentInterruptController()->MaskVector(intno);
+    //FIXME: mask lapic stuff
+    ((x86HAL*)CurrentHAL)->GetCurrentInterruptController()->MaskVector(intno);
 }
 
 void x86InterruptDispatcher::UnmaskInterrupt(InterruptingDevice i)
@@ -69,14 +74,22 @@ void x86InterruptDispatcher::UnmaskInterrupt(InterruptingDevice i)
     if(intno == -1)
         return;
     
-    CurrentHAL->GetCurrentInterruptController()->UnmaskVector(intno);
+    //FIXME: unmask lapic stuff
+    ((x86HAL*)CurrentHAL)->GetCurrentInterruptController()->UnmaskVector(intno);
 }
 
 void x86InterruptDispatcher::Execute(registers_t *regs)
 {
-    //FIXME: check if this is a local interrupt and notify the local APIC instead of the general interrupt controller
-    if(regs->int_no > 16)
-        CurrentHAL->GetCurrentInterruptController()->EndOfInterrupt(regs->int_no);
+    if(regs->int_no >= ARCH_X86_INTERRUPT_BASE)
+    {
+        if(! ((x86HAL*)CurrentHAL)->GetCurrentInterruptController()->EndOfInterrupt(regs->int_no))
+        {
+            //Notify local apic
+            LAPIC* lapic = ((x86Processor*)CurrentHAL->GetCurrentProcessor())->GetLAPIC();
+            if(lapic)
+                lapic->LocalEndOfInterrupt();
+        }
+    }
     
     /*ARCH_INTERRUPTS_DEBUG_MSG("Executing interrupt");
     ARCH_INTERRUPTS_DEBUG_MSG("Register state:");
@@ -104,16 +117,20 @@ void x86InterruptDispatcher::Execute(registers_t *regs)
     }
     else
     {
-        DEBUG_MSG("unhandled " << regs->int_no);
-        if(regs->int_no < 32)
+        //DEBUG_MSG("unhandled " << regs->int_no);
+        if(regs->int_no < ARCH_X86_INTERRUPT_BASE)
         {
             ARCH_INTERRUPTS_DEBUG_MSG("Unhandled fault: " << dec << regs->int_no);
         }
+        else if(regs->int_no < ARCH_X86_LOCAL_INTERRUPT_BASE)
+        {
+            ARCH_INTERRUPTS_DEBUG_MSG("Unhandled io interrupt: " << dec << regs->int_no);
+        }
         else
         {
-            ARCH_INTERRUPTS_DEBUG_MSG("Unhandled interrupt: " << dec << regs->int_no);
+            ARCH_INTERRUPTS_DEBUG_MSG("Unhandled local interrupt: " << dec << regs->int_no);
         }
-    }
+    }    
 }
 
 int x86InterruptDispatcher::exceptionToVector(Exception e)
@@ -162,29 +179,34 @@ int x86InterruptDispatcher::interruptToVector(InterruptingDevice i)
     switch(i)
     {
         case IRDEV_TIMER:
-            return 32 + 0;
+        {
+            if(((x86Processor*)CurrentHAL->GetCurrentProcessor())->GetLAPIC())
+                return 0xfb;
+            else
+                return ARCH_X86_INTERRUPT_BASE + 0;
+        }
         case IRDEV_KEYBOARD:
-            return 32 + 1;
+            return ARCH_X86_INTERRUPT_BASE + 1;
         case IRDEV_SERIAL1:
-            return 32 + 4;
+            return ARCH_X86_INTERRUPT_BASE + 4;
         case IRDEV_SERIAL2:
-            return 32 + 3;
+            return ARCH_X86_INTERRUPT_BASE + 3;
         case IRDEV_PARALLEL2:
-            return 32 + 5;
+            return ARCH_X86_INTERRUPT_BASE + 5;
         case IRDEV_FLOPPY:
-            return 32 + 6;
+            return ARCH_X86_INTERRUPT_BASE + 6;
         case IRDEV_PARALLEL1:
-            return 32 + 7;
+            return ARCH_X86_INTERRUPT_BASE + 7;
         case IRDEV_RTC:
-            return 32 + 8;
+            return ARCH_X86_INTERRUPT_BASE + 8;
         case IRDEV_PS2MOUSE:
-            return 32 + 12;
+            return ARCH_X86_INTERRUPT_BASE + 12;
         case IRDEV_FPU:
-            return 32 + 13;
+            return ARCH_X86_INTERRUPT_BASE + 13;
         case IRDEV_ATAPRIMARY:
-            return 32 + 14;
+            return ARCH_X86_INTERRUPT_BASE + 14;
         case IRDEV_ATASLAVE:
-            return 32 + 15;
+            return ARCH_X86_INTERRUPT_BASE + 15;
         default:
             return -1;
     }

@@ -24,7 +24,8 @@ CXXSOURCES = HAL.cpp \
 			 ACPI/ACPITable.cpp \
 			 ACPI/RSDP.cpp \
 			 ACPI/RSDT.cpp \
-			 LAPIC.cpp
+			 LAPIC.cpp \
+			 IOAPIC.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = start.S interruptStubs.S SchedulingHelper.S gdt_flush.S

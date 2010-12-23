@@ -2,7 +2,7 @@
 #define _ARCHX86_PIC_H
 
 #include <types.h>
-#include <halinterface/BaseInterruptController.h>
+#include <arch/internal/InterruptController.h>
 
 //-----------------------------------------------
 //	Command words are used to control the devices
@@ -26,7 +26,7 @@
 
 namespace Arch
 {
-    class PIC : public BaseInterruptController
+    class PIC : public InterruptController
     {
     private:
         unsigned char master_mask;
@@ -40,7 +40,7 @@ namespace Arch
         virtual void MaskVector(uint8_t vectorNumber);
         virtual void UnmaskVector(uint8_t vectorNumber);
         
-        virtual void EndOfInterrupt(uint8_t vectorNumber);
+        virtual bool EndOfInterrupt(uint8_t vectorNumber);
     };
 }
 

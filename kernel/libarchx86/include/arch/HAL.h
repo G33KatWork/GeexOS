@@ -7,11 +7,13 @@
 #include <arch/internal/LAPIC.h>
 #include <arch/internal/ACPIParser.h>
 #include <arch/x86ThreadContext.h>
+#include <arch/x86Processor.h>
 #include <arch/internal/SchedulingHelper.h>
 #include <arch/x86BootEnvironment.h>
 #include <arch/TextmodeDebugOutput.h>
 #include <arch/SerialDebugOutput.h>
-#include <halinterface/BaseInterruptController.h>
+#include <arch/internal/InterruptController.h>
+#include <arch/internal/IOAPIC.h>
 
 namespace Arch
 {
@@ -32,6 +34,9 @@ namespace Arch
         
         virtual void GetCPUVendor(char* buf);
         
+        //FIXME: return real current processor, if we have more than one later
+        virtual BaseProcessor* GetCurrentProcessor() { return bootstrapProcessor; }
+        
         virtual void HaltMachine();
         
         virtual BaseInterruptDispatcher* GetInterruptDispatcher();
@@ -46,8 +51,8 @@ namespace Arch
         virtual Address GetFramePointer() { return readBasePointer(); }
         virtual void SetFramePointer(Address NewPointer) { writeBasePointer(NewPointer); }
     
-        virtual BaseInterruptController* GetCurrentInterruptController() { return pic; }
-    
+        InterruptController* GetCurrentInterruptController() { if(ioapic != NULL) return ioapic; else return pic; }
+        
     private:
         BaseInterruptDispatcher* ird;
         BasePaging *paging;
@@ -59,9 +64,12 @@ namespace Arch
         Debug::DebugOutputDeviceType currentDebugDevice;
         ACPIParser* acpiParser;
         
+        //FIXME: for now we just have one processor, use a list for the others later
+        x86Processor* bootstrapProcessor;
+        
         PIT* pit;
-        LAPIC* lapic;
         PIC* pic;
+        IOAPIC *ioapic;
     };
     
     //Export the ThreadContext type

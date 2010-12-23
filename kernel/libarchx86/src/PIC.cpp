@@ -97,7 +97,7 @@ void PIC::Initialize()
 	outb (I86_PIC1_REG_DATA, icw);
 	outb (I86_PIC2_REG_DATA, icw);
 	
-	master_mask = 0xFF /*& ~(1<<2)*/;
+	master_mask = 0xFB /*& ~(1<<2)*/;
 	slave_mask = 0xFF;
     outb(I86_PIC1_REG_IMR, master_mask);
     outb(I86_PIC2_REG_IMR, slave_mask);
@@ -141,13 +141,15 @@ void PIC::UnmaskVector(uint8_t vectorNumber)
 	}
 }
 
-void PIC::EndOfInterrupt(uint8_t vectorNumber)
+bool PIC::EndOfInterrupt(uint8_t vectorNumber)
 {
     if (vectorNumber > 48 || vectorNumber < 32)
-		return;
+		return false;
 
 	if (vectorNumber >= 40)	//Slave
 		outb(I86_PIC2_REG_COMMAND, I86_PIC_OCW2_MASK_EOI);
 
 	outb(I86_PIC1_REG_COMMAND, I86_PIC_OCW2_MASK_EOI);
+	
+    return true;
 }

@@ -16,17 +16,17 @@ namespace Arch
 		
 		enum ApicStructureTypes
 		{
-			LOCALAPIC					=		0,
-			IOAPIC						=		1,
-			INTERRUPTSOURCEOVERRIDE		=		2,
-			NMISOURCE					=		3,
-			LOCALAPICNMI				=		4,
-			LOCALAPICADDRESSOVERRIDE	=		5,
-			IOSAPIC						=		6,
-			LOCALSAPIC					=		7,
-			PLATFORMINTERRUPTSOURCES	=		8,
-			LOCALX2APIC					=		9,
-			LOCALX2APICNMI				=		0xA
+			MADT_LOCALAPIC					=		0,
+			MADT_IOAPIC						=		1,
+			MADT_INTERRUPTSOURCEOVERRIDE	=		2,
+			MADT_NMISOURCE					=		3,
+			MADT_LOCALAPICNMI				=		4,
+			MADT_LOCALAPICADDRESSOVERRIDE	=		5,
+			MADT_IOSAPIC					=		6,
+			MADT_LOCALSAPIC					=		7,
+			MADT_PLATFORMINTERRUPTSOURCES	=		8,
+			MADT_LOCALX2APIC				=		9,
+			MADT_LOCALX2APICNMI				=		0xA
 		};
 		
 		enum LocalAPICStructureFlags

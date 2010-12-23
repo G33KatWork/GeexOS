@@ -55,7 +55,7 @@ void LAPIC::Initialize()
     //Set timer interrupt vector
     conf = LAPICRead(LAPIC_LVT_TIMER) & 0xfffdff00;
     conf |= LAPIC_LVT_TIMERMODE_PERIODIC;
-    conf |= 32;     //FIXME: Get interrupt vector number from somewhere in the HAL
+    conf |= 0xfb;     //FIXME: Get interrupt vector number from somewhere in the HAL
     LAPICWrite(LAPIC_LVT_TIMER, conf);
     
     //Mask timer interrupt
@@ -99,7 +99,7 @@ bool LAPIC::IsAvailable()
     return d & CPUID_FLAG_APIC;
 }
 
-Address LAPIC::GetBaseAddress()
+Address LAPIC::GetVirtBaseAddress()
 {
     Address a, d;
     getMSR(MSR_APIC_BASE, &a, &d);

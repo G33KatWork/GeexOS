@@ -6,7 +6,7 @@
 #include <halinterface/BasePaging.h>
 #include <halinterface/BootEnvironment.h>
 #include <halinterface/BaseDebugOutputDevice.h>
-#include <halinterface/BaseInterruptController.h>
+#include <halinterface/BaseProcessor.h>
 
 namespace Arch
 {
@@ -66,6 +66,12 @@ namespace Arch
         virtual void GetCPUVendor(char* buf) = 0;
         
         /**
+         * This method returns an instance to the Processor the code is
+         * currently running on.
+        **/
+        virtual BaseProcessor* GetCurrentProcessor() = 0;
+        
+        /**
          * This method should halt all CPUs and disable all interrupts.
          * Mainly this will be called in the event of a kernel panic
          * or a shutdown/reboot.
@@ -86,11 +92,6 @@ namespace Arch
          * Returns the currently used timer on the platform
         **/
         virtual BaseTimer* GetHardwareClockSource() = 0;
-        
-        /**
-         * Returns the currently used interrupt controller of the platform
-        **/
-        virtual BaseInterruptController* GetCurrentInterruptController() = 0;
         
         /**
          * Returns a BootEnvironment containing information like the ELF headers
