@@ -18,6 +18,7 @@
 #include <arch/VBEDebugOutput.h>
 
 using namespace Arch;
+using namespace Arch::ACPI;
 using namespace Memory;
 using namespace Debug;
 using namespace Memory;
@@ -112,19 +113,8 @@ void x86HAL::InitializationAfterMemoryAvailable()
     acpiParser = new ACPIParser();
     acpiParser->Parse();
     
-    //TODO: Init LAPIC if available
-    //TODO: Init HPET or LAPIC timer if available
-    //TODO: Init IOAPIC
-    
-    //FIXME: Replace PIC with IOAPIC
-    pic = new PIC();
-    pic->Initialize();
-    HAL_DEBUG_MSG("PIC initialized...");
-    
-    //The old PIT interrupt should be masked inside the PIC here
-    //so, if we configure the LAPIC as a timer, it is never enabled
-    //and doesn't interfere with the LAPIC timer which, for now, uses the same vector as the PIT
-    
+    //Configure LAPIC on bootstrap processor
+    //FIXME: Use ACPI tables for LAPICs
     if(LAPIC::IsAvailable())
     {
         HAL_DEBUG_MSG("LAPIC is available. Configuring...");
@@ -140,7 +130,7 @@ void x86HAL::InitializationAfterMemoryAvailable()
         lapic->DetermineBusFrequency();
         
         lapic->SetTickLengthUs(1000);
-        HAL_DEBUG_MSG("LAPIC with ID ID " << Debug::dec << lapic->GetID() << " initialized...");
+        HAL_DEBUG_MSG("LAPIC with ID " << Debug::dec << lapic->GetID() << " on bootstrapping processor initialized...");
     }
     else
     {
@@ -150,6 +140,42 @@ void x86HAL::InitializationAfterMemoryAvailable()
         pit = new PIT();
         pit->SetTickLengthUs(1000);     //1000us = 1ms
         HAL_DEBUG_MSG("PIT initialized...");
+    }
+    
+    //FIXME: Handle more than 1 I/O APIC
+    IOAPICStructure* ioapicStruct = (IOAPICStructure*)acpiParser->GetMADT()->GetAPICStructOfType(0, MADT_IOAPIC);
+    
+    //Setup IOAPIC or PIC
+    if(ioapicStruct)
+    {
+        HAL_DEBUG_MSG("IOAPIC Structure found in ACPI, configuring...");
+        HAL_DEBUG_MSG("IOAPIC ID is " << hex << ioapicStruct->IOAPICID);
+        HAL_DEBUG_MSG("IOAPIC Base address is " << hex << ioapicStruct->IOAPICAddress);
+        HAL_DEBUG_MSG("IOAPIC global system interrupt base is " << hex << ioapicStruct->GlobalSystemInterruptBase);
+        
+        ioapic = new IOAPIC(ioapicStruct->IOAPICAddress, ioapicStruct->GlobalSystemInterruptBase);
+        ioapic->MapIntoIOMemory();
+        
+        if(ioapic->GetID() != ioapicStruct->IOAPICID)
+            ioapic->SetID(ioapicStruct->IOAPICID);
+        ASSERT(ioapic->GetID() == ioapicStruct->IOAPICID, "IOAPIC id is not equal to IOAPIC id in MADT ACPI Table");
+        ioapic->Initialize();
+        
+        //configure interrupt source overrides for IOAPIC
+        InterruptSourceOverrideStructure* override = (InterruptSourceOverrideStructure*)acpiParser->GetMADT()->GetAPICStructOfType(0, MADT_INTERRUPTSOURCEOVERRIDE);
+        while(override)
+        {
+            HAL_DEBUG_MSG("Found interrupt source override from " << dec << override->Source << " to " << override->GlobalSystemInterrupt);
+            override = (InterruptSourceOverrideStructure*)acpiParser->GetMADT()->GetNextAPICStructOfType((APICStructureHeader*)override, MADT_INTERRUPTSOURCEOVERRIDE);
+        }
+        
+        HAL_DEBUG_MSG("Configured IOAPIC with id " << hex << ioapic->GetID() << " in version " << ioapic->GetVersion());
+    }
+    //else
+    {
+        HAL_DEBUG_MSG("No IOAPIC Structure found in ACPI, falling back to legacy PIC...");
+        pic = new PIC();
+        pic->Initialize();
     }
 }
 

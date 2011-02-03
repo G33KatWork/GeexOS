@@ -37,14 +37,15 @@ namespace Arch
 		
 		enum InterruptSourceOverrideStructureFlags
 		{
-			POLARITY_BUSSPEC			=	0,
-			POLARITY_ACTIVEHIGH			=	1,
-			POLARITY_RESERVED			=	2,
-			POLARITY_ACTIVE				=	3,
-			TRIGGER_BUSSPEC				=	0,
-			TRIGERMODE_EDGE				=	1,
-			TRIGGERMODE_RESERVED		=	2,
-			TRIGGERMODE_LEVEL			=	3
+			POLARITY_BUSSPEC			=	0,  //0000
+			POLARITY_ACTIVEHIGH			=	1,  //0001
+			POLARITY_RESERVED			=	2,  //0010
+			POLARITY_ACTIVE				=	3,  //0011
+			
+			TRIGGER_BUSSPEC				=	0,  //0000
+			TRIGERMODE_EDGE				=	4,  //0100
+			TRIGGERMODE_RESERVED		=	8,  //1000
+			TRIGGERMODE_LEVEL			=	12  //1100
 		};
 		
 		enum PlatformInterruptSourceFlags
@@ -168,43 +169,48 @@ namespace Arch
         public:
 			uint32_t GetLocalAPICAddress() { return Read32(36); }
 			uint32_t GetFlags() { return Read32(40); }
-			size_t GetAPICStructureCount()
-			{
-				size_t baseSize = ACPITABLEHEADERLEN + 2*sizeof(uint32_t);
-				size_t curSize = baseSize;
-				size_t structCount = 0;
-				Address start = GetAddress();
-				
-				while(curSize < GetLengthInternal())
-				{
-					structCount++;
-					APICStructureHeader* struc = (APICStructureHeader*)(start + curSize);
-					curSize += struc->Length;
-				}
-				
-				return structCount;
-			}
 			
-			APICStructureHeader* GetAPICStruct(size_t n, uint8_t* type)
-			{
-				size_t baseSize = ACPITABLEHEADERLEN + 2*sizeof(uint32_t);
-				size_t curSize = baseSize;
-				Address start = GetAddress();
-				size_t i = 0;
-				
-				while(i < n)
-				{
-					ASSERT(curSize < GetLengthInternal(), "Index out of bounds");
-					i++;
-					APICStructureHeader* struc = (APICStructureHeader*)(start + curSize);
-					curSize += struc->Length;
-				}
-				
-				APICStructureHeader* retStruct = (APICStructureHeader*)(GetAddress() + curSize);
-				if(type != NULL)
-					*type = retStruct->Type;
-				return retStruct;
-			}
+			/**
+			 * Returns the whole amount of subsctructures inside the MADT
+			**/
+            unsigned int GetAPICStructureCount();
+			
+			/**
+			 * Returns the substructure and type of it at a given index
+			 * If the index is out of bounds, NULL is returned.
+			 * type may be a NULL pointer if not needed
+			 *
+			 * \param n the index
+			 * \param type a pointer to a ApicStructureTypes variable which will be set to the type of the found substruct
+			 * \return the found substructure or NULL if the given index was out of bounds
+			**/
+            APICStructureHeader* GetAPICStruct(unsigned int n, ApicStructureTypes* type);
+			
+			/**
+			 * Returns the first substructure of a given type beginning at index n
+			 * 
+			 * \param start the offset to begin the search at
+			 * \param type the desired type of the next structure to be found
+			 * \return The next found substructure or NULL
+			**/
+            APICStructureHeader* GetAPICStructOfType(unsigned int start, ApicStructureTypes type);
+			
+			/**
+			 * Returns the index of a given substructure pointer or -1 if it is not found
+			 *
+			 * \param apicStruct the substructure the index of should be determined
+			 * \return the index of the given struct or -1 if not found
+			**/
+            int GetAPICStructIndex(APICStructureHeader* apicStruct);
+			
+			/**
+			 * Returns the next substructure of a given type after a given previous substructure
+			 * 
+			 * \param previous the pointer to the previous structure
+			 * \type the desired type of the next structure to be found
+			 * \return the next found structure or NULL
+			**/
+            APICStructureHeader* GetNextAPICStructOfType(APICStructureHeader* previous, ApicStructureTypes type);
         };
     }
 }

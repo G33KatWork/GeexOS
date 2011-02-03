@@ -24,6 +24,7 @@ CXXSOURCES = HAL.cpp \
 			 ACPI/ACPITable.cpp \
 			 ACPI/RSDP.cpp \
 			 ACPI/RSDT.cpp \
+ 			 ACPI/MADT.cpp \
 			 LAPIC.cpp \
 			 IOAPIC.cpp
 

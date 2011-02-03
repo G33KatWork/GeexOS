@@ -54,6 +54,7 @@ else
 endif
 
 	$(Q)$(SUDO) $(RM) -Rf tmp
+	$(Q)$(SUDO) chmod 666 ./floppy.img
 
 initrd.img: utils/geninitramfs resources/test.txt resources/test1.txt
 	$(call cmd_msg,GENINITRD,initrd.img)
@@ -91,6 +92,9 @@ vmware: all
 doxygen: doxygen.conf
 	$(call cmd_msg,DOXYGEN,$<)
 	$(Q)cat $< | doxygen - $(QOUTPUT)
+
+doxyclean:
+	$(Q)$(RM) -rf doc/html
 
 # Cleaning
 clean:

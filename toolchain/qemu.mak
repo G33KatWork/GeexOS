@@ -1,4 +1,4 @@
-QEMU_VERSION		:= 0.12.4
+QEMU_VERSION		:= 0.13.0
 QEMU_SOURCE	     	:= $(TOOLCHAIN_SRCDIR)/qemu-$(QEMU_VERSION).tar.bz2
 QEMU_DOWNLOAD	    := http://download.savannah.gnu.org/releases/qemu/qemu-$(QEMU_VERSION).tar.gz
 QEMU_PATCHES	    := 

@@ -136,7 +136,7 @@ void LAPIC::DetermineBusFrequency()
     
     count = 0xffffffff - count;
     
-    DEBUG_MSG("count: " << Debug::dec << count);
+    //DEBUG_MSG("count: " << Debug::dec << count);
     
     uint64_t ticksPerSec = (uint64_t)(count * CALIBRATIONLOOP_FREQUENCY / CALIBRATIONLOOP_COUNT);
     lapicBusFrequency = ticksPerSec;

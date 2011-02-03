@@ -7,10 +7,6 @@
 using namespace Arch;
 using namespace Debug;
 
-#define     ARCH_X86_EXCEPTION_BASE         0
-#define     ARCH_X86_INTERRUPT_BASE         0x20
-#define     ARCH_X86_LOCAL_INTERRUPT_BASE   0xfb
-
 int nestedExceptions = 0;
 
 x86InterruptDispatcher::x86InterruptDispatcher()

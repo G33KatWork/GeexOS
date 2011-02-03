@@ -47,6 +47,8 @@ void operator delete(void *p, bool pageAllocation);
 
 void* kmalloc(size_t size);
 void kfree(void* p);
+//void* krealloc(void* p, size_t s);
+
 
 unsigned int getPlacementPointer();
 

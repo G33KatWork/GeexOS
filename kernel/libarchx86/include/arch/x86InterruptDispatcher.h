@@ -5,6 +5,10 @@
 #include <halinterface/BaseInterruptDispatcher.h>
 #include <arch/internal/idt.h>
 
+#define     ARCH_X86_EXCEPTION_BASE         0
+#define     ARCH_X86_INTERRUPT_BASE         0x20
+#define     ARCH_X86_LOCAL_INTERRUPT_BASE   0xfb
+
 // Set the following number to the maximum nested exceptions
 // the kernel tries to resolve before it will panic
 #define     MAX_NESTED_EXCEPTIONS   1

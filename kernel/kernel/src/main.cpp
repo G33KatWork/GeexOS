@@ -16,10 +16,6 @@
 #include <kernel/Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.h>
 #include <kernel/Memory/Slab/SlabAllocator.h>
 
-#include <string.h>
-
-#include <kernel/Memory/Virtual/Regions/SwappedMemoryRegion.h>
-
 extern      Address             bootStack;          //defined in start.S
 
 using namespace Debug;
@@ -178,7 +174,7 @@ int main()
     //Initialize the scheduler
     Scheduler::GetInstance()->SetTimerManager(tm);
     
-    SlabCache* largeCache = slaballoc->CreateCache("Large Testcache", 0x201, 0);
+    /*SlabCache* largeCache = slaballoc->CreateCache("Large Testcache", 0x201, 0);
     MAIN_DEBUG_MSG("Large SlabCache is at " << hex << (Address)largeCache);
     void* largealloc1 = largeCache->AllocateObject();
     MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc1);
@@ -204,7 +200,7 @@ int main()
     largeCache->FreeObject(largealloc5);
     largeCache->FreeObject(largealloc6);
     largeCache->FreeObject(largealloc8);
-    slaballoc->DestroyCache(largeCache);
+    slaballoc->DestroyCache(largeCache);*/
     
     slaballoc->FreeUnusedMemory();
     

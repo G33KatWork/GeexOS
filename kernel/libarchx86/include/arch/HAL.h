@@ -51,7 +51,7 @@ namespace Arch
         virtual Address GetFramePointer() { return readBasePointer(); }
         virtual void SetFramePointer(Address NewPointer) { writeBasePointer(NewPointer); }
     
-        InterruptController* GetCurrentInterruptController() { if(ioapic != NULL) return ioapic; else return pic; }
+        InterruptController* GetCurrentInterruptController() { /*if(ioapic != NULL) return ioapic; else*/ return pic; }
         
     private:
         BaseInterruptDispatcher* ird;

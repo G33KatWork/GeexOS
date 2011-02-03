@@ -4,6 +4,7 @@
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/debug.h>
 #include <arch/hal.h>
+#include <string.h>
 
 using namespace Debug;
 using namespace Arch;
@@ -74,6 +75,28 @@ void kfree(void* p)
     else
         PANIC("It seems that you are trying to free an object at " << hex << addr << " not residing in the slab allocator. Not good!");
 }
+
+/*void* krealloc(void* p, size_t s)
+{
+    if(s <= 0)
+    {
+        if(p) kfree(p);
+        return NULL;
+    }
+    else if(!p)
+        return kmalloc(s);
+    else
+    {
+        void* newBuf = kmalloc(s);
+        if(newBuf)
+        {
+            memcpy(newBuf, p, s);       //FIXME: Broken! Copies too much for some cases and could lead to a pagefault :-/
+            kfree(p);
+        }
+        
+        return newBuf;
+    }
+}*/
 
 unsigned int getPlacementPointer()
 {
