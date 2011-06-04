@@ -1,0 +1,33 @@
+Threads hold ports
+	Port can be allocated:	Port p = Port::Create(IPC Space, Right);
+		IPC Space...
+		Rights are stuff like Receive or Send
+			Only one thread can hold receive right
+	
+	Every thread holds exception ports if desired:	Port p = Port::GetExceptionPort(Type);
+		Exceptions are things like signals in POSIX
+		Only Receive right
+	
+	Rights of already existing ports can be acquired:	Port p = Port::AcquireRight(Port, Right)
+
+Ports itself are in fact message queues:
+	Receive(&MSG);
+	Send(&MSG);
+	
+Messages are nested structs with one header and several descriptors
+	Those descriptors describe the contained data itself like port rights, data, ports etc.
+
+How to acquire ports of other services?
+	Talk to a special bootstrap-port and retrieve those ports and rights
+	
+
+
+
+
+TODO: Are those rights to acquire really necessary? Just fetch a port from the bootstrap server and there you go
+	If you create a port, the creating thread gets receive rights
+	If you retrieve a port, the retrieving thread gets send right
+But... How can be controlled who speaks with whom? A mallicious attacker could just talk directly to the system servers. Bad!
+
+What about an interrupt port for device drivers?
+Timeouts for message sending? If queue is full?

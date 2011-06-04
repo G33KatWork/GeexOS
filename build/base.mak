@@ -2,6 +2,9 @@
 ifneq ($(BASE_INCLUDED),1)
 BASE_INCLUDED := 1
 
+# Define root directory
+SRC := $(shell cd $(SRC); pwd)
+
 # Fancy colorful output
 BUILD_COLOUR ?= 1
 export BUILD_COLOUR V
@@ -17,7 +20,7 @@ endif
 # General utilities	       #
 ############################
 ifeq ($(shell uname),Darwin)
-	export SUDO_ASKPASS:= build/macos-askpass
+	export SUDO_ASKPASS:= $(SRC)/build/macos-askpass
 SUDO		:= sudo -A
 else
 SUDO		:= sudo
@@ -65,9 +68,6 @@ endef
 # Define toolchain target
 TOOLCHAIN_TARGET    := i686-elf
 #TOOLCHAIN_TARGET    := avr32
-
-# Define root directory
-SRC                 := $(shell cd $(SRC); pwd)
 
 # Grab the toolchain information.
 include $(SRC)/build/toolchain.mak

@@ -1,0 +1,6 @@
+This is the C/C++ standard lib for the GeexOS kernel.
+It does NOT conform to any posix or C/C++ standard in terms of datatypes or locations of
+functions in various files. Keep that in mind and don't blame me for that. I simply don't care.
+
+It also sometimes depends on kernel functions/macros like PANIC().
+
