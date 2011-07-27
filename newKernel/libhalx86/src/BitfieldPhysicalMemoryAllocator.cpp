@@ -37,7 +37,12 @@ void BitfieldPhysicalMemoryAllocator::MarkAsUsed(Address physAddr)
 {
     PHYS_BITFIELD_DEBUG_MSG("Marking frame as used: " << hex << physAddr);
     if((physAddr / PAGE_SIZE) <= nFrames)
+    {
+        if(frames->IsBitSet(physAddr / PAGE_SIZE))
+            PANIC("Frame at " << hex << physAddr << " already was marked as used");
+        
         frames->SetBit(physAddr / PAGE_SIZE);
+    }
 }
 
 

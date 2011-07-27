@@ -5,8 +5,6 @@
 using namespace Arch;
 using namespace Debug;
 
-//FIXME: Mark as used necessary? The objects are living in the placement section,
-//they will be protected as soon as the program sections are parsed and inserted into the memory manager
 void x86Paging::Init()
 {
     ARCH_PAGING_DEBUG_MSG("Initializing Paging...");
@@ -41,9 +39,6 @@ void x86Paging::Init()
             //    is identity mapped
             Address physicalOfTable = earlyFindPhysicalAddress((Address)ourTable);
             
-            //Mark page in physical memory allocator as used. We do not want this to be overwritten!
-            CurrentHAL->GetPhysicalMemoryAllocator()->MarkAsUsed(physicalOfTable);
-            
             //finally set the new table in the directory
             kernel_directory->SetTable(i, ourTable, physicalOfTable | 0x3);
         }
@@ -51,7 +46,6 @@ void x86Paging::Init()
     
     current_directory = kernel_directory;
     Address kernelPagedirPtr = earlyFindPhysicalAddress((Address)kernel_directory);
-    CurrentHAL->GetPhysicalMemoryAllocator()->MarkAsUsed(kernelPagedirPtr);
     
     ARCH_PAGING_DEBUG_MSG("Switching to PageDirectory with physical address " << hex << (unsigned)kernelPagedirPtr << "...");
     SwitchPageDirectory(kernelPagedirPtr);

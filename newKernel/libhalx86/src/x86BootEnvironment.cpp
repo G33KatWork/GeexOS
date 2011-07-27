@@ -4,6 +4,9 @@
 
 using namespace Arch;
 
+#define     ELF_SECTION_HEADER_FLAG_WRITE           (1 << 0)
+#define     ELF_SECTION_HEADER_FLAG_EXEC            (1 << 2)
+
 x86BootEnvironment::x86BootEnvironment(KernelInformation* i)
 {
     //Copy cmdline
@@ -24,8 +27,15 @@ x86BootEnvironment::x86BootEnvironment(KernelInformation* i)
     
     //program region
     programRegionCount = i->programRegionCount;
-    programRegions = (KernelInformationProgramRegion*)kmalloc(sizeof(KernelInformationProgramRegion) * programRegionCount);
-    memcpy(programRegions, i->programRegions, sizeof(KernelInformationProgramRegion) * programRegionCount);
+    programRegions = (KernelProgramRegion*)kmalloc(sizeof(KernelProgramRegion) * programRegionCount);
+    for(size_t j = 0; j < programRegionCount; j++)
+    {
+        programRegions[j].VirtualStart = (Address)i->programRegions[j].vaddr;
+        programRegions[j].Length = i->programRegions[j].len;
+        programRegions[j].Readable = true;
+        programRegions[j].Writable = (i->programRegions[j].flags & ELF_SECTION_HEADER_FLAG_WRITE) ? true : false;
+        programRegions[j].Executable = (i->programRegions[j].flags & ELF_SECTION_HEADER_FLAG_EXEC) ? true : false;
+    }
     
     symtabSize = i->symtabSize;
     strtabSize = i->strtabSize;

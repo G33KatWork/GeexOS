@@ -15,6 +15,7 @@ CXXSOURCES = main.cpp \
 			 Memory/Virtual/VirtualMemoryManager.cpp \
 			 Memory/Virtual/VirtualMemoryRegion.cpp \
 			 Memory/Virtual/VirtualMemorySpace.cpp \
+			 Memory/Virtual/Regions/KernelProgramMemoryRegion.cpp \
 			 Memory/IO/IOMemoryManager.cpp
 
 # List Assembler to be assembled with NASM here

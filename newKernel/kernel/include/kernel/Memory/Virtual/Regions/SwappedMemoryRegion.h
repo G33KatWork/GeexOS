@@ -2,7 +2,6 @@
 #define SWAPPEDMEMORYREGION_H_
 
 #include <types.h>
-#include <arch/types.h>
 #include <kernel/global.h>
 #include <kernel/Memory/Virtual/Regions/LazyMemoryRegion.h>
 

@@ -29,7 +29,7 @@ namespace Memory
 		
         void AddRegion(VirtualMemoryRegion* region);
         void RemoveRegion(VirtualMemoryRegion* region);
-		void AnnounceRegionWithPreallocatedMemory(Address address, size_t size, const char* rname, AllocationFlags f);
+		//void AnnounceRegionWithPreallocatedMemory(Address address, size_t size, const char* rname, AllocationFlags f);
 		
 		VirtualMemoryRegion* FindRegionByName(const char* regionName);
 		VirtualMemoryRegion* FindRegionByStartAddress(Address start);

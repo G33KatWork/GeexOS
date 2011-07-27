@@ -5,6 +5,25 @@
 
 namespace Arch
 {
+    class KernelProgramRegion
+    {
+    public:
+        /// Virtual start address of mapped program section
+        Address VirtualStart;
+        
+        /// Page-aligned length of mapped program section
+        uint64_t Length;
+        
+        /// Readable flag
+        bool Readable;
+        
+        /// Writable flag
+        bool Writable;
+        
+        /// Executable flag
+        bool Executable;
+    };
+    
     class BootEnvironment
     {
     protected:
@@ -23,6 +42,12 @@ namespace Arch
         
         /// Returns the length of the module BLOB
         virtual size_t GetModuleSize() = 0;
+        
+        /// Returns the amount of mapped program sections
+        virtual size_t GetProgramRegionCount() = 0;
+        
+        /// Returns the i-th program section
+        virtual KernelProgramRegion* GetProgramRegion(size_t idx) = 0;
     };
 }
 

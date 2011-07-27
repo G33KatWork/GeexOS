@@ -26,8 +26,8 @@ namespace Arch
             return biosMemregions + idx;
         }
         
-        uint32_t GetProgramRegionCount() { return programRegionCount; }
-        KernelInformationProgramRegion* GetProgramRegion(uint32_t idx)
+        virtual size_t GetProgramRegionCount() { return programRegionCount; }
+        virtual KernelProgramRegion* GetProgramRegion(size_t idx)
         {
             ASSERT(idx < programRegionCount, "Index out of bounds");
             return programRegions + idx;
@@ -43,8 +43,8 @@ namespace Arch
         uint32_t biosMemregionCount;
         KernelInformationMemoryRegion* biosMemregions;
         
-        uint32_t programRegionCount;
-        KernelInformationProgramRegion* programRegions;
+        size_t programRegionCount;
+        KernelProgramRegion* programRegions;
         
         uint8_t* symtab;
         uint8_t* strtab;
