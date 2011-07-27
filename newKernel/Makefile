@@ -45,7 +45,7 @@ else
 	$(Q)$(SUDO) mount -o loop floppy.img tmp $(QOUTPUT)
 endif
 
-	$(Q)$(SUDO) $(CP) loaderstub/loaderstub.elf tmp/kernel
+	$(Q)$(SUDO) $(CP) loaderstub/loaderstub.elf tmp/loader.elf
 	$(Q)$(SUDO) $(CP) kernel/kernel.elf tmp/kern.elf
 	$(Q)$(SUDO) $(CP) testmodule/module.o tmp/module.o
 
@@ -57,6 +57,10 @@ endif
 
 	$(Q)$(SUDO) $(RM) -Rf tmp
 	$(Q)$(SUDO) chmod 666 ./floppy.img
+
+bochs: floppy.img
+	$(call cmd_msg,BOCHS,floppy.img)
+	$(Q)$(BOCHS) -f ../resources/bochsrc_newKernel.txt -q $(QOUTPUT)
 
 qemu: floppy.img
 	$(call cmd_msg,QEMU,floppy.img)

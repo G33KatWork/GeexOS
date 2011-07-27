@@ -14,12 +14,8 @@ int main()
 {
     #ifdef SERIAL_DEBUG
         CurrentHAL->SetCurrentDebugOutputDeviceType(Debug::Serial);
-    #else
-        CurrentHAL->SetCurrentDebugOutputDeviceType(Debug::TextMonitor);
     #endif
     CurrentHAL->GetCurrentDebugOutputDevice()->Clear();
-    
-    MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
     CurrentHAL->Initialize();
     
@@ -36,9 +32,11 @@ int main()
     VirtualMemoryManager::GetInstance()->SetCurrentMemorySpace(VirtualMemoryManager::GetInstance()->KernelSpace()); //Just to be sure...
     MAIN_DEBUG_MSG("Virtual memory space for kernel created...");
     
-    
-    
     CurrentHAL->InitializationDone();
+    
+    //TODO: Implement normal (non-debug) output-macro that prints text to graphical screen via HAL
+    //which gets initialized after the HAL INIT is finished
+    MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
     while(1);
 }

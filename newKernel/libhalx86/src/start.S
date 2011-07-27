@@ -57,7 +57,7 @@ kernelInformation:	dw 0
 
 section .bss
 ;define the initial bootstack which is used until we set up our own
-align 0x1000                                            ; align to page boundary
+align 4096                                            ; align to page boundary
 global bootStack
 bootStackEnd:
 	resb      STACKSIZE

@@ -28,20 +28,20 @@ namespace Arch
         
         virtual BasePaging* GetPaging();
         virtual BootEnvironment* GetBootEnvironment() { return bootenv; }
-        virtual Debug::BaseDebugOutputDevice* GetCurrentDebugOutputDevice();
+        virtual Debug::BaseOutputDevice* GetCurrentDebugOutputDevice();
         virtual void SetCurrentDebugOutputDeviceType(Debug::DebugOutputDeviceType type);
         
         virtual BasePhysicalMemoryAllocator* GetPhysicalMemoryAllocator();
         
     private:
         void reserveBIOSMemregions();
+        void initializeBootGraphics();
         
     private:
         BasePaging *paging;
         BootEnvironment* bootenv;
         Debug::NullDebugOutputDevice nullDebug;
-        Debug::BaseDebugOutputDevice* textDebug;
-        Debug::BaseDebugOutputDevice* serialDebug;
+        Debug::BaseOutputDevice* serialDebug;
         Debug::DebugOutputDeviceType currentDebugDevice;
         
         BitfieldPhysicalMemoryAllocator* physicalAllocator;

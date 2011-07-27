@@ -1,11 +1,7 @@
-GDB_VERSION    := 7.1
+GDB_VERSION    := 7.2
 GDB_SOURCE     := $(TOOLCHAIN_SRCDIR)/gdb-$(GDB_VERSION).tar.bz2
 GDB_DOWNLOAD   := http://ftp.gnu.org/gnu/gdb/gdb-$(GDB_VERSION).tar.bz2
 GDB_PATCHES    := 
-
-ifeq ($(TOOLCHAIN_TARGET),avr32)
-GDB_PATCHES += $(TOOLCHAIN_PATCHDIR)/gdb-$(GDB_VERSION).atmel.1.0.3.patch
-endif
 
 # Download
 $(GDB_SOURCE):

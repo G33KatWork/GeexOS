@@ -3,7 +3,7 @@
 
 #include <types.h>
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
-#include <halinterface/BaseDebugOutputDevice.h>
+#include <halinterface/BaseOutputDevice.h>
 #include <halinterface/BasePaging.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
 
@@ -43,7 +43,7 @@ namespace Memory
         /* To be called by a page fault handler */
         bool HandlePageFault(Address faultingAddress);
 		
-		void DumpRegions(Debug::BaseDebugOutputDevice* c);
+		void DumpRegions(Debug::BaseOutputDevice* c);
 		
         const char* Name() { return name; }
 		

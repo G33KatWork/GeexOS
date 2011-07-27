@@ -11,7 +11,7 @@ using namespace Arch;
 
 IOMemoryManager::IOMemoryManager(Address IOMemoryStart, size_t IOMemorySize)
 {
-    IO_MEMORY_MANAGER_DEBUG_MSG("Initializing IOMemoryManager. Virtual I/O Memory starting at " << hex << IOMemoryStart << " width size " << hex << IOMemorySize);
+    IO_MEMORY_MANAGER_DEBUG_MSG("Initializing IOMemoryManager. Virtual I/O Memory starting at " << hex << IOMemoryStart << " with size " << hex << IOMemorySize);
     
     iomemStart = IOMemoryStart;
     iomemSize = IOMemorySize;
@@ -137,7 +137,7 @@ IOMemoryRegion* IOMemoryManager::Allocate(Address virtualAddress, Address physic
     return region;
 }
 
-void IOMemoryManager::DumpRegions(BaseDebugOutputDevice* c)
+void IOMemoryManager::DumpRegions(BaseOutputDevice* c)
 {
     for(IOMemoryRegion* curRegion = regionList.Head(); curRegion != NULL; curRegion = regionList.GetNext(curRegion))
     {

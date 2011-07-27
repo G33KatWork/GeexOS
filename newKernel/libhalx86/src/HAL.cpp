@@ -23,7 +23,6 @@ x86HAL::x86HAL()
 {
     bootenv = NULL;
     serialDebug = NULL;
-    textDebug = NULL;
     physicalAllocator = NULL;
     paging = NULL;
     nullDebug = NullDebugOutputDevice();
@@ -95,6 +94,14 @@ void x86HAL::InitializationDone()
 {
     reserveBIOSMemregions();
     HAL_DEBUG_MSG("Arch initialization done...");
+    
+    //Now, that we have IO Memory management, we can use some more sophisticated text output
+    initializeBootGraphics();
+}
+
+void x86HAL::initializeBootGraphics()
+{
+    //TODO: do vbe stuff here
 }
     
 void x86HAL::EnableInterruptsOnCurrentCPU()
@@ -126,12 +133,10 @@ BasePaging* x86HAL::GetPaging()
     return paging;
 }
 
-Debug::BaseDebugOutputDevice* x86HAL::GetCurrentDebugOutputDevice()
+Debug::BaseOutputDevice* x86HAL::GetCurrentDebugOutputDevice()
 {
     switch(currentDebugDevice)
     {
-        case TextMonitor:
-            return textDebug;
         case Serial:
             return serialDebug;
         default:
@@ -143,14 +148,6 @@ void x86HAL::SetCurrentDebugOutputDeviceType(Debug::DebugOutputDeviceType type)
 {
     switch(type)
     {
-        case TextMonitor:
-            if(textDebug == NULL)
-                textDebug = new TextmodeDebugOutput();
-            break;
-        case GraphicalMonitor:
-            //if(graphicalDebug == NULL)
-            //    graphicalDebug = new VBEDebugOutput();
-            break;
         case Serial:
             if(serialDebug == NULL)
                 serialDebug = new SerialDebugOutput(SERIAL_COM1);

@@ -1,5 +1,5 @@
-#ifndef _HAL_INTERFACES_BASE_DEBUG_OUTPUT_DEVICE_H
-#define _HAL_INTERFACES_BASE_DEBUG_OUTPUT_DEVICE_H
+#ifndef _HAL_INTERFACES_BASE_OUTPUT_DEVICE_H
+#define _HAL_INTERFACES_BASE_OUTPUT_DEVICE_H
 
 #include <types.h>
 
@@ -38,29 +38,28 @@ namespace Debug
     enum DebugOutputDeviceType
     {
         None,
-        TextMonitor,
-        GraphicalMonitor,
         Serial
+        //TODO: Add GDB/Debugger/Firewire/USB/UDP/whatnot output
     };
 }
 
 namespace Debug
 {   
-    //Baseclass for Debugging output devices
-    class BaseDebugOutputDevice
+    //Baseclass for simple character output devices
+    class BaseOutputDevice
     {
     protected:
 		int foregroundColor;
 	    int backgroundColor;
 	    Special printMode;
 	
-		BaseDebugOutputDevice()
+		BaseOutputDevice()
 		{
 		    foregroundColor = White;
             backgroundColor = Black;
             printMode = hex;
 		}
-        virtual ~BaseDebugOutputDevice() {};
+        virtual ~BaseOutputDevice() {};
 
         void reverseArray(char* arr);
 
@@ -78,24 +77,24 @@ namespace Debug
         void PrintDec(int n);
         void PrintData(char* start, size_t len);
         
-        BaseDebugOutputDevice &operator<<(char *c);
-        BaseDebugOutputDevice &operator<<(const char *c);
-        BaseDebugOutputDevice &operator<<(unsigned int i);
-        BaseDebugOutputDevice &operator<<(int i);
-        BaseDebugOutputDevice &operator<<(size_t s);
-        BaseDebugOutputDevice &operator<<(Special s);
+        BaseOutputDevice &operator<<(char *c);
+        BaseOutputDevice &operator<<(const char *c);
+        BaseOutputDevice &operator<<(unsigned int i);
+        BaseOutputDevice &operator<<(int i);
+        BaseOutputDevice &operator<<(size_t s);
+        BaseOutputDevice &operator<<(Special s);
         
 		virtual void Clear() = 0;
         virtual void PrintChar(char c) = 0;
     };
     
-    class NullDebugOutputDevice : public BaseDebugOutputDevice
+    class NullDebugOutputDevice : public BaseOutputDevice
     {
     public:
         NullDebugOutputDevice() {}
         ~NullDebugOutputDevice() {}
 
-        //CharacterOutputDevice Methods
+        //BaseOutputDevice Methods
         void PrintChar(char c __attribute__((unused))) {}
         void Clear() {}
     };

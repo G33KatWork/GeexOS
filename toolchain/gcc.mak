@@ -1,13 +1,13 @@
-GCC_VERSION    := 4.5.0
+GCC_VERSION    := 4.6.1
 GCC_SOURCE     := $(TOOLCHAIN_SRCDIR)/gcc-$(GCC_VERSION).tar.bz2
 GCC_DOWNLOAD   := http://ftp.gnu.org/gnu/gcc/gcc-$(GCC_VERSION)/gcc-$(GCC_VERSION).tar.bz2
 GCC_PATCHES    := 
 
-ifeq ($(TOOLCHAIN_TARGET),avr32)
-GCC_PATCHES += $(TOOLCHAIN_PATCHDIR)/gcc-$(GCC_VERSION).atmel.1.1.3.patch
+# Hack to build on OS X.
+ifeq ($(shell uname),Darwin)
+# fix compilation issue with llvm/clang (internal compiler error at runtime)
+GCC_CONFENV = CC=/usr/bin/gcc-4.2 CPP=/usr/bin/cpp-4.2 CXX=/usr/bin/g++-4.2 LD=/usr/bin/gcc-4.2
 endif
-
-#$(TOOLCHAIN_PATCHDIR)/gcc-$(GCC_VERSION).atmel.1.1.3-revert-broken-uclibc-stuff.patch $(TOOLCHAIN_PATCHDIR)/902-avr32-revert-broken-read-modify-write-stuff.patch
 
 PATH += :$(TOOLCHAIN_ROOTDIR)/bin
 
@@ -45,7 +45,7 @@ $(TOOLCHAIN_ROOTDIR)/.gcc-configure: $(TOOLCHAIN_ROOTDIR)/.gcc-extract
 	$(Q)mkdir -p $(TOOLCHAIN_BUILDDIR)/gcc-build
 	$(call cmd_msg,CONFIG,$(TOOLCHAIN_TARGET)/gcc-$(GCC_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/gcc-build; \
-		../gcc-$(GCC_VERSION)/configure \
+		$(GCC_CONFENV) ../gcc-$(GCC_VERSION)/configure \
 			--prefix=$(TOOLCHAIN_ROOTDIR) \
 			--target=$(TOOLCHAIN_TARGET) \
 			--without-headers \

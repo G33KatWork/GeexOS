@@ -9,7 +9,7 @@
 //FIXME: panic message should not go over debug output...
 #define PANIC(msg) \
 { \
-    Debug::BaseDebugOutputDevice* kdbg = Arch::CurrentHAL->GetCurrentDebugOutputDevice(); \
+    Debug::BaseOutputDevice* kdbg = Arch::CurrentHAL->GetCurrentDebugOutputDevice(); \
     kdbg->SetForeground(Debug::Red); \
     kdbg->PrintString("[PANIC] Kernel Panic <"__FILE__">: "); \
     *kdbg << msg << Debug::endl; \

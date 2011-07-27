@@ -1,9 +1,9 @@
-#include <halinterface/BaseDebugOutputDevice.h>
+#include <halinterface/BaseOutputDevice.h>
 #include <string.h>
 
 using namespace Debug;
 
-void BaseDebugOutputDevice::PrintString(char *c)
+void BaseOutputDevice::PrintString(char *c)
 {
     unsigned int i = 0;
     while(c[i])
@@ -13,7 +13,7 @@ void BaseDebugOutputDevice::PrintString(char *c)
     }
 }
 
-void BaseDebugOutputDevice::PrintHex(unsigned int n)
+void BaseOutputDevice::PrintHex(unsigned int n)
 {
     char hexChars[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     
@@ -34,7 +34,7 @@ void BaseDebugOutputDevice::PrintHex(unsigned int n)
     PrintString(num);
 }
 
-void BaseDebugOutputDevice::PrintDec(unsigned int n)
+void BaseOutputDevice::PrintDec(unsigned int n)
 {
     char num[20];
     memset(num, 0, 20);
@@ -52,7 +52,7 @@ void BaseDebugOutputDevice::PrintDec(unsigned int n)
     PrintString(num);
 }
 
-void BaseDebugOutputDevice::PrintDec(int n)
+void BaseOutputDevice::PrintDec(int n)
 {
     int sign;
     char num[20];
@@ -76,7 +76,7 @@ void BaseDebugOutputDevice::PrintDec(int n)
     PrintString(num);
 }
 
-void BaseDebugOutputDevice::PrintData(char* start, size_t len)
+void BaseOutputDevice::PrintData(char* start, size_t len)
 {
     for(unsigned int i = 0; i < (len / 0x10)+1; i++)
     {
@@ -106,19 +106,19 @@ void BaseDebugOutputDevice::PrintData(char* start, size_t len)
     }
 }
 
-BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(char *c)
+BaseOutputDevice &BaseOutputDevice::operator<<(char *c)
 {
     PrintString(c);
     return *this;
 }
 
-BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(const char *c)
+BaseOutputDevice &BaseOutputDevice::operator<<(const char *c)
 {
     PrintString(c);
     return *this;
 }
 
-BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(unsigned int i)
+BaseOutputDevice &BaseOutputDevice::operator<<(unsigned int i)
 {
     if (printMode == dec)
         PrintDec(i);
@@ -128,7 +128,7 @@ BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(unsigned int i)
     return *this;
 }
 
-BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(int i)
+BaseOutputDevice &BaseOutputDevice::operator<<(int i)
 {
     if (printMode == dec)
         PrintDec(i);
@@ -138,7 +138,7 @@ BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(int i)
     return *this;
 }
 
-BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(size_t s)
+BaseOutputDevice &BaseOutputDevice::operator<<(size_t s)
 {
     if (printMode == dec)
         PrintDec((unsigned)s);
@@ -148,7 +148,7 @@ BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(size_t s)
     return *this;
 }
 
-BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(Special s)
+BaseOutputDevice &BaseOutputDevice::operator<<(Special s)
 {
     switch(s)
     {
@@ -166,7 +166,7 @@ BaseDebugOutputDevice &BaseDebugOutputDevice::operator<<(Special s)
       return *this;
 }
 
-void BaseDebugOutputDevice::reverseArray(char* arr)
+void BaseOutputDevice::reverseArray(char* arr)
 {
     int i, j;
     for (i = 0, j = strlen(arr)-1; i<j; i++, j--)

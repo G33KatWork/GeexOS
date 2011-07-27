@@ -131,7 +131,7 @@ VirtualMemoryRegion* VirtualMemorySpace::FindRegionEnclosingAddress(Address addr
     return NULL;
 }
 
-void VirtualMemorySpace::DumpRegions(BaseDebugOutputDevice* c)
+void VirtualMemorySpace::DumpRegions(BaseOutputDevice* c)
 {
     for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {

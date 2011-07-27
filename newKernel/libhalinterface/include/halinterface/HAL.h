@@ -2,7 +2,7 @@
 #define _HAL_INTERFACES_HAL_H
 
 #include <halinterface/BootEnvironment.h>
-#include <halinterface/BaseDebugOutputDevice.h>
+#include <halinterface/BaseOutputDevice.h>
 #include <halinterface/BasePaging.h>
 #include <halinterface/BasePhysicalMemoryAllocator.h>
 
@@ -75,7 +75,7 @@ namespace Arch
         /**
          * Returns an instance to the currently used debug output device
         **/
-        virtual Debug::BaseDebugOutputDevice* GetCurrentDebugOutputDevice() = 0;
+        virtual Debug::BaseOutputDevice* GetCurrentDebugOutputDevice() = 0;
         
         /**
          * Switches the currently used debug output device to the given type

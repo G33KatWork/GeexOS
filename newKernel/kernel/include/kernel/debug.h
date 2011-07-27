@@ -21,13 +21,13 @@
 // #define EN_SCHEDULER_DEBUG_MSG
 // #define EN_TIMER_MGR_DEBUG_MSG
 // #define EN_ELF_INFORMATION_DEBUG_MSG
-#define EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG
-#define EN_VIRTUAL_MEMORY_SPACE_DEBUG_MSG
-#define EN_VIRTUAL_MEMORY_REGION_DEBUG_MSG
+// #define EN_VIRTUAL_MEMORY_MANAGER_DEBUG_MSG
+// #define EN_VIRTUAL_MEMORY_SPACE_DEBUG_MSG
+// #define EN_VIRTUAL_MEMORY_REGION_DEBUG_MSG
 // #define EN_KERNEL_THREAD_STACK_DEBUG_MSG
 // #define EN_STACK_DEBUG_MSG
 // #define EN_ARCH_INTERRUPTS_DEBUG_MSG
-//#define EN_ARCH_PAGING_DEBUG_MSG
+// #define EN_ARCH_PAGING_DEBUG_MSG
 // #define EN_PLACEMENT_DEBUG_MSG
 // #define EN_PHYS_BITFIELD_DEBUG_MSG
 // #define EN_GDBSTUB_DEBUG_MSG
@@ -36,7 +36,7 @@
 
 #define DEBUG_MSG(msg) \
 { \
-    Debug::BaseDebugOutputDevice* kdbg = Arch::CurrentHAL->GetCurrentDebugOutputDevice(); \
+    Debug::BaseOutputDevice* kdbg = Arch::CurrentHAL->GetCurrentDebugOutputDevice(); \
     Debug::Color foreground = kdbg->GetForeground(); \
     kdbg->SetForeground(Debug::LightBlue); \
     kdbg->PrintString("[DEBUG] "); \

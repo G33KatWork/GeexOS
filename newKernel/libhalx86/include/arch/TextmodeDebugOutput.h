@@ -2,11 +2,11 @@
 #define _ARCHX86_TEXTMODE_OUTPUT_H_
 
 #include <types.h>
-#include <halinterface/BaseDebugOutputDevice.h>
+#include <halinterface/BaseOutputDevice.h>
 
 namespace Debug
 {
-    class TextmodeDebugOutput : public Debug::BaseDebugOutputDevice
+    class TextmodeDebugOutput : public Debug::BaseOutputDevice
     {
     public:
         TextmodeDebugOutput();

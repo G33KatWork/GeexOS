@@ -8,7 +8,7 @@ TARGET = libhalinterface.a
 CCSOURCES = 
 
 # List C++ source files here
-CXXSOURCES = BaseDebugOutputDevice.cpp
+CXXSOURCES = BaseOutputDevice.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = 

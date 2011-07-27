@@ -3,7 +3,7 @@
 
 #include <types.h>
 #include <kernel/Memory/IO/IOMemoryRegion.h>
-#include <halinterface/BaseDebugOutputDevice.h>
+#include <halinterface/BaseOutputDevice.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Memory
@@ -24,7 +24,7 @@ namespace Memory
         
         Address TranslatePhysicalAddress(Address physicalAddress);
         
-        void DumpRegions(Debug::BaseDebugOutputDevice* c);
+        void DumpRegions(Debug::BaseOutputDevice* c);
         
     private:
         Address iomemStart;

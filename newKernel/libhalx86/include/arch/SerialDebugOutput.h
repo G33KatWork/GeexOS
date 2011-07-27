@@ -2,7 +2,7 @@
 #define _ARCHX86_SERIAL_OUTPUT_H_
 
 #include <types.h>
-#include <halinterface/BaseDebugOutputDevice.h>
+#include <halinterface/BaseOutputDevice.h>
 
 #define SERIAL_COM1  0x3f8
 #define SERIAL_COM2  0x2f8
@@ -10,7 +10,7 @@
 
 namespace Debug
 {
-    class SerialDebugOutput : public Debug::BaseDebugOutputDevice
+    class SerialDebugOutput : public Debug::BaseOutputDevice
     {
     public:
         SerialDebugOutput();

@@ -48,22 +48,20 @@ void x86Paging::Init()
     }
     
     current_directory = kernel_directory;
-    //FIXME: find physical address of new kernel directory and switch to it
     Address kernelPagedirPtr = earlyFindPhysicalAddress((Address)kernel_directory);
     CurrentHAL->GetPhysicalMemoryAllocator()->MarkAsUsed(kernelPagedirPtr);
     
     ARCH_PAGING_DEBUG_MSG("Switching to PageDirectory with physical address " << hex << (unsigned)kernelPagedirPtr << "...");
     SwitchPageDirectory(kernelPagedirPtr);
-    ARCH_PAGING_DEBUG_MSG("Switching successful");
 }
 
 void x86Paging::InitDone()
 {
-    ARCH_PAGING_DEBUG_MSG("HAL Initialization done, removing lowermost mapping");
+    /*ARCH_PAGING_DEBUG_MSG("HAL Initialization done, removing lowermost mapping");
     kernel_directory->SetTable(0, NULL, NULL);
     
     for(Address i = 0; i < 4*1024*1024; i+=PAGE_SIZE)
-        asm volatile("invlpg %0"::"m" (*(char *)i));
+        asm volatile("invlpg %0"::"m" (*(char *)i));*/
         
     //Allocate remaining page tables in kernel land, for easy cloning of address spaces for userspace later
     //TODO: Find a better way to do this. This are 2MB of RAM! :-/
