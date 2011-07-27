@@ -16,8 +16,8 @@ void* PlacementAllocator::Allocate(size_t len, bool pageAlign)
     //PLACEMENT_DEBUG_MSG("Allocating " << dec << len << " Bytes " << (pageAlign?" page-aligned":""));
     //PLACEMENT_DEBUG_MSG("Currently allocated space in placement region: " << dec << GetPlacementAllocatedSize() << " Bytes");
     
-    //if(GetPlacementAllocatedSize() + len > KERNEL_PLACEMENT_SIZE)
-    //    PANIC("Placement region overflow");
+    if(GetPlacementAllocatedSize() + len > KERNEL_PLACEMENT_SIZE)
+        PANIC("Placement region overflow");
     
     unsigned int tmp;
 
@@ -41,9 +41,7 @@ unsigned int PlacementAllocator::GetPointerPosition()
 
 size_t PlacementAllocator::GetPlacementAllocatedSize()
 {
-    PANIC("Not implemented.");
-    return 0;
-    //return placement_address - KERNEL_PLACEMENT_START;
+    return placement_address - (unsigned int)&placement;
 }
 
 Address Memory::GetPlacementBeginning()

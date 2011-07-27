@@ -93,6 +93,10 @@ void x86HAL::reserveBIOSMemregions()
 void x86HAL::InitializationDone()
 {
     reserveBIOSMemregions();
+    
+    //FIXME: takes so much RAM...
+    GetPaging()->InitDone();
+    
     HAL_DEBUG_MSG("Arch initialization done...");
     
     //Now, that we have IO Memory management, we can use some more sophisticated text output

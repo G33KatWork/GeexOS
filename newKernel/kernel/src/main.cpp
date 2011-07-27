@@ -49,7 +49,7 @@ int main()
         VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(progRegion);
     }
     
-    //Yeeha! At this point all platform related memory stuff should be set up and save.
+    //Yeeha! At this point all platform related memory stuff should be set up and safe.
     
     //TODO: Implement normal (non-debug) output-macro that prints text to graphical screen via HAL
     //which gets initialized after the HAL INIT is finished

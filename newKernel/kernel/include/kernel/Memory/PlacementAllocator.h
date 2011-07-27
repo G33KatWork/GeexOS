@@ -3,6 +3,9 @@
 
 #include <types.h>
 
+//if you change this, change the linkerscript, too
+#define KERNEL_PLACEMENT_SIZE   0x200000
+
 namespace Memory
 {
     Address GetPlacementBeginning();
