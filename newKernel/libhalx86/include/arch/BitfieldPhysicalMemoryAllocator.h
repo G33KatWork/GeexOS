@@ -17,6 +17,8 @@ namespace Arch
         virtual void MarkAsUsed(Address physAddr);
         virtual bool IsFree(Address physAddr);
         
+        virtual void DumpUsed(Debug::BaseOutputDevice* c);
+        
     private:
         DataStructures::Bitfield *frames;
         uint32_t nFrames;

@@ -38,5 +38,20 @@ int main()
     //which gets initialized after the HAL INIT is finished
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
+    MAIN_DEBUG_MSG("Physical memory manager has the following addresses marked as used:");
+#ifdef EN_DEBUG_MSG_MAIN
+    CurrentHAL->GetPhysicalMemoryAllocator()->DumpUsed(CurrentHAL->GetCurrentDebugOutputDevice());
+#endif
+    
+    MAIN_DEBUG_MSG("IOMemoryManager knows the following regions:");
+#ifdef EN_DEBUG_MSG_MAIN
+    VirtualMemoryManager::GetInstance()->IOMemory()->DumpRegions(CurrentHAL->GetCurrentDebugOutputDevice());
+#endif
+
+    MAIN_DEBUG_MSG("Virtual kernel space knows the following regions:");
+#ifdef EN_DEBUG_MSG_MAIN
+    VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(CurrentHAL->GetCurrentDebugOutputDevice());
+#endif
+    
     while(1);
 }

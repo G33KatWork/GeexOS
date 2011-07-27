@@ -41,6 +41,8 @@ unsigned int PlacementAllocator::GetPointerPosition()
 
 size_t PlacementAllocator::GetPlacementAllocatedSize()
 {
+    PANIC("Not implemented.");
+    return 0;
     //return placement_address - KERNEL_PLACEMENT_START;
 }
 

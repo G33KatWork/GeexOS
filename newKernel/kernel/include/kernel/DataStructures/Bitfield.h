@@ -19,6 +19,8 @@ namespace DataStructures
         void ClearBit(uint32_t Index);
         bool IsBitSet(uint32_t Index);
         uint32_t GetFirstClearedIndex();
+        
+        uint32_t GetNumElements() { return numElements; }
     };
 }
 

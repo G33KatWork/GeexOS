@@ -50,3 +50,27 @@ bool BitfieldPhysicalMemoryAllocator::IsFree(Address physAddr)
 	else
         return false;
 }
+
+void BitfieldPhysicalMemoryAllocator::DumpUsed(BaseOutputDevice* c)
+{
+    //Weird and slow code, just to make it look pretty... Anyway, it's just for debugging
+    uint32_t printed = 0;
+    bool firstPrint = false;
+    
+    for(uint32_t i = 0; i < frames->GetNumElements(); i++)
+    {
+        if(frames->IsBitSet(i))
+        {
+            if(!firstPrint)
+                *c << "BFPHYSMEM: ";
+            *c << hex << i * 4096 << "\t";
+            printed++;
+            firstPrint = true;
+        }
+        
+        if(firstPrint && printed % 8 == 0)
+            *c << endl << "BFPHYSMEM: ";
+    }
+    
+    *c << endl << endl;
+}
