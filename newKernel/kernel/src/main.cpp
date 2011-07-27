@@ -33,6 +33,9 @@ int main()
     MAIN_DEBUG_MSG("Virtual memory space for kernel created...");
     
     CurrentHAL->InitializationDone();
+    //TODO: Get program regions from HAL and tell memory manager about them
+    
+    //Yeeha! At this point all platform related memory stuff should be set up and save.
     
     //TODO: Implement normal (non-debug) output-macro that prints text to graphical screen via HAL
     //which gets initialized after the HAL INIT is finished

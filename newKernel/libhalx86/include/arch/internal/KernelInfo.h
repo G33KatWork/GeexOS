@@ -12,6 +12,14 @@ struct kerninfo_memory_region {
 }  __attribute__((packed));
 typedef struct kerninfo_memory_region KernelInformationMemoryRegion;
 
+// format of a mapped program region of the kernel binary
+struct kerninfo_program_region {
+    uint64_t        vaddr;
+    uint64_t        len;
+    uint32_t        flags;  //see elf flags of program headers
+} __attribute__((packed));
+typedef struct kerninfo_program_region KernelInformationProgramRegion;
+
 /**
  * This structure is passed to the kernel by the loader stub
  * for several information like the amount of physical memory,
@@ -26,6 +34,8 @@ struct kernel_information {
     uint32_t                    moduleLength;
     uint32_t                    memoryRegionCount;
     KernelInformationMemoryRegion* memoryRegions;
+    uint32_t                    programRegionCount;
+    KernelInformationProgramRegion* programRegions;
     uint32_t                    symtabAddr;
     uint32_t                    symtabSize;
     uint32_t                    strtabAddr;

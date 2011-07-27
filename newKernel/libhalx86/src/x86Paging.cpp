@@ -5,6 +5,8 @@
 using namespace Arch;
 using namespace Debug;
 
+//FIXME: Mark as used necessary? The objects are living in the placement section,
+//they will be protected as soon as the program sections are parsed and inserted into the memory manager
 void x86Paging::Init()
 {
     ARCH_PAGING_DEBUG_MSG("Initializing Paging...");

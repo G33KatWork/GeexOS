@@ -22,6 +22,11 @@ x86BootEnvironment::x86BootEnvironment(KernelInformation* i)
     biosMemregions = (KernelInformationMemoryRegion*)kmalloc(sizeof(KernelInformationMemoryRegion) * biosMemregionCount);
     memcpy(biosMemregions, i->memoryRegions, sizeof(KernelInformationMemoryRegion) * biosMemregionCount);
     
+    //program region
+    programRegionCount = i->programRegionCount;
+    programRegions = (KernelInformationProgramRegion*)kmalloc(sizeof(KernelInformationProgramRegion) * programRegionCount);
+    memcpy(programRegions, i->programRegions, sizeof(KernelInformationProgramRegion) * programRegionCount);
+    
     symtabSize = i->symtabSize;
     strtabSize = i->strtabSize;
     symtab = (uint8_t*)kmalloc(symtabSize);

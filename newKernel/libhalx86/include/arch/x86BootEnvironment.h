@@ -25,6 +25,13 @@ namespace Arch
             ASSERT(idx < biosMemregionCount, "Index out of bounds");
             return biosMemregions + idx;
         }
+        
+        uint32_t GetProgramRegionCount() { return programRegionCount; }
+        KernelInformationProgramRegion* GetProgramRegion(uint32_t idx)
+        {
+            ASSERT(idx < programRegionCount, "Index out of bounds");
+            return programRegions + idx;
+        }
     
     private:
         char* cmdLine;
@@ -35,6 +42,9 @@ namespace Arch
         
         uint32_t biosMemregionCount;
         KernelInformationMemoryRegion* biosMemregions;
+        
+        uint32_t programRegionCount;
+        KernelInformationProgramRegion* programRegions;
         
         uint8_t* symtab;
         uint8_t* strtab;

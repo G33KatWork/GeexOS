@@ -6,15 +6,17 @@
 #include <KernelInfo.h>
 
 //Physical start address for kernel and module image
+//FIXME: while mapping, the biosregions should be checked. We don't want to overwrite important stuff!
 #define     IMAGE_MAPPING_PHYSICAL_START        0x200000
 
 Address currentPhysicalMapAddress = IMAGE_MAPPING_PHYSICAL_START;
 KernelInformation kernelInformation;
+KernelInformationProgramRegion programRegions[32];
 
 typedef void (*elfEntry)(KernelInformation*);
 
 int kmain(MultibootInfo* multibootInformation, unsigned int magic);
-void mapElfFile(void* elfPointer);
+uint32_t mapElfFile(void* elfPointer);
 
 int kmain(MultibootInfo* multibootInformation, unsigned int magic)
 {
@@ -39,7 +41,7 @@ int kmain(MultibootInfo* multibootInformation, unsigned int magic)
     if(!elf32_isElf((void*)module.modStart))
         panic("ERROR: First supplied module is not an ELF file.");
     
-    mapElfFile((void*)module.modStart);
+    uint32_t numProgramSections = mapElfFile((void*)module.modStart);
     
     //retrieve symbol and string table from ELF
     size_t symtabSize;
@@ -62,6 +64,8 @@ int kmain(MultibootInfo* multibootInformation, unsigned int magic)
     kernelInformation.moduleLength = multibootInformation->modules[1].modEnd - multibootInformation->modules[1].modStart;
     kernelInformation.memoryRegionCount = multibootInformation->mmap_length / sizeof(KernelInformationMemoryRegion);
     kernelInformation.memoryRegions = (KernelInformationMemoryRegion*)multibootInformation->mmap_addr;
+    kernelInformation.programRegionCount = numProgramSections;
+    kernelInformation.programRegions = programRegions;
     kernelInformation.symtabAddr = symtabAddress;
     kernelInformation.symtabSize = symtabSize;
     kernelInformation.strtabAddr = strtabAddress;
@@ -74,7 +78,7 @@ int kmain(MultibootInfo* multibootInformation, unsigned int magic)
     return 0;
 }
 
-void mapElfFile(void* elfPointer)
+uint32_t mapElfFile(void* elfPointer)
 {
     Elf32ProgramHeader* header;
     int numHeaders = elf32_getProgramHeaders(elfPointer, &header);
@@ -82,6 +86,9 @@ void mapElfFile(void* elfPointer)
     
     if(numHeaders == 0)
         panic("No program headers in ELF file found. WTF?");
+    
+    if(numHeaders >= 32)
+        panic("Too many program headers.");
     
     for(int i = 0; i < numHeaders; i++)
     {
@@ -119,6 +126,13 @@ void mapElfFile(void* elfPointer)
         for(Address a = header->vaddr; a < header->vaddr + sectionSize; a += PAGE_SIZE)
             paging_setflags(a, header->flags & ELF_PROGRAM_HEADER_FLAG_WRITE, FALSE, header->flags & ELF_PROGRAM_HEADER_FLAG_EXEC);
         
+        //fill programRegions with section
+        programRegions[i].vaddr = header->vaddr;
+        programRegions[i].len = sectionSize;
+        programRegions[i].flags = header->flags;
+        
         header++;
     }
+    
+    return numHeaders;
 }
