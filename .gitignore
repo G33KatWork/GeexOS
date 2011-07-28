@@ -5,7 +5,6 @@ resources/vmware.vmxf
 serialOut
 toolchain/i686-elf
 toolchain/source
-kernel/kernel/disasm
 utils/geninitramfs
 utils/genmapfile
 *.img
@@ -13,10 +12,9 @@ utils/genmapfile
 *.map
 *.a
 *.sym
-kernel/kernel/obj
-kernel/libarchx86/obj
-kernel/libkcpp/obj
-kernel/libhalinterface/obj
+*.o
+disasm
+obj
 doc/html
 .gdbhistory
 .project
