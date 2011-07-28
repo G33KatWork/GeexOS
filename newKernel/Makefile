@@ -47,7 +47,7 @@ endif
 
 	$(Q)$(SUDO) $(CP) loaderstub/loaderstub.elf tmp/loader.elf
 	$(Q)$(SUDO) $(CP) kernel/kernel.elf tmp/kern.elf
-	$(Q)$(SUDO) $(CP) testmodule/module.o tmp/module.o
+	$(Q)$(SUDO) utils/genmoduleblob.py testmodule/module.o > tmp/modules
 
 ifeq ($(shell uname),Darwin)
 	$(Q)$(SUDO) hdiutil detach tmp $(QOUTPUT)
