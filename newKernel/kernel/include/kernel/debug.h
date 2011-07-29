@@ -33,6 +33,7 @@
 // #define EN_GDBSTUB_DEBUG_MSG
 // #define EN_BITFIELD_DEBUG_MSG
 // #define EN_BUDDY_ALLOC_DEBUG_MSG
+#define EN_OBJ_SYS_DEBUG_MSG
 
 #define DEBUG_MSG(msg) \
 { \
@@ -192,6 +193,10 @@
     #define BUDDY_ALLOC_DEBUG_MSG(x)
 #endif
 
-
+#ifdef EN_OBJ_SYS_DEBUG_MSG
+    #define OBJ_SYS_DEBUG_MSG(x)                DEBUG_MSG("OBJ: "x)
+#else
+    #define OBJ_SYS_DEBUG_MSG(x)
+#endif
 
 #endif

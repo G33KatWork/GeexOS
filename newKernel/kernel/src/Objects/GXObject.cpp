@@ -1,6 +1,8 @@
 #include <kernel/Objects/GXObject.h>
 #include <kernel/global.h>
 
+using namespace Debug;
+
 //Metadata class foo
 //Move into macro later?
 
@@ -47,12 +49,12 @@ bool GXObject::Initialize() { return true; }
 
 void GXObject::operator delete(void* obj, size_t UNUSED(size))
 {
-    //OBJ_SYS_DEBUG_MGS("Deleting object at " << hex << (Address)obj << " of size " << dec << size);
+    OBJ_SYS_DEBUG_MSG("Deleting object at " << hex << (Address)obj);
     kfree(obj);
 }
 
 void* GXObject::operator new(size_t size)
 {
-    //OBJ_SYS_DEBUG_MGS("Allocating object of size " << dec << size);
+    OBJ_SYS_DEBUG_MSG("Allocating object of size " << hex << size);
     return kmalloc(size);
 }
