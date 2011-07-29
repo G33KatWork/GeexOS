@@ -135,7 +135,7 @@ private:
      * It only lives statically allocated in the class it manages the
      * metadata for
     **/
-    static void* operator new(size_t size);
+    static void* operator new(size_t size) throw();
     
     /**
      * A pointer to the class' superclass meta class

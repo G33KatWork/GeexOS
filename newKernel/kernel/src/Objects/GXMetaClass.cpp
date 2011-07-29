@@ -102,5 +102,5 @@ int GXMetaClass::GetRetainCount() const { return 0; }
 void GXMetaClass::Retain() const {}
 void GXMetaClass::Release() const {}
 
-void* GXMetaClass::operator new(size_t) { return NULL; }
+void* GXMetaClass::operator new(size_t) throw() { return NULL; }
 void GXMetaClass::operator delete(void*, size_t) {}

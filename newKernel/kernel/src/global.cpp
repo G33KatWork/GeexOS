@@ -49,7 +49,7 @@ void *operator new(size_t size, bool pageAllocation)
     return placementAlloc.Allocate(size, pageAllocation);
 }
 
-void operator delete(void *p, bool UNUSED(pageAllocation))
+void operator delete(void *UNUSED(p), bool UNUSED(pageAllocation))
 {
     
 }
@@ -62,7 +62,7 @@ void* kmalloc(size_t size)
         return placementAlloc.Allocate(size, false);
 }
 
-void kfree(void* p)
+void kfree(void* UNUSED(p))
 {
     /*Address addr = (Address)p;
     

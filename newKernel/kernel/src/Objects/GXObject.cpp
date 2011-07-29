@@ -45,7 +45,7 @@ void GXObject::Release() const
 void GXObject::Free() {}
 bool GXObject::Initialize() { return true; }
 
-void GXObject::operator delete(void* obj, size_t size)
+void GXObject::operator delete(void* obj, size_t UNUSED(size))
 {
     //OBJ_SYS_DEBUG_MGS("Deleting object at " << hex << (Address)obj << " of size " << dec << size);
     kfree(obj);
