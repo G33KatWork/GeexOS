@@ -1,4 +1,4 @@
-#include <Objects/GXObject.h>
+#include <kernel/Objects/GXObject.h>
 #include <kernel/global.h>
 
 //Metadata class foo

@@ -20,11 +20,7 @@ libhalx86:
 	$(call cmd_msg,SUBDIR,libhalx86)
 	$(call call_submake,libhalx86,all)
 
-geexobjects:
-	$(call cmd_msg,SUBDIR,geexobjects)
-	$(call call_submake,geexobjects,all)
-
-kernel: libkcpp libhalinterface libhalx86 geexobjects
+kernel: libkcpp libhalinterface libhalx86
 	$(call cmd_msg,SUBDIR,kernel)
 	$(call call_submake,kernel,all)
 
@@ -77,7 +73,6 @@ clean:
 	$(call call_submake,libkcpp,clean)
 	$(call call_submake,libhalinterface,clean)
 	$(call call_submake,libhalx86,clean)
-	$(call call_submake,geexobjects,clean)
 	$(call call_submake,kernel,clean)
 	$(call call_submake,loaderstub,clean)
 	$(call call_submake,testmodule,clean)
@@ -87,9 +82,8 @@ distclean: clean
 	$(call call_submake,libkcpp,distclean)
 	$(call call_submake,libhalinterface,distclean)
 	$(call call_submake,libhalx86,distclean)
-	$(call call_submake,geexobjects,distclean)
 	$(call call_submake,kernel,distclean)
 	$(call call_submake,loaderstub,distclean)
 	$(call call_submake,testmodule,distclean)
 
-.PHONY: testmodule geexobjects loaderstub libhalinterface libhalx86 libkcpp kernel clean distclean floppy.img qemu qemudebug
+.PHONY: testmodule loaderstub libhalinterface libhalx86 libkcpp kernel clean distclean floppy.img qemu qemudebug

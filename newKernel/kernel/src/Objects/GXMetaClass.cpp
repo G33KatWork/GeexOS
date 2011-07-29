@@ -1,4 +1,4 @@
-#include <Objects/GXMetaClass.h>
+#include <kernel/Objects/GXMetaClass.h>
 
 // GXMetaClassBase
 

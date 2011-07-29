@@ -2,7 +2,7 @@
 #define _KERNEL_MODULE_H_
 
 #include <types.h>
-#include <Objects/GXObject.h>
+#include <kernel/Objects/GXObject.h>
 
 namespace Modules
 {

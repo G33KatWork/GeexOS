@@ -16,16 +16,18 @@ CXXSOURCES = main.cpp \
 			 Memory/Virtual/VirtualMemoryRegion.cpp \
 			 Memory/Virtual/VirtualMemorySpace.cpp \
 			 Memory/Virtual/Regions/KernelProgramMemoryRegion.cpp \
-			 Memory/IO/IOMemoryManager.cpp
+			 Memory/IO/IOMemoryManager.cpp \
+			 Objects/GXMetaClass.cpp\
+			 Objects/GXObject.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = 
 
 # Additional include paths to consider
-INCLUDES =	include ../libkcpp/include ../libhalx86/include ../libhalinterface/include ../GeexObjects/include
+INCLUDES =	include ../libkcpp/include ../libhalx86/include ../libhalinterface/include
 
 # Additional static libs to link agains
-STATICLIBS = ../libkcpp/libkcpp.a ../libhalinterface/libhalinterface.a ../libhalx86/libhalx86.a ../GeexObjects/geexobjects.a
+STATICLIBS = ../libkcpp/libkcpp.a ../libhalinterface/libhalinterface.a ../libhalx86/libhalx86.a
 
 # Folder for object files
 OBJDIR = obj

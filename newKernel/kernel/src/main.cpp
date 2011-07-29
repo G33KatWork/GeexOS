@@ -57,7 +57,8 @@ int main()
     //TODO: Implement normal (non-debug) output-macro that prints text to graphical screen via HAL
     //which gets initialized after the HAL INIT is finished
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
-    
+
+#if 0
     MAIN_DEBUG_MSG("Physical memory manager has the following addresses marked as used:");
 #ifdef EN_DEBUG_MSG_MAIN
     CurrentHAL->GetPhysicalMemoryAllocator()->DumpUsed(CurrentHAL->GetCurrentDebugOutputDevice());
@@ -72,11 +73,13 @@ int main()
 #ifdef EN_DEBUG_MSG_MAIN
     VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(CurrentHAL->GetCurrentDebugOutputDevice());
 #endif
+#endif
 
     MAIN_DEBUG_MSG("Module BLOB is at " << hex << CurrentHAL->GetBootEnvironment()->GetModuleLocation() << " with size " << CurrentHAL->GetBootEnvironment()->GetModuleSize());
     
     KernelModule* obj = GXAllocateFromType(KernelModule);
     obj->Plug();
+    GXSafeReleaseNULL(obj);
     
     while(1);
 }

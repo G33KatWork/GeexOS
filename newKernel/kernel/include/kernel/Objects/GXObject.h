@@ -1,7 +1,7 @@
 #ifndef _GX_OBJECT_SYSTEM_OBJECT_H_
 #define _GX_OBJECT_SYSTEM_OBJECT_H_
 
-#include <Objects/GXMetaClass.h>
+#include <kernel/Objects/GXMetaClass.h>
 
 /**
  * This is the base class of all objects inside the object
