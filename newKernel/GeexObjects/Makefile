@@ -14,7 +14,7 @@ CXXSOURCES = GXMetaClass.cpp GXObject.cpp
 ASOURCES = 
 
 # Additional include paths to consider
-INCLUDES =	include ../libkcpp/include
+INCLUDES =	include ../libkcpp/include ../kernel/include ../libhalinterface/include
 
 # Additional static libs to link against
 STATICLIBS = 

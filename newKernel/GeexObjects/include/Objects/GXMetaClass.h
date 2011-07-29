@@ -341,14 +341,14 @@ public:
  * This macro implements the metadata class and default constructors for a normal class
 **/
 #define GXImplementMetaClassAndDefaultStructors(className, superclassName)                      \
-    GXImplementMetaClassWithInit(className, superclassName, )                                   \
+    GXImplementMetaClassWithInit(className, superclassName, ;)                                  \
     GXImplementDefaultStructors(className, superclassName)
 
 /**
  * This macro implements the metadata class and abstract constructors for an abstract class
 **/
 #define GXImplementMetaClassAndAbstractStructors(className, superclassName)                     \
-    GXImplementMetaClassWithInit(className, superclassName, )                                   \
+    GXImplementMetaClassWithInit(className, superclassName, ;)                                  \
     GXImplementAbstractStructors(className, superclassName)
 
 #endif

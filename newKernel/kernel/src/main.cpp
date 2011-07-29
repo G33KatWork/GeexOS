@@ -7,9 +7,12 @@
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/Memory/Virtual/Regions/KernelProgramMemoryRegion.h>
 
+#include <kernel/Modules/KernelModule.h>
+
 using namespace Arch;
 using namespace Debug;
 using namespace Memory;
+using namespace Modules;
 
 int main()
 {
@@ -69,6 +72,11 @@ int main()
 #ifdef EN_DEBUG_MSG_MAIN
     VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(CurrentHAL->GetCurrentDebugOutputDevice());
 #endif
+
+    MAIN_DEBUG_MSG("Module BLOB is at " << hex << CurrentHAL->GetBootEnvironment()->GetModuleLocation() << " with size " << CurrentHAL->GetBootEnvironment()->GetModuleSize());
+    
+    KernelModule* obj = GXAllocateFromType(KernelModule);
+    obj->Plug();
     
     while(1);
 }
