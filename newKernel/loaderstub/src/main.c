@@ -117,7 +117,7 @@ uint32_t mapElfFile(void* elfPointer)
         if(header->filesz > 0)
         {
             print_string_static("Copying from "); print_integer_hex((Address)elfPointer + header->offset); print_string_static(" to "); print_integer_hex(header->vaddr); print_string_static("\r\n");
-            memcpy((void*)header->vaddr, (void*)((Address)elfPointer + header->offset), sectionSize);
+            memcpy((void*)header->vaddr, (void*)((Address)elfPointer + header->offset), header->filesz);
         }
         else
             print_string_static("No data for this section\r\n");
