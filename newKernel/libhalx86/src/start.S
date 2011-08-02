@@ -6,7 +6,7 @@ extern start_ctors
 extern end_ctors
 extern __cxa_finalize
 
-STACKSIZE          equ        0x1000 ; 4k initial stack - will be moved later
+STACKSIZE          equ        0x10000 ; 64k stack for the main kernel thread
 
 section .text
 align 4
@@ -56,7 +56,7 @@ kernelInformation:	dw 0
 ;---------------------------------------------------------------------------------------------
 
 section .bss
-;define the initial bootstack which is used until we set up our own
+;define the bootstack which is used by the main kernel thread for all initialization tasks
 align 4096                                            ; align to page boundary
 global bootStack
 bootStackEnd:

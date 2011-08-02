@@ -1,10 +1,13 @@
 #include <arch/HAL.h>
 #include <arch/x86Paging.h>
 #include <arch/x86BootEnvironment.h>
+#include <arch/x86InterruptDispatcher.h>
 
 #include <arch/internal/GDT.h>
+#include <arch/internal/IDT.h>
 #include <arch/internal/CPUID.h>
 #include <arch/internal/MSR.h>
+#include <arch/internal/x86PageFaultHandler.h>
 
 #include <kernel/debug.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
@@ -17,6 +20,7 @@ using namespace Memory;
 x86HAL aNewHAL = x86HAL();
 HAL* Arch::CurrentHAL = &aNewHAL;
 
+//defined in start.S
 extern KernelInformation* kernelInformation;
 
 x86HAL::x86HAL()
@@ -25,8 +29,10 @@ x86HAL::x86HAL()
     serialDebug = NULL;
     physicalAllocator = NULL;
     paging = NULL;
+    interruptDispatcher = NULL;
     nullDebug = NullDebugOutputDevice();
     currentDebugDevice = None;
+    pageFaultHandler = NULL;
 }
 
 void x86HAL::Initialize()
@@ -38,6 +44,10 @@ void x86HAL::Initialize()
     gdt_install();
     HAL_DEBUG_MSG("GDT installed...");
     
+    idt_setup();
+    idt_install();
+    HAL_DEBUG_MSG("IDT installed...");
+    
     if(kernelInformation == NULL)
         PANIC("The multiboot structure pointer is NULL. Not good!");
     
@@ -45,6 +55,10 @@ void x86HAL::Initialize()
     HAL_DEBUG_MSG("Boot environment information successfully parsed...");
     
     physicalAllocator = new BitfieldPhysicalMemoryAllocator(bootenv->GetInstalledMemory());
+    
+    interruptDispatcher = new x86InterruptDispatcher();
+    pageFaultHandler = new x86PageFaultHandler();
+    interruptDispatcher->RegisterInterruptVector(14, pageFaultHandler);
     
     GetPaging()->Init();
     
@@ -166,4 +180,9 @@ void x86HAL::SetCurrentDebugOutputDeviceType(Debug::DebugOutputDeviceType type)
 BasePhysicalMemoryAllocator* x86HAL::GetPhysicalMemoryAllocator()
 {
     return physicalAllocator;
+}
+
+BaseInterruptDispatcher* x86HAL::GetInterruptDispatcher()
+{
+    return interruptDispatcher;
 }

@@ -8,6 +8,8 @@
 #include <arch/BitfieldPhysicalMemoryAllocator.h>
 #include <arch/AddressLayout.h>
 
+#include <arch/internal/x86ResolveableException.h>
+
 namespace Arch
 {
     class x86HAL : public HAL
@@ -32,6 +34,7 @@ namespace Arch
         virtual void SetCurrentDebugOutputDeviceType(Debug::DebugOutputDeviceType type);
         
         virtual BasePhysicalMemoryAllocator* GetPhysicalMemoryAllocator();
+        virtual BaseInterruptDispatcher* GetInterruptDispatcher();
         
     private:
         void reserveBIOSMemregions();
@@ -45,6 +48,9 @@ namespace Arch
         Debug::DebugOutputDeviceType currentDebugDevice;
         
         BitfieldPhysicalMemoryAllocator* physicalAllocator;
+        BaseInterruptDispatcher* interruptDispatcher;
+        
+        Arch::x86ResolveableException* pageFaultHandler;
     };
 }
 

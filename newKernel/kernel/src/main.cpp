@@ -6,6 +6,7 @@
 #include <kernel/debug.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/Memory/Virtual/Regions/KernelProgramMemoryRegion.h>
+#include <kernel/Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.h>
 
 #include <kernel/Modules/KernelModule.h>
 
@@ -80,6 +81,16 @@ int main()
     KernelModule* obj = GXAllocateFromType(KernelModule);
     obj->Plug();
     GXSafeReleaseNULL(obj);
+    
+    
+    BuddyAllocatedMemoryRegion* bud = new BuddyAllocatedMemoryRegion(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE, "Buddytest", 10);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(bud);
+    
+    bud->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    Address addr = bud->AllocateBuddy(0);
+    bud->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    bud->FreeBuddy(addr, 0);
+    bud->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
     
     while(1);
 }

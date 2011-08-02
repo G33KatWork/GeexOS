@@ -5,6 +5,7 @@
 #include <halinterface/BaseOutputDevice.h>
 #include <halinterface/BasePaging.h>
 #include <halinterface/BasePhysicalMemoryAllocator.h>
+#include <halinterface/BaseInterruptDispatcher.h>
 
 namespace Arch
 {
@@ -86,6 +87,11 @@ namespace Arch
          * Returns the physical memory allocator for this architecture
         **/
         virtual BasePhysicalMemoryAllocator* GetPhysicalMemoryAllocator() = 0;
+        
+        /**
+         * Returns the interrupt dispatcher for this architecture
+        **/
+        virtual BaseInterruptDispatcher* GetInterruptDispatcher() = 0;
     };
     
     /**

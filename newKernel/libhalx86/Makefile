@@ -8,10 +8,18 @@ TARGET = libhalx86.a
 CCSOURCES = 
 
 # List C++ source files here
-CXXSOURCES = HAL.cpp TextmodeDebugOutput.cpp SerialDebugOutput.cpp x86Paging.cpp GDT.cpp BitfieldPhysicalMemoryAllocator.cpp x86BootEnvironment.cpp
+CXXSOURCES = HAL.cpp \
+             TextmodeDebugOutput.cpp \
+             SerialDebugOutput.cpp \
+             x86Paging.cpp \
+             GDT.cpp \
+             IDT.cpp \
+             x86InterruptDispatcher.cpp \
+             BitfieldPhysicalMemoryAllocator.cpp \
+             x86BootEnvironment.cpp
 
 # List Assembler to be assembled with NASM here
-ASOURCES = start.S gdt_flush.S
+ASOURCES = start.S gdt_flush.S interruptStubs.S
 
 # Additional include paths to consider
 INCLUDES =	include ../libhalinterface/include ../libkcpp/include ../kernel/include

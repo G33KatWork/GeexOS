@@ -1,0 +1,12 @@
+Module class inherits from GXObject
+Module class holds module information (regions, length, name, dependencies, shit like that)
+
+ModuleRegistry holds all known Module instances either from the given module BLOB on boot or loaded later from a filesystem
+ModuleRegistry can be queried for all modules of type X (via type system) or name
+
+KernelPlugin inherits from Module and they provide thinks like Scheduler, IPC, SLAB Allocator etc.
+
+KernelDriver inherits from Module and they provide driver functionality.
+They have a Probe()-Method which returns true, if the driver found compatible hardware
+Special rove have PlatformDriver (inherits from KernelDriver) drivers which are loaded like plugins on bootup and are
+responsible for providing platform stuff and loading additional drivers like PCI, USB, Firewire, ACPI Parsing, etc.

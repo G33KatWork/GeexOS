@@ -16,6 +16,7 @@ CXXSOURCES = main.cpp \
 			 Memory/Virtual/VirtualMemoryRegion.cpp \
 			 Memory/Virtual/VirtualMemorySpace.cpp \
 			 Memory/Virtual/Regions/KernelProgramMemoryRegion.cpp \
+			 Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.cpp \
 			 Memory/IO/IOMemoryManager.cpp \
 			 Objects/GXMetaClass.cpp\
 			 Objects/GXObject.cpp
