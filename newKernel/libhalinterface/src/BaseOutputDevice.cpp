@@ -101,7 +101,7 @@ void BaseOutputDevice::PrintData(char* start, size_t len)
                 PrintChar(c);
         }
         
-        PrintString("\n");
+        PrintString("\r\n");
         start += 0x10;
     }
 }
@@ -153,6 +153,7 @@ BaseOutputDevice &BaseOutputDevice::operator<<(Special s)
     switch(s)
     {
         case endl:
+            PrintChar('\r');
             PrintChar('\n');
             break;
         case dec:

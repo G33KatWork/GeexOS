@@ -111,23 +111,35 @@ VirtualMemoryRegion* VirtualMemorySpace::FindRegionByName(const char* regionName
 
 VirtualMemoryRegion* VirtualMemorySpace::FindRegionByStartAddress(Address start)
 {
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("VirtualMemoryRegion at address " << hex << start << " in VirtualMemorySpace " << name << " was requested");
+
     for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {
         if(curRegion->startAddress == start)
+        {
+            VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Found region " << curRegion->name);
             return curRegion;
+        }
     }
     
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Requested region doesn't seem to exist in VirtualMemorySpace " << name);
     return NULL;
 }    
 
 VirtualMemoryRegion* VirtualMemorySpace::FindRegionEnclosingAddress(Address addr)
 {
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("VirtualMemoryRegion enclosing address " << hex << addr << " in VirtualMemorySpace " << name << " was requested");
+    
     for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {
         if(addr >= curRegion->startAddress && addr < (curRegion->startAddress + curRegion->size))
+        {
+            VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Found region " << curRegion->name);
             return curRegion;
+        }
     }
     
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Requested region doesn't seem to exist in VirtualMemorySpace " << name);
     return NULL;
 }
 

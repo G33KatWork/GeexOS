@@ -17,9 +17,14 @@ CXXSOURCES = main.cpp \
 			 Memory/Virtual/VirtualMemorySpace.cpp \
 			 Memory/Virtual/Regions/KernelProgramMemoryRegion.cpp \
 			 Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.cpp \
+			 Memory/Slab/LargeCache.cpp \
+			 Memory/Slab/SlabAllocator.cpp \
+			 Memory/Slab/SlabCache.cpp \
+			 Memory/Slab/SmallCache.cpp \
 			 Memory/IO/IOMemoryManager.cpp \
-			 Objects/GXMetaClass.cpp\
-			 Objects/GXObject.cpp
+			 Objects/GXMetaClass.cpp \
+			 Objects/GXObject.cpp \
+			 ELF/ELFFile.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = 

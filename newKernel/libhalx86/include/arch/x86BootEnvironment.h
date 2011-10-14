@@ -16,8 +16,8 @@ namespace Arch
         virtual size_t GetInstalledMemory() { return memory; }
         virtual const char* GetKernelCommandline() { return cmdLine; }
         
-        virtual Address GetModuleLocation() { return moduleLocation; }
-        virtual size_t GetModuleSize() { return moduleSize; }
+        virtual KernelBootModuleRepository* GetBootModuleRepository() { return (KernelBootModuleRepository*)moduleLocation; }
+        virtual size_t GetBootModuleRepositorySize() { return moduleSize; }
     
         uint32_t GetBIOSMemregionCount() { return biosMemregionCount; }
         KernelInformationMemoryRegion* GetBIOSMemregion(uint32_t idx)
