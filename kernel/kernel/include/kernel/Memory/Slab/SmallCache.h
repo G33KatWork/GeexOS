@@ -1,7 +1,6 @@
 #ifndef _SLAB_ALLOCATOR_SMALLCACHE_H_
 #define _SLAB_ALLOCATOR_SMALLCACHE_H_
 
-#include <arch/types.h>
 #include <types.h>
 #include <kernel/Memory/Slab/SlabCache.h>
 #include <arch/HAL.h>

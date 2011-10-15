@@ -1,4 +1,4 @@
-#include <kernel/global.h>
+//#include <kernel/global.h>
 #include <string.h>
 #include <cxxabi.h>
 
@@ -8,7 +8,7 @@
 //Support for pure virtual functions
 extern "C" void __cxa_pure_virtual()
 {
-    PANIC("Error while calling pure virtual function!");
+    //PANIC("Error while calling pure virtual function!");
 }
 
 //__cxa_atexit and __cxa_finalize implementations
@@ -49,7 +49,7 @@ int __cxa_atexit(void (*f)(void *), void *p, void *d)
 }
  
 /* This currently destroys all objects */
-void __cxa_finalize(void* UNUSED(d))
+void __cxa_finalize(void*)
 {
     unsigned int i = iObject;
     for (; i > 0; --i)

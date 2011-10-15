@@ -40,6 +40,7 @@ void* LargeCache::AllocateObject()
         this->fullSlabList.Prepend(slab);
     }
     
+    objectsAllocated++;
     return allocatedObject;
 }
 
@@ -76,6 +77,7 @@ void LargeCache::FreeObject(void* object)
     }
     
     ResizeHashTableIfNeeded();
+    objectsAllocated--;
 }
 
 Slab* LargeCache::Grow()
@@ -119,6 +121,7 @@ void LargeCache::ReleaseSlab(Slab* slab)
     this->hashTable.Remove((HashedSlab*)slab);
     FreeFromSizeSlabs(((HashedSlab*)slab)->freeArray);
     this->allocator->FreeBuddy(slab->objectStart, this->order);
+    FreeFromSizeSlabs(slab);
     
     this->ResizeHashTableIfNeeded();
 }

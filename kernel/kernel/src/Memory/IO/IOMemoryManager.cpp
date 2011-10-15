@@ -11,7 +11,7 @@ using namespace Arch;
 
 IOMemoryManager::IOMemoryManager(Address IOMemoryStart, size_t IOMemorySize)
 {
-    IO_MEMORY_MANAGER_DEBUG_MSG("Initializing IOMemoryManager. Virtual I/O Memory starting at " << hex << IOMemoryStart << " width size " << hex << IOMemorySize);
+    IO_MEMORY_MANAGER_DEBUG_MSG("Initializing IOMemoryManager. Virtual I/O Memory starting at " << hex << IOMemoryStart << " with size " << hex << IOMemorySize);
     
     iomemStart = IOMemoryStart;
     iomemSize = IOMemorySize;
@@ -67,8 +67,12 @@ IOMemoryRegion* IOMemoryManager::FindRegionEnclosingVirtualAddress(Address virtu
 IOMemoryRegion* IOMemoryManager::MapPhysical(Address physicalAddress, size_t size, const char* regionName)
 {
     IO_MEMORY_MANAGER_DEBUG_MSG("Mapping a physical I/O Memory range into I/O memory");
-    IO_MEMORY_MANAGER_DEBUG_MSG("Physical Address " << hex << physicalAddress <<
-                                " Name: " << regionName);
+    IO_MEMORY_MANAGER_DEBUG_MSG("Physical Address " << hex << physicalAddress << ", size " << size
+                                << " Name: " << regionName);
+    
+    ASSERT(IS_PAGE_ALIGNED(physicalAddress), "Physical address of IO memory region to create must be page aligned");
+    ASSERT(IS_PAGE_ALIGNED(size), "Size of IO memory region to create must be page aligned");
+    ASSERT(regionName != NULL, "A name for the IO memory region must be supplied");
     
     size_t continousFreeSpace = 0;
 
@@ -115,7 +119,7 @@ IOMemoryRegion* IOMemoryManager::Allocate(Address virtualAddress, Address physic
     
     for(Address i = region->startAddress; i < region->startAddress + region->size; i += PAGE_SIZE)
     {
-        ASSERT(!VirtualMemoryManager::GetInstance()->PhysicalAllocator()->IsFree(physicalAddress), "Physical frame to be mapped manually into I/O Memory is not marked as used");
+        ASSERT(!CurrentHAL->GetPhysicalMemoryAllocator()->IsFree(physicalAddress), "Physical frame to be mapped manually into I/O Memory is not marked as used");
         ASSERT(!CurrentHAL->GetPaging()->IsPresent(i), "Virtual address which should be mapped manually to a physical frame is already present");
         
         CurrentHAL->GetPaging()->MapAddress(
@@ -133,7 +137,7 @@ IOMemoryRegion* IOMemoryManager::Allocate(Address virtualAddress, Address physic
     return region;
 }
 
-void IOMemoryManager::DumpRegions(BaseDebugOutputDevice* c)
+void IOMemoryManager::DumpRegions(BaseOutputDevice* c)
 {
     for(IOMemoryRegion* curRegion = regionList.Head(); curRegion != NULL; curRegion = regionList.GetNext(curRegion))
     {

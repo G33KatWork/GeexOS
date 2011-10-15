@@ -1,6 +1,5 @@
 #include <kernel/Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.h>
 
-
 #include <kernel/global.h>
 #include <string.h>
 
@@ -74,7 +73,7 @@ Address BuddyAllocatedMemoryRegion::AllocateBuddy(size_t order)
         if(freeElements[i] == NULL)
             continue;
             
-        BUDDY_ALLOC_DEBUG_MSG("Found free element at order " << dec << i);
+        BUDDY_ALLOC_DEBUG_MSG("Found free element with order " << dec << i << " at " << hex << (Address)freeElements[i]);
         
         //remove from list
         struct BuddyElement* ret = freeElements[i];
@@ -159,7 +158,7 @@ void BuddyAllocatedMemoryRegion::FreeBuddy(Address addr, size_t order)
     BUDDY_ALLOC_DEBUG_MSG("No more buddies to merge");
 }
 
-void BuddyAllocatedMemoryRegion::DumpBuddyInfo(BaseDebugOutputDevice* c)
+void BuddyAllocatedMemoryRegion::DumpBuddyInfo(BaseOutputDevice* c)
 {
     *c << "BUDDY: " << this->Name() << ": ";
     for(size_t order = minOrder; order <= maxOrder; order++)

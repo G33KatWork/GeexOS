@@ -1,6 +1,6 @@
 #include <kernel/Memory/Virtual/VirtualMemorySpace.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
-#include <kernel/Memory/Virtual/Regions/PreallocatedMemoryRegion.h>
+//#include <kernel/Memory/Virtual/Regions/PreallocatedMemoryRegion.h>
 #include <string.h>
 #include <kernel/global.h>
 #include <kernel/debug.h>
@@ -39,20 +39,20 @@ void VirtualMemorySpace::SetFlags(VirtualMemoryRegion* r, AllocationFlags f)
     }
 }
 
-void VirtualMemorySpace::AnnounceRegion(VirtualMemoryRegion* region)
+void VirtualMemorySpace::AddRegion(VirtualMemoryRegion* region)
 {
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Announcing region " << region->name << " in VirtualMemorySpace " << this->name);
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Adding region " << region->name << " in VirtualMemorySpace " << this->name);
     //FIXME: check if space already occupied?
     AddRegionToList(region);
 }
 
-void VirtualMemorySpace::DiscontinueRegion(VirtualMemoryRegion* region)
+void VirtualMemorySpace::RemoveRegion(VirtualMemoryRegion* region)
 {
-    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Discontinuing region " << region->name << " in VirtualMemorySpace " << this->name);
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("removing region " << region->name << " in VirtualMemorySpace " << this->name);
     RemoveRegionFromList(region);
 }
 
-void VirtualMemorySpace::AnnounceRegionWithPreallocatedMemory(Address address, size_t size, const char* rname, AllocationFlags f)
+/*void VirtualMemorySpace::AnnounceRegionWithPreallocatedMemory(Address address, size_t size, const char* rname, AllocationFlags f)
 {
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Announcing prealloc-region " << rname << " in VirtualMemorySpace " << this->name);
     VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Starting Address " << hex << address <<
@@ -65,7 +65,7 @@ void VirtualMemorySpace::AnnounceRegionWithPreallocatedMemory(Address address, s
     VirtualMemoryRegion* region = new PreallocatedMemoryRegion(address, size, rname, f);
     SetFlags(region, f);
     AddRegionToList(region);
-}
+}*/
 
 /*void VirtualMemorySpace::Remap(VirtualMemoryRegion* region, Address NewAddress)
 {
@@ -111,27 +111,39 @@ VirtualMemoryRegion* VirtualMemorySpace::FindRegionByName(const char* regionName
 
 VirtualMemoryRegion* VirtualMemorySpace::FindRegionByStartAddress(Address start)
 {
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("VirtualMemoryRegion at address " << hex << start << " in VirtualMemorySpace " << name << " was requested");
+
     for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {
         if(curRegion->startAddress == start)
+        {
+            VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Found region " << curRegion->name);
             return curRegion;
+        }
     }
     
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Requested region doesn't seem to exist in VirtualMemorySpace " << name);
     return NULL;
 }    
 
 VirtualMemoryRegion* VirtualMemorySpace::FindRegionEnclosingAddress(Address addr)
 {
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("VirtualMemoryRegion enclosing address " << hex << addr << " in VirtualMemorySpace " << name << " was requested");
+    
     for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {
         if(addr >= curRegion->startAddress && addr < (curRegion->startAddress + curRegion->size))
+        {
+            VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Found region " << curRegion->name);
             return curRegion;
+        }
     }
     
+    VIRTUAL_MEMORY_SPACE_DEBUG_MSG("Requested region doesn't seem to exist in VirtualMemorySpace " << name);
     return NULL;
 }
 
-void VirtualMemorySpace::DumpRegions(BaseDebugOutputDevice* c)
+void VirtualMemorySpace::DumpRegions(BaseOutputDevice* c)
 {
     for(VirtualMemoryRegion* curRegion = memoryRegionList.Head(); curRegion != NULL; curRegion = memoryRegionList.GetNext(curRegion))
     {

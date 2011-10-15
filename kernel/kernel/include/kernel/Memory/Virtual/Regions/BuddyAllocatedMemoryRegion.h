@@ -2,10 +2,10 @@
 #define BUDDYALLOCATEDMEMORYREGION_H_
 
 #include <types.h>
-#include <arch/types.h>
 #include <kernel/Memory/Virtual/Regions/LazyMemoryRegion.h>
 #include <kernel/DataStructures/Bitfield.h>
-//#include <arch/HAL.h>
+
+//TODO: Implement method to return all unneeded physical memory to the physical allocator
 
 namespace Memory
 {
@@ -40,7 +40,7 @@ namespace Memory
 		
         Address AllocateBuddy(size_t order);
         void FreeBuddy(Address addr, size_t order);
-        void DumpBuddyInfo(Debug::BaseDebugOutputDevice* c);
+        void DumpBuddyInfo(Debug::BaseOutputDevice* c);
     };
 }
 #endif

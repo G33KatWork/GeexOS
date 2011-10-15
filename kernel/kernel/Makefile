@@ -10,40 +10,30 @@ CCSOURCES =
 # List C++ source files here
 CXXSOURCES = main.cpp \
 			 global.cpp \
-			 Processes/Scheduler.cpp \
-			 Processes/Thread.cpp \
-			 DataStructures/OrderedArray.cpp \
-			 DataStructures/List.cpp\
-			 Time/Timer.cpp\
-			 Time/TimerManager.cpp \
- 			 Memory/PlacementAllocator.cpp \
-             Memory/Virtual/VirtualMemoryManager.cpp \
-             Memory/Virtual/VirtualMemorySpace.cpp \
-             Memory/Virtual/VirtualMemoryRegion.cpp \
-			 Memory/BitfieldPhysicalMemoryManager.cpp \
-			 Memory/IO/IOMemoryManager.cpp \
-			 utils/ElfInformation.cpp \
-			 Processes/Scheduler.cpp \
-			 Processes/Thread.cpp \
-			 Processes/KernelThread.cpp \
-			 Memory/Virtual/Regions/KernelStackMemoryRegion.cpp \
-			 Memory/Virtual/Regions/KernelThreadStackRegion.cpp \
-			 Memory/Slab/SlabAllocator.cpp \
+			 Memory/PlacementAllocator.cpp \
+			 DataStructures/Bitfield.cpp \
+			 Memory/Virtual/VirtualMemoryManager.cpp \
+			 Memory/Virtual/VirtualMemoryRegion.cpp \
+			 Memory/Virtual/VirtualMemorySpace.cpp \
+			 Memory/Virtual/Regions/KernelProgramMemoryRegion.cpp \
+			 Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.cpp \
 			 Memory/Slab/LargeCache.cpp \
-			 Memory/Slab/SmallCache.cpp \
+			 Memory/Slab/SlabAllocator.cpp \
 			 Memory/Slab/SlabCache.cpp \
-             DataStructures/Bitfield.cpp \
- 			 Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.cpp
-#			 Memory/Slab/SlabManager.cpp
+			 Memory/Slab/SmallCache.cpp \
+			 Memory/IO/IOMemoryManager.cpp \
+			 Objects/GXMetaClass.cpp \
+			 Objects/GXObject.cpp \
+			 ELF/ELFFile.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = 
 
 # Additional include paths to consider
-INCLUDES =	include ../libarchx86/include ../libkcpp/include ../libhalinterface/include
+INCLUDES =	include ../libkcpp/include ../libhalx86/include ../libhalinterface/include
 
 # Additional static libs to link agains
-STATICLIBS = ../libarchx86/libarchx86.a ../libkcpp/libkcpp.a ../libhalinterface/libhalinterface.a
+STATICLIBS = ../libkcpp/libkcpp.a ../libhalinterface/libhalinterface.a ../libhalx86/libhalx86.a
 
 # Folder for object files
 OBJDIR = obj

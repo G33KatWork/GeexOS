@@ -1,2 +1,0 @@
-bla
-I'm a fucking fancy testfile from the initrd

@@ -1,7 +1,6 @@
 #ifndef _SLAB_ALLOCATOR_LARGECACHE_H_
 #define _SLAB_ALLOCATOR_LARGECACHE_H_
 
-#include <arch/types.h>
 #include <types.h>
 #include <arch/HAL.h>
 #include <kernel/DataStructures/HashTable.h>

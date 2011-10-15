@@ -5,8 +5,6 @@ resources/vmware.vmxf
 serialOut
 toolchain/i686-elf
 toolchain/source
-utils/geninitramfs
-utils/genmapfile
 *.img
 *.elf
 *.map

@@ -2,9 +2,8 @@
 #define VIRTUALMEMORYSPACE_H_
 
 #include <types.h>
-#include <arch/types.h>
 #include <kernel/Memory/Virtual/VirtualMemoryRegion.h>
-#include <halinterface/BaseDebugOutputDevice.h>
+#include <halinterface/BaseOutputDevice.h>
 #include <halinterface/BasePaging.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
 
@@ -28,9 +27,9 @@ namespace Memory
             pageDirectory = pageDir;
         }
 		
-        void AnnounceRegion(VirtualMemoryRegion* region);
-        void DiscontinueRegion(VirtualMemoryRegion* region);
-		void AnnounceRegionWithPreallocatedMemory(Address address, size_t size, const char* rname, AllocationFlags f);
+        void AddRegion(VirtualMemoryRegion* region);
+        void RemoveRegion(VirtualMemoryRegion* region);
+		//void AnnounceRegionWithPreallocatedMemory(Address address, size_t size, const char* rname, AllocationFlags f);
 		
 		VirtualMemoryRegion* FindRegionByName(const char* regionName);
 		VirtualMemoryRegion* FindRegionByStartAddress(Address start);
@@ -44,7 +43,7 @@ namespace Memory
         /* To be called by a page fault handler */
         bool HandlePageFault(Address faultingAddress);
 		
-		void DumpRegions(Debug::BaseDebugOutputDevice* c);
+		void DumpRegions(Debug::BaseOutputDevice* c);
 		
         const char* Name() { return name; }
 		

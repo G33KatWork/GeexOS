@@ -20,6 +20,8 @@ static struct cacheSizes cacheSizes[] = {
     { 1 << 7, NULL },
     { 1 << 8, NULL },
     { 1 << 9, NULL },
+    { 1 << 10, NULL },
+    { 1 << 11, NULL },
     { 0,      NULL }
 };
 
@@ -52,7 +54,7 @@ void* Memory::Slab::AllocateFromSizeSlabs(size_t size)
     while(cacheSizes[i].size != 0 && totalSize > cacheSizes[i].size)
         i++;
     
-    if(cacheSizes[i].size == 0)
+    if(cacheSizes[i].size == 0 || cacheSizes[i].cache == NULL)
     {
         PANIC("No suitable cache size for object with size " << dec << size << " found");
         return NULL;
@@ -111,7 +113,7 @@ SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, 
         void* largeCacheBuffer = AllocateFromSizeSlabs(sizeof(LargeCache));
         if(largeCacheBuffer == NULL)
         {
-            SLAB_ALLOCATOR_DEBUG_MSG("Error creating new LarheSlabCache " << cacheName);
+            SLAB_ALLOCATOR_DEBUG_MSG("Error creating new LargeCache " << cacheName);
             return NULL;
         }
         
@@ -141,6 +143,10 @@ SlabCache* SlabAllocator::CreateCache(const char* cacheName, size_t objectSize, 
 void SlabAllocator::DestroyCache(SlabCache* cache)
 {
     this->cacheList.Remove(cache);
+    
+    if(cache->objSize > SLAB_LIMIT)
+        FreeFromSizeSlabs(cache);
+    
     cache->Destroy();
 }
 
@@ -149,4 +155,17 @@ void SlabAllocator::FreeUnusedMemory()
     SLAB_ALLOCATOR_DEBUG_MSG("Releasing unused memory");
     for(SlabCache* curCache = this->cacheList.Head(); curCache != NULL; curCache = this->cacheList.GetNext(curCache))
         curCache->ReleaseUnusedMemory();
+}
+
+void SlabAllocator::DumpCacheInfo(BaseOutputDevice* c)
+{
+    for(SlabCache* curCache = cacheList.Head(); curCache != NULL; curCache = cacheList.GetNext(curCache))
+    {
+        *c << "SLABALLOC: " << "\tName: " << curCache->name << endl;
+        *c << "SLABALLOC: " << "\tObjSize: " << dec << (unsigned int)curCache->objSize << endl;
+        *c << "SLABALLOC: " << "\tOrder: " << dec << (unsigned int)curCache->order << endl;
+        *c << "SLABALLOC: " << "\tObjectsPerSlab: " << dec << (unsigned int)curCache->objectsPerSlab << endl;
+        *c << "SLABALLOC: " << "\tObjectsAllocated: " << dec << (unsigned int)curCache->objectsAllocated << endl;
+        *c << endl;
+    }
 }

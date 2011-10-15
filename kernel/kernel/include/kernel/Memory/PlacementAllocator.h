@@ -2,7 +2,9 @@
 #define PLACEMENT_ALLOCATOR_H_
 
 #include <types.h>
-#include <arch/types.h>
+
+//if you change this, change the linkerscript, too
+#define KERNEL_PLACEMENT_SIZE   0x200000
 
 namespace Memory
 {

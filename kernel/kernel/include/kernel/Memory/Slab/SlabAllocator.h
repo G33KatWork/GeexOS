@@ -1,7 +1,6 @@
 #ifndef _SLAB_ALLOCATOR_H_
 #define _SLAB_ALLOCATOR_H_
 
-#include <arch/types.h>
 #include <types.h>
 #include <kernel/Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.h>
 #include <kernel/Memory/Slab/SlabCache.h>
@@ -25,6 +24,8 @@ namespace Memory
             void DestroyCache(SlabCache* cache);
             
             void FreeUnusedMemory();
+            
+            void DumpCacheInfo(Debug::BaseOutputDevice* c);
         };
         
         void* AllocateFromSizeSlabs(size_t size);

@@ -1,7 +1,6 @@
 #ifndef _SLAB_ALLOCATOR_SLABCACHE_H_
 #define _SLAB_ALLOCATOR_SLABCACHE_H_
 
-#include <arch/types.h>
 #include <types.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
 #include <kernel/Memory/Slab/Slab.h>
@@ -28,7 +27,7 @@ namespace Memory
             size_t objSize;
             size_t order;
             size_t objectsPerSlab;
-            //size_t objectsAllocated;
+            size_t objectsAllocated;
             //size_t objectsActive;
         
             static size_t EstimateNrObjects(size_t order, size_t objSize, size_t* nr, size_t* wastage);
@@ -61,6 +60,7 @@ namespace Memory
             inline size_t GetObjectSize() { return objSize; }
             inline size_t GetOrder() { return order; }
             inline const char* GetName() const { return name; }
+            inline size_t GetAllocatedObjectCount() const { return objectsAllocated; }
         };
     }
 }

@@ -1,15 +1,20 @@
 #ifndef _HAL_INTERFACES_HAL_H
 #define _HAL_INTERFACES_HAL_H
 
-#include <halinterface/BaseTimer.h>
-#include <halinterface/BaseInterruptDispatcher.h>
-#include <halinterface/BasePaging.h>
 #include <halinterface/BootEnvironment.h>
-#include <halinterface/BaseDebugOutputDevice.h>
-#include <halinterface/BaseProcessor.h>
+#include <halinterface/BaseOutputDevice.h>
+#include <halinterface/BasePaging.h>
+#include <halinterface/BasePhysicalMemoryAllocator.h>
+#include <halinterface/BaseInterruptDispatcher.h>
 
 namespace Arch
 {
+    /**
+     * The HAL encapsulates all platform specific information and actions the
+     * kernel needs in its early initialization process when no modules are loaded
+     * yet. The specific platform implementation is linked statically into the
+     * kernel and available directly after coming out of the bootloader.
+    **/
     class HAL
     {
     public:
@@ -21,24 +26,9 @@ namespace Arch
         
         /**
          * This method is called to finalize the early initialization.
+         * The HAL assumes that the VirtualMemoryManager is initialized here.
         **/
         virtual void InitializationDone() = 0;
-        
-        /**
-         * This method is called after all memory related tasks are completed by
-         * the kernel. Here the full memory manager as well as dynamic kernel
-         * memory via the SLABAllocator is available.
-        **/
-        virtual void InitializationAfterMemoryAvailable() = 0;
-        
-        /**
-         * The main kernel thread calls this method as soon as the
-         * virtual memory manager is initialized. The HAL should register
-         * platform specific memory regions
-         * (IO Memory, memory holes, etc.) in this function.
-         * Dynamic memory as the SLAB Allocator is not yet available here.
-        **/
-        virtual void SetupArchMemRegions() = 0;
         
         /**
          * This call globally enables interrupt handling by setting the
@@ -46,7 +36,7 @@ namespace Arch
          * be modified. As soon as a task switch will occur, interrupts
          * are enabled again.
         **/
-        virtual void EnableInterrupts() = 0;
+        virtual void EnableInterruptsOnCurrentCPU() = 0;
         
         /**
          * Globally disables interrupts by deleting the CPU flag.
@@ -56,42 +46,26 @@ namespace Arch
          * return a bool which indicates if interrupts were enabled.
          * If not, reenabling should not take place.
         **/
-        virtual void DisableInterrupts() = 0;
+        virtual void DisableInterruptsOnCurrentCPU() = 0;
         
         /**
          * This method puts a string containing the CPU vendors name
          * into a given buffer. The caller is responsible for providing
          * a buffer with proper size.
         **/
-        virtual void GetCPUVendor(char* buf) = 0;
-        
-        /**
-         * This method returns an instance to the Processor the code is
-         * currently running on.
-        **/
-        virtual BaseProcessor* GetCurrentProcessor() = 0;
+        virtual void GetCPUVendorName(char* buf) = 0;
         
         /**
          * This method should halt all CPUs and disable all interrupts.
          * Mainly this will be called in the event of a kernel panic
          * or a shutdown/reboot.
         **/
-        virtual void HaltMachine() = 0;
-        
-        /**
-         * Returns an instance of the platform specific interrupt handler
-        **/
-        virtual BaseInterruptDispatcher* GetInterruptDispatcher() = 0;
+        virtual void HaltCurrentCPU() = 0;
         
         /**
          * Returns an instance of the Paging subsystem for the platform
         **/
         virtual BasePaging* GetPaging() = 0;
-        
-        /**
-         * Returns the currently used timer on the platform
-        **/
-        virtual BaseTimer* GetHardwareClockSource() = 0;
         
         /**
          * Returns a BootEnvironment containing information like the ELF headers
@@ -102,7 +76,7 @@ namespace Arch
         /**
          * Returns an instance to the currently used debug output device
         **/
-        virtual Debug::BaseDebugOutputDevice* GetCurrentDebugOutputDevice() = 0;
+        virtual Debug::BaseOutputDevice* GetCurrentDebugOutputDevice() = 0;
         
         /**
          * Switches the currently used debug output device to the given type
@@ -110,25 +84,14 @@ namespace Arch
         virtual void SetCurrentDebugOutputDeviceType(Debug::DebugOutputDeviceType type) = 0;
         
         /**
-         * Returns the current stackpointer after the function call
+         * Returns the physical memory allocator for this architecture
         **/
-        virtual Address GetStackPointer() = 0;
+        virtual BasePhysicalMemoryAllocator* GetPhysicalMemoryAllocator() = 0;
         
         /**
-         * Sets the stackpointer register to a new value. It is absolutely necessary that
-         * this value is correct, otherwise a failure WILL occur when returning from this function
+         * Returns the interrupt dispatcher for this architecture
         **/
-        virtual void SetStackPointer(Address NewPointer) = 0;
-        
-        /**
-         * Returns the current frame pointer
-        **/
-        virtual Address GetFramePointer() = 0;
-        
-        /**
-         * Sets the current framepointer register
-        **/
-        virtual void SetFramePointer(Address NewPointer) = 0;
+        virtual BaseInterruptDispatcher* GetInterruptDispatcher() = 0;
     };
     
     /**

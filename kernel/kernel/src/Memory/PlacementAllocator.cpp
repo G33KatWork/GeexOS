@@ -1,11 +1,7 @@
 #include <kernel/Memory/PlacementAllocator.h>
-#include <kernel/global.h>
 #include <arch/HAL.h>
-#include <kernel/debug.h>
-#include <arch/AddressLayout.h>
 
 using namespace Memory;
-using namespace Debug;
 
 extern unsigned int placement;
 
@@ -17,8 +13,8 @@ PlacementAllocator::PlacementAllocator()
 
 void* PlacementAllocator::Allocate(size_t len, bool pageAlign)
 {
-    PLACEMENT_DEBUG_MSG("Allocating " << dec << len << " Bytes " << (pageAlign?" page-aligned":""));
-    PLACEMENT_DEBUG_MSG("Currently allocated space in placement region: " << dec << GetPlacementAllocatedSize() << " Bytes");
+    //PLACEMENT_DEBUG_MSG("Allocating " << dec << len << " Bytes " << (pageAlign?" page-aligned":""));
+    //PLACEMENT_DEBUG_MSG("Currently allocated space in placement region: " << dec << GetPlacementAllocatedSize() << " Bytes");
     
     if(GetPlacementAllocatedSize() + len > KERNEL_PLACEMENT_SIZE)
         PANIC("Placement region overflow");
@@ -45,7 +41,7 @@ unsigned int PlacementAllocator::GetPointerPosition()
 
 size_t PlacementAllocator::GetPlacementAllocatedSize()
 {
-    return placement_address - KERNEL_PLACEMENT_START;
+    return placement_address - (unsigned int)&placement;
 }
 
 Address Memory::GetPlacementBeginning()

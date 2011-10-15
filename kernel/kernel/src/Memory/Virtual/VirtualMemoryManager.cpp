@@ -2,7 +2,6 @@
 #include <arch/HAL.h>
 #include <kernel/debug.h>
 #include <string.h>
-#include <arch/AddressLayout.h>
 
 using namespace Arch;
 using namespace Memory;
@@ -19,23 +18,15 @@ VirtualMemoryManager VirtualMemoryManager::instance = VirtualMemoryManager();
 VirtualMemoryManager* VirtualMemoryManager::GetInstance() { return &instance; }
 
 VirtualMemoryManager::VirtualMemoryManager()
-    : phys(NULL),
-    iomanager(NULL),
+    : iomanager(NULL),
     currentSpace(NULL),
-    kernelSpace(NULL),
-    kernelStack(NULL),
-    kernelElf(NULL),
-    kernelThreadStacks(NULL),
-    slabAllocator(NULL)
+    kernelSpace(NULL)
 {}
 
-void VirtualMemoryManager::Init(size_t MemorySize)
+void VirtualMemoryManager::Init()
 {
-    VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Initializing virtual kernel memory subsystem. Memory size: " << dec << (unsigned int)MemorySize << "KB");
-    
-    phys = new BitfieldPhysicalMemoryManager(MemorySize);
     iomanager = new IOMemoryManager(KERNEL_IO_MEMORY_START, KERNEL_IO_MEMORY_END - KERNEL_IO_MEMORY_START);
-    VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("Physical memory manager initialized...");
+    VIRTUAL_MEMORY_MANAGER_DEBUG_MSG("IO memory manager initialized...");
 }
 
 void VirtualMemoryManager::AddSpace(VirtualMemorySpace* space)

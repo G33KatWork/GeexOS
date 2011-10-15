@@ -2,7 +2,6 @@
 #define VIRTUALMEMORYREGION_H_
 
 #include <types.h>
-#include <arch/types.h>
 #include <kernel/global.h>
 #include <arch/HAL.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>

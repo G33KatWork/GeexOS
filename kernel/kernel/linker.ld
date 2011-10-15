@@ -1,18 +1,13 @@
 OUTPUT_FORMAT("elf32-i386")
 ENTRY (start)
 
-SECTIONS{
-    . = 0x00100000;
+PHDRS {
+}
 
-    .setup :
-	 {
-	    *(.multibootHeader)
-        *(.setup)
-	}
-
+SECTIONS {
     . += 0xC0000000;
     
-    .text ALIGN (4096) : AT(ADDR(.text) - 0xC0000000)
+    .text ALIGN (4096) : AT(ADDR(.text))
     {
         code = .; _code = .; __code = .;
         *(.text*)
@@ -20,13 +15,13 @@ SECTIONS{
         *(.gnu.linkonce.t*)
     }
 
-    .rodata ALIGN (4096) : AT(ADDR(.rodata) - 0xC0000000)
+    .rodata ALIGN (4096) : AT(ADDR(.rodata))
     {
         *(.rodata*)
         *(.gnu.linkonce.r*)
     }
 
-    .data ALIGN (4096) : AT(ADDR(.data) - 0xC0000000)
+    .data ALIGN (4096) : AT(ADDR(.data))
     {
         start_ctors = .;
         *(.ctor*)
@@ -38,7 +33,7 @@ SECTIONS{
         *(.gnu.linkonce.d*)
     }
 
-    .bss ALIGN (4096) : AT(ADDR(.bss) - 0xC0000000)
+    .bss ALIGN (4096) : AT(ADDR(.bss))
     {
         sbss = .;
         bss = .; _bss = .; __bss = .;
@@ -52,9 +47,9 @@ SECTIONS{
     end = .; _end = .; __end = .;
 
     . = 0xC0200000;
-    .placement ALIGN(4096) : AT(ADDR(.placement) - 0xC0000000)
+    .placement ALIGN(4096) : AT(ADDR(.placement))
     {
         placement = .;
-        *(.placement)
+		. += 0x200000;
     }
 }

@@ -33,6 +33,7 @@ void* SmallCache::AllocateObject()
         this->fullSlabList.Prepend(slab);
     }
     
+    objectsAllocated++;
     return allocatedObject;
 }
 
@@ -64,6 +65,8 @@ void SmallCache::FreeObject(void* object)
         this->partialSlabList.Remove(slab);
         this->freeSlabList.Prepend(slab);
     }
+    
+    objectsAllocated--;
 }
 
 void SmallCache::ReleaseSlab(Slab* slab)

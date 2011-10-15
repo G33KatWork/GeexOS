@@ -22,7 +22,7 @@ void VirtualMemoryRegion::MapFreshPages(Address start, size_t length)
     for(Address i = start; i < start + length; i += PAGE_SIZE)
         CurrentHAL->GetPaging()->MapAddress(
             i,
-            VirtualMemoryManager::GetInstance()->PhysicalAllocator()->AllocateFrame(),
+            CurrentHAL->GetPhysicalMemoryAllocator()->AllocateFrame(),
             flags & ALLOCFLAG_WRITABLE,
             flags & ALLOCFLAG_USERMODE 
         );
@@ -46,7 +46,7 @@ void VirtualMemoryRegion::UnmapPages(Address start, size_t length)
         if(phys)
         {
             CurrentHAL->GetPaging()->UnmapAddress(i);
-            VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(phys);
+            CurrentHAL->GetPhysicalMemoryAllocator()->DeallocateFrame(phys);
         }
     }
 }

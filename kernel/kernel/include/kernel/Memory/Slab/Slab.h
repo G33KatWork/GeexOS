@@ -1,7 +1,6 @@
 #ifndef _SLAB_ALLOCATOR_SLAB_H_
 #define _SLAB_ALLOCATOR_SLAB_H_
 
-#include <arch/types.h>
 #include <types.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
 

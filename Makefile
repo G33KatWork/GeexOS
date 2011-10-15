@@ -33,7 +33,7 @@ $(CC):
 	$(call call_submake,toolchain,all)
 
 # Create bootfloppy
-floppy.img: kernel/kernel/kernel.elf initrd.img
+floppy.img: kernel/kernel/kernel.elf
 	$(call cmd_msg,MKFLOPPY,floppy.img)
 	$(Q)$(SUDO) -A $(MKDIR) tmp
 	$(Q)$(SUDO) $(CP) resources/floppy.$(FLOPPYTYPE).img ./floppy.img
@@ -44,8 +44,9 @@ else
 	$(Q)$(SUDO) mount -o loop floppy.img tmp $(QOUTPUT)
 endif
 
-	$(Q)$(SUDO) $(CP) kernel/kernel/kernel.elf tmp/kernel
-	$(Q)$(SUDO) $(CP) initrd.img tmp/initrd.img
+	$(Q)$(SUDO) $(CP) kernel/loaderstub/loaderstub.elf tmp/loader.elf
+	$(Q)$(SUDO) $(CP) kernel/kernel/kernel.elf tmp/kern.elf
+	$(Q)$(SUDO) utils/genmoduleblob.py kernel/testmodule/module.o > tmp/modules
 
 ifeq ($(shell uname),Darwin)
 	$(Q)$(SUDO) hdiutil detach tmp $(QOUTPUT)
@@ -55,14 +56,6 @@ endif
 
 	$(Q)$(SUDO) $(RM) -Rf tmp
 	$(Q)$(SUDO) chmod 666 ./floppy.img
-
-initrd.img: utils/geninitramfs resources/test.txt resources/test1.txt
-	$(call cmd_msg,GENINITRD,initrd.img)
-	$(Q)utils/geninitramfs resources/test.txt test.txt resources/test1.txt test1.txt $(QOUTPUT)
-
-utils/geninitramfs:
-	$(call cmd_msg,SUBDIR,utils)
-	$(call call_submake,utils,all)
 
 # Start bochs
 bochs: all
@@ -86,7 +79,7 @@ ddd: all
 # Start VMware Fusion
 vmware: all
 	$(call cmd_msg,VMWARE,floppy.img)
-	$(Q)/Library/Application\ Support/VMware\ Fusion/vmrun -T fusion start resources/vmware.vmx $(QOUTPUT)
+	$(Q)/Applications/VMware\ Fusion.app/Contents/Library/vmrun -T fusion start resources/vmware.vmx $(QOUTPUT)
 
 # generate doxygen documentation
 doxygen: doxygen.conf
@@ -100,12 +93,10 @@ doxyclean:
 clean:
 	$(call call_submake,kernel,clean)
 	$(call call_submake,toolchain,clean)
-	$(call call_submake,utils,clean)
 	$(call call_submake,applications,clean)
 	$(call call_submake,drivers,clean)
 	$(call call_submake,servers,clean)
 	$(Q)$(RM) -f floppy.img
-	$(Q)$(RM) -f initrd.img
 	$(Q)$(RM) -f bochsout.txt
 	$(Q)$(RM) -f source
 

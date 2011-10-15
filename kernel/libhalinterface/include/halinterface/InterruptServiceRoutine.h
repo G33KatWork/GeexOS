@@ -1,8 +1,6 @@
 #ifndef _HAL_INTERFACES_INTERRUPT_SERVICE_ROUTINE_H
 #define _HAL_INTERFACES_INTERRUPT_SERVICE_ROUTINE_H
 
-#include <arch/types.h>
-
 namespace Arch
 {
     //Interface for ISRs
@@ -12,7 +10,7 @@ namespace Arch
         virtual ~InterruptServiceRoutine() {};
 
     public:    
-        virtual void Execute(registers_t *regs) = 0;
+        virtual void Execute() = 0;
     };
 }
 

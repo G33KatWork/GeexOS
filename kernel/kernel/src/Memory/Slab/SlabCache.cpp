@@ -28,7 +28,7 @@ SlabCache::SlabCache(const char* Name, int Align, int Size, SlabAllocator* Paren
     
     strcpy(name, Name);
     allocator = ParentAllocator;
-    //objectsAllocated = 0;
+    objectsAllocated = 0;
     //objectsActive = 0;
 }
 
@@ -100,21 +100,37 @@ size_t SlabCache::GetObjectCount(size_t* objSize, size_t align, size_t* order, s
     return nr;
 }
 
+//FIXME: this breaks because of list manipulation and removing afterwards m(
 void SlabCache::Destroy()
 {
     SLAB_CACHE_DEBUG_MSG("Destroying LargeCache at " << hex << (Address)this << " with name " << name);
     
     SLAB_CACHE_DEBUG_MSG("Returning free slabs to buddy allocator");
-    for(Slab* curSlab = this->freeSlabList.Head(); curSlab != NULL; curSlab = this->freeSlabList.GetNext(curSlab))
+    Slab* curSlab = this->freeSlabList.Head();
+    while(curSlab)
+    {
+        Slab* nextSlab = this->freeSlabList.GetNext(curSlab);
         this->ReleaseSlab(curSlab);
+        curSlab = nextSlab;
+    }
     
     SLAB_CACHE_DEBUG_MSG("Returning partial slabs to buddy allocator");
-    for(Slab* curSlab = this->partialSlabList.Head(); curSlab != NULL; curSlab = this->partialSlabList.GetNext(curSlab))
+    curSlab = this->partialSlabList.Head();
+    while(curSlab)
+    {
+        Slab* nextSlab = this->partialSlabList.GetNext(curSlab);
         this->ReleaseSlab(curSlab);
+        curSlab = nextSlab;
+    }
     
     SLAB_CACHE_DEBUG_MSG("Returning full slabs to buddy allocator");
-    for(Slab* curSlab = this->fullSlabList.Head(); curSlab != NULL; curSlab = this->fullSlabList.GetNext(curSlab))
+    curSlab = this->fullSlabList.Head();
+    while(curSlab)
+    {
+        Slab* nextSlab = this->fullSlabList.GetNext(curSlab);
         this->ReleaseSlab(curSlab);
+        curSlab = nextSlab;
+    }
 }
 
 void SlabCache::ReleaseUnusedMemory()

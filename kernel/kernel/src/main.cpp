@@ -1,236 +1,122 @@
+#include <types.h>
+#include <limits.h>
+
 #include <halinterface/HAL.h>
-#include <kernel/global.h>
-#include <kernel/Memory/PlacementAllocator.h>
-#include <halinterface/BaseInterruptDispatcher.h>
-#include <kernel/IInterruptServiceRoutine.h>
-#include <kernel/Time/TimerManager.h>
-#include <kernel/Time/Timer.h>
+
+#include <kernel/debug.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
-#include <kernel/Memory/Virtual/VirtualMemorySpace.h>
-#include <kernel/Time/TimerHandler.h>
-#include <kernel/utils/ElfInformation.h>
-#include <kernel/Processes/Scheduler.h>
-#include <kernel/Processes/KernelThread.h>
-#include <arch/AddressLayout.h>
-#include <kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.h>
-#include <kernel/Memory/Virtual/Regions/BuddyAllocatedMemoryRegion.h>
+#include <kernel/Memory/Virtual/Regions/KernelProgramMemoryRegion.h>
 #include <kernel/Memory/Slab/SlabAllocator.h>
 
-extern      Address             bootStack;          //defined in start.S
+#include <kernel/Modules/KernelModule.h>
 
-using namespace Debug;
+#include <string.h>
+
 using namespace Arch;
-using namespace Kernel;
+using namespace Debug;
 using namespace Memory;
-using namespace Processes;
-using namespace Time;
 using namespace Memory::Slab;
+using namespace Modules;
 
-void syncMemregionsWithPaging(void);
+#include <kernel/Objects/GXObject.h>
 
-void umode(int UNUSED(arg))
+class TestObject : public GXObject
 {
-    asm volatile("  \
-         cli; \
-         movw $0x23, %ax; \
-         movw %ax, %ds; \
-         movw %ax, %es; \
-         movw %ax, %fs; \
-         movw %ax, %gs; \
-                       \
-         movl %esp, %eax; \
-         pushl $0x23; \
-         pushl %eax; \
-         pushf; \
-         pop %eax; \
-         or $0x200, %eax; \
-         push %eax; \
-         pushl $0x1B; \
-         pushl $1f; \
-         iret; \
-       1: \
-         ");
-     while(1);
-}
-
-void foo(int arg)
-{   
-	//char bla[4096];
-    while(1)
+    GXDeclareDefaultMetadata(TestObject)
+    
+public:
+    void doSomething()
     {
-		//bla[100] = 'x';
-        CurrentHAL->GetCurrentDebugOutputDevice()->PrintChar((char)arg);
-        for(int i = 0; i < 10000000; i++);
+        MAIN_DEBUG_MSG("TestObject did something");
     }
-}
+};
+
+GXImplementMetaClassAndDefaultStructors(TestObject, GXObject)
 
 int main()
 {
-    //Prepare debug output
     #ifdef SERIAL_DEBUG
         CurrentHAL->SetCurrentDebugOutputDeviceType(Debug::Serial);
-    #else
-        CurrentHAL->SetCurrentDebugOutputDeviceType(Debug::TextMonitor);
     #endif
     CurrentHAL->GetCurrentDebugOutputDevice()->Clear();
-    MAIN_DEBUG_MSG("GeexOS Kernel booting...");
     
-    char cpuVendor[17] = {0};
-    CurrentHAL->GetCPUVendor(cpuVendor);
-    MAIN_DEBUG_MSG("CPU Vendor: " << cpuVendor);
-    
-    //Flush GDT and initialize IDT (Interrupts)
     CurrentHAL->Initialize();
-    MAIN_DEBUG_MSG("CPU and Interrupt tables initialized...");
     
-    CurrentHAL->InitializationDone();
+    MAIN_DEBUG_MSG("Kernel commandline: " << CurrentHAL->GetBootEnvironment()->GetKernelCommandline());
     
     //Initialize Memory
-    VirtualMemoryManager::GetInstance()->Init(CurrentHAL->GetBootEnvironment()->GetInstalledMemory());
+    VirtualMemoryManager::GetInstance()->Init();
     MAIN_DEBUG_MSG("Virtual memory manager instace created...");
     
-    //Build virtual memory space for kernel ELF
-    VirtualMemoryManager::GetInstance()->KernelSpace(new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace", CurrentHAL->GetPaging()->GetKernelDirectory()));
+    //Initialize virtual memory management
+    VirtualMemoryManager::GetInstance()->KernelSpace(
+        new VirtualMemorySpace(VirtualMemoryManager::GetInstance(), "KernelSpace", CurrentHAL->GetPaging()->GetKernelDirectory())
+    );
     VirtualMemoryManager::GetInstance()->SetCurrentMemorySpace(VirtualMemoryManager::GetInstance()->KernelSpace()); //Just to be sure...
     MAIN_DEBUG_MSG("Virtual memory space for kernel created...");
     
-    //Parse ELF-Stuff delivered from GRUB and create .text, .data, .rodata, .bss and .placement sections in kernel space
-    ElfInformation* elfInfo = new ElfInformation(CurrentHAL->GetBootEnvironment()->GetELFAddress(),
-                                                 CurrentHAL->GetBootEnvironment()->GetELFshndx(),
-                                                 CurrentHAL->GetBootEnvironment()->GetELFSize(),
-                                                 CurrentHAL->GetBootEnvironment()->GetELFNum()
-                                                 );
-    VirtualMemoryManager::GetInstance()->KernelElf(elfInfo);
-    MAIN_DEBUG_MSG("ELF-Information for kernel binary parsed...");
+    //Tell HAL that we have a virtual memory manager
+    CurrentHAL->InitializationDone();
     
-    //Create Arch-specific memory regions in kernel space
-    //On x86: Framebuffer for textmode and lowest 64K for BIOS
-    CurrentHAL->SetupArchMemRegions();
+    //Reserve ELF program regions of kernel in virtual memory management
+    MAIN_DEBUG_MSG("Telling memory manager about kernel program regions...");
+    size_t progRegionCount = CurrentHAL->GetBootEnvironment()->GetProgramRegionCount();
+    for(size_t i = 0; i < progRegionCount; i++)
+    {
+        KernelProgramRegion* regionInfo = CurrentHAL->GetBootEnvironment()->GetProgramRegion(i);
+        KernelProgramMemoryRegion* progRegion = new KernelProgramMemoryRegion(
+                                                        regionInfo->VirtualStart,
+                                                        regionInfo->Length,
+                                                        "Kernel Program",
+                                                        (regionInfo->Writable ? ALLOCFLAG_WRITABLE : 0) | (regionInfo->Executable ? ALLOCFLAG_EXECUTABLE : 0)
+                                                    );
+        VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(progRegion);
+    }
+    
+    //Initialize dynamic memory with the slab allocator
+    SlabAllocator* slabAlloc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
+    VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(slabAlloc);
+    InitializeSizeCaches(slabAlloc);
+    VirtualMemoryManager::GetInstance()->SlabAllocator(slabAlloc);
+    
+    //Yeeha! At this point all platform related memory stuff should be set up and safe.
+    
+    //TODO: Implement normal (non-debug) output-macro that prints text to graphical screen via HAL
+    //which gets initialized after the HAL INIT is finished
+    MAIN_DEBUG_MSG("GeexOS Kernel booting...");
+
+    //Create module repository memory region for boot-critical modules
+    MAIN_DEBUG_MSG("Module BLOB is at " << hex << (Address)CurrentHAL->GetBootEnvironment()->GetBootModuleRepository() << " with size " << CurrentHAL->GetBootEnvironment()->GetBootModuleRepositorySize());
+    
+
+#if 0
+#ifdef EN_DEBUG_MSG_MAIN
+    // MAIN_DEBUG_MSG("Physical memory manager has the following addresses marked as used:");
+    // CurrentHAL->GetPhysicalMemoryAllocator()->DumpUsed(CurrentHAL->GetCurrentDebugOutputDevice());
+    
+    MAIN_DEBUG_MSG("IOMemoryManager knows the following regions:");
     VirtualMemoryManager::GetInstance()->IOMemory()->DumpRegions(CurrentHAL->GetCurrentDebugOutputDevice());
-    
-    //Create defined Stack and move boot stack to new position
-    KernelStackMemoryRegion* kernelStack = new KernelStackMemoryRegion(KERNEL_STACK_ADDRESS - KERNEL_STACK_SIZE, KERNEL_STACK_SIZE, "Main kernel stack");
-    kernelStack->MoveCurrentStackHere((Address)&bootStack);
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(kernelStack);
-    VirtualMemoryManager::GetInstance()->KernelStack(kernelStack);
-    MAIN_DEBUG_MSG("Stack seems to be successfully moved to defined address: " << hex << KERNEL_STACK_ADDRESS << " with size: " << KERNEL_STACK_SIZE);
-    //MAIN_DEBUG_MSG("New Stackpointer: " << readStackPointer());
-    
-    syncMemregionsWithPaging();
-    
-    //Initialize Slab Allocator for kernel
-    SlabAllocator* slaballoc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(slaballoc);
-    InitializeSizeCaches(slaballoc);
-    VirtualMemoryManager::GetInstance()->SlabAllocator(slaballoc);
-    MAIN_DEBUG_MSG("Slab allocator created...");
-    
-    CurrentHAL->InitializationAfterMemoryAvailable();
-    
-    //Interrupts are now available
-    CurrentHAL->EnableInterrupts();
-    MAIN_DEBUG_MSG("Interrupts enabled...");
-    
-    MAIN_DEBUG_MSG("Kernel commandline: " << CurrentHAL->GetBootEnvironment()->GetKernelCommandline());
-    MAIN_DEBUG_MSG("Placement pointer is at " << hex << getPlacementPointer());
-    
-    //Init timer
-    TimerManager *tm = new TimerManager(CurrentHAL->GetHardwareClockSource());
-    CurrentHAL->GetInterruptDispatcher()->RegisterInterruptHandler(BaseInterruptDispatcher::IRDEV_TIMER, new TimerHandler(tm, Scheduler::GetInstance()));
-    MAIN_DEBUG_MSG("Timer initialized...");
-    
+
+    MAIN_DEBUG_MSG("Virtual kernel space knows the following regions:");
     VirtualMemoryManager::GetInstance()->KernelSpace()->DumpRegions(CurrentHAL->GetCurrentDebugOutputDevice());
     
-    //Set up the memory region for upcoming kernel threads
-    MAIN_DEBUG_MSG("Initializing kernel thread stack memory region...");
-    KernelThreadStackMemoryRegion* kernelThreadStacks = new KernelThreadStackMemoryRegion(KERNEL_THREAD_STACK_REGION_START, KERNEL_THREAD_STACK_REGION_SIZE, "Kernel thread stacks");
-    VirtualMemoryManager::GetInstance()->KernelThreadStacks(kernelThreadStacks);
-    VirtualMemoryManager::GetInstance()->KernelSpace()->AnnounceRegion(kernelThreadStacks);
+    MAIN_DEBUG_MSG("Buddy info of SLAB Allocator:");
+    slabAlloc->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
     
-    KernelThread* thread = new KernelThread(1, foo, (int)'A', PAGE_SIZE*10, "A Thread");
-    Scheduler::GetInstance()->AddThread(thread);
-    KernelThread* thread2 = new KernelThread(2, foo, (int)'C', PAGE_SIZE*10, "C Thread");
-    Scheduler::GetInstance()->AddThread(thread2);
-    KernelThread* thread3 = new KernelThread(3, foo, (int)'D', PAGE_SIZE*10, "D Thread");
-    Scheduler::GetInstance()->AddThread(thread3);
+    MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
+    slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+#endif
+#endif
 
-    VirtualMemoryManager::GetInstance()->KernelThreadStacks()->DumpStacks(CurrentHAL->GetCurrentDebugOutputDevice());
+#if 0
+    KernelModule* obj = GXAllocateFromType(KernelModule);
+    obj->Plug();
+    GXSafeReleaseNULL(obj);
     
-    //VirtualMemoryRegion* uModeCode = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x3000000, 0x1000, "Usercode", ALLOCFLAG_WRITABLE|ALLOCFLAG_EXECUTABLE|ALLOCFLAG_USERMODE);
-    //VirtualMemoryRegion* kstack = VirtualMemoryManager::GetInstance()->KernelSpace()->Allocate(0x4000000, 0x1000, "kstack", ALLOCFLAG_WRITABLE);
-    //Arch::gdt_set_kernel_stack(0x4000000+0x1000);
-    /*void* codeStart = (void*)uModeCode->StartAddress();
-    memcpy(codeStart, (const void*)umode, 0x1000);
-    typedef void threadfunc(int);
-    threadfunc* func;
-    char addr[] = {0x00, 0x00, 0x00, 0x3}; 
-    memcpy((void*)&func, addr, 4);
-    DEBUG_MSG("func points to " << hex << (unsigned)func);*/
-    //KernelThread* thread4 = new KernelThread(4, umode, (int)'U', PAGE_SIZE, "Umode Thread");
-    //Scheduler::GetInstance()->AddThread(thread4);
-    
-    Scheduler::GetInstance()->DumpThreads(CurrentHAL->GetCurrentDebugOutputDevice());
-    
-    //Initialize the scheduler
-    Scheduler::GetInstance()->SetTimerManager(tm);
-    
-    /*SlabCache* largeCache = slaballoc->CreateCache("Large Testcache", 0x201, 0);
-    MAIN_DEBUG_MSG("Large SlabCache is at " << hex << (Address)largeCache);
-    void* largealloc1 = largeCache->AllocateObject();
-    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc1);
-    void* largealloc2 = largeCache->AllocateObject();
-    MAIN_DEBUG_MSG("3arge allocated object at " << hex << (Address)largealloc2);
-    void* largealloc3 = largeCache->AllocateObject();
-    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc3);
-    void* largealloc4 = largeCache->AllocateObject();
-    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc4);
-    void* largealloc5 = largeCache->AllocateObject();
-    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc5);
-    void* largealloc6 = largeCache->AllocateObject();
-    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc6);
-    void* largealloc7 = largeCache->AllocateObject();
-    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc7);
-    void* largealloc8 = largeCache->AllocateObject();
-    MAIN_DEBUG_MSG("Large allocated object at " << hex << (Address)largealloc8);
-    largeCache->FreeObject(largealloc2);
-    largeCache->FreeObject(largealloc1);
-    largeCache->FreeObject(largealloc3);
-    largeCache->FreeObject(largealloc7);
-    largeCache->FreeObject(largealloc4);
-    largeCache->FreeObject(largealloc5);
-    largeCache->FreeObject(largealloc6);
-    largeCache->FreeObject(largealloc8);
-    slaballoc->DestroyCache(largeCache);*/
-    
-    slaballoc->FreeUnusedMemory();
-    
-    slaballoc->DumpBuddyInfo(CurrentHAL->GetCurrentDebugOutputDevice());
-        
-    for(;;) {
-        *CurrentHAL->GetCurrentDebugOutputDevice() << "B";
-        for(int i = 0; i < 10000000; i++);
-    }
-    
-    return 0; 
-}
+    TestObject* object = GXAllocateFromType(TestObject);
+    object->doSomething();
+    object->Release();
+#endif
 
-void syncMemregionsWithPaging(void)
-{
-    //Whilst initialization of the paging, we allocated the lowermost 4MB for our purposes.
-    //Now, that we arranged all our needs regarding to memory with the help of our marvellous
-    //virtual memory management, we don't need the whole 4MB.
-    //What we do now is a major cleanup. We need to synchronize the regions which are really allocated
-    //and needed within our virtual memory space with the paging.
-    //Sine we only have a kernel space at this time, we don't bother about other spaces. There are simply none.
-    for(Address i = KERNEL_BASE; i < 4*1024*1024+KERNEL_BASE; i += PAGE_SIZE)
-    {
-        if(VirtualMemoryManager::GetInstance()->KernelSpace()->FindRegionEnclosingAddress(i) == NULL)
-        {
-            Address physicalAddr = CurrentHAL->GetPaging()->GetPhysicalAddress(i);
-            MAIN_DEBUG_MSG("Virtual address " << hex << i << " pointing to physical " << physicalAddr << " doesn't seem to contain a region.");
-            
-            CurrentHAL->GetPaging()->UnmapAddress(i);
-            VirtualMemoryManager::GetInstance()->PhysicalAllocator()->DeallocateFrame(physicalAddr);
-        }
-    }
+    while(1);
 }

@@ -2,7 +2,6 @@
 #define IOMEMORYREGION_H_
 
 #include <types.h>
-#include <arch/types.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Memory
