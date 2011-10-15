@@ -17,7 +17,7 @@ x86BootEnvironment::x86BootEnvironment(KernelInformation* i)
     memory = i->memoryLo + i->memoryHi;
     
     //Modules
-    moduleLocation = (Address)kmalloc(sizeof(i->moduleLength));
+    moduleLocation = (Address)kmalloc(i->moduleLength);
     memcpy((void*)moduleLocation, (void*)i->moduleStartAddress, i->moduleLength);
     moduleSize = i->moduleLength;
     
