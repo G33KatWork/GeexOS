@@ -7,7 +7,7 @@
 //#include <kernel/Memory/Virtual/Regions/KernelStackMemoryRegion.h>
 //#include <kernel/utils/ElfInformation.h>
 //#include <kernel/Memory/Virtual/Regions/KernelThreadStackRegion.h>
-//#include <kernel/Memory/Slab/SlabAllocator.h>
+#include <kernel/Memory/Slab/SlabAllocator.h>
 #include <kernel/Memory/IO/IOMemoryManager.h>
 #include <kernel/DataStructures/DoublyLinkedList.h>
 
@@ -44,8 +44,8 @@ namespace Memory
         //void KernelElf(ElfInformation* NewKernelElf) { kernelElf = NewKernelElf; }
         //KernelThreadStackMemoryRegion* KernelThreadStacks() { return kernelThreadStacks; }
         //void KernelThreadStacks(KernelThreadStackMemoryRegion* NewKernelThreadStacks) { kernelThreadStacks = NewKernelThreadStacks; }
-        //Slab::SlabAllocator* SlabAllocator() { return slabAllocator; }
-        //void SlabAllocator(Slab::SlabAllocator* NewSlabAllocator) { slabAllocator = NewSlabAllocator; }
+        Slab::SlabAllocator* SlabAllocator() { return slabAllocator; }
+        void SlabAllocator(Slab::SlabAllocator* NewSlabAllocator) { slabAllocator = NewSlabAllocator; }
         
     private:
         static VirtualMemoryManager instance;
@@ -59,7 +59,7 @@ namespace Memory
         //KernelStackMemoryRegion* kernelStack;
         //ElfInformation* kernelElf;
         //KernelThreadStackMemoryRegion* kernelThreadStacks;
-        //Slab::SlabAllocator* slabAllocator;
+        Slab::SlabAllocator* slabAllocator;
         
         DataStructures::DoublyLinkedList<VirtualMemorySpace> memorySpaceList;
     };

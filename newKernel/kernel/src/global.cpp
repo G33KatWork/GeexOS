@@ -1,6 +1,7 @@
 #include <kernel/global.h>
 #include <arch/hal.h>
 #include <kernel/Memory/PlacementAllocator.h>
+#include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/debug.h>
 #include <arch/hal.h>
 #include <string.h>
@@ -56,21 +57,21 @@ void operator delete(void *UNUSED(p), bool UNUSED(pageAllocation))
 
 void* kmalloc(size_t size)
 {
-    /*if(VirtualMemoryManager::GetInstance()->SlabAllocator() != NULL)
+    if(VirtualMemoryManager::GetInstance()->SlabAllocator() != NULL)
         return Slab::AllocateFromSizeSlabs(size);
-    else    */
+    else
         return placementAlloc.Allocate(size, false);
 }
 
-void kfree(void* UNUSED(p))
+void kfree(void* p)
 {
-    /*Address addr = (Address)p;
+    Address addr = (Address)p;
     
     if(addr >= VirtualMemoryManager::GetInstance()->SlabAllocator()->StartAddress() &&
        addr < VirtualMemoryManager::GetInstance()->SlabAllocator()->StartAddress() + VirtualMemoryManager::GetInstance()->SlabAllocator()->Size())
         Slab::FreeFromSizeSlabs(p);
     else
-        PANIC("It seems that you are trying to free an object at " << hex << addr << " not residing in the slab allocator. Not good!");*/
+        PANIC("It seems that you are trying to free an object at " << hex << addr << " not residing in the slab allocator. Not good!");
 }
 
 unsigned int getPlacementPointer()

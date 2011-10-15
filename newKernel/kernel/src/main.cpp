@@ -77,6 +77,7 @@ int main()
     SlabAllocator* slabAlloc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(slabAlloc);
     InitializeSizeCaches(slabAlloc);
+    VirtualMemoryManager::GetInstance()->SlabAllocator(slabAlloc);
     
     //Yeeha! At this point all platform related memory stuff should be set up and safe.
     
@@ -86,7 +87,7 @@ int main()
 
     //Create module repository memory region for boot-critical modules
     MAIN_DEBUG_MSG("Module BLOB is at " << hex << (Address)CurrentHAL->GetBootEnvironment()->GetBootModuleRepository() << " with size " << CurrentHAL->GetBootEnvironment()->GetBootModuleRepositorySize());
-
+    
 
 #if 0
 #ifdef EN_DEBUG_MSG_MAIN
