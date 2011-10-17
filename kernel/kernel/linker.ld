@@ -44,12 +44,26 @@ SECTIONS {
         *(.gnu.linkonce.b*)
     }
     
+    .dynsym         : { *(.dynsym) }
+    .dynstr         : { *(.dynstr) }
+
     end = .; _end = .; __end = .;
 
     . = 0xC0200000;
     .placement ALIGN(4096) : AT(ADDR(.placement))
     {
         placement = .;
-		. += 0x200000;
+        . += 0x200000;
+    }
+    
+    /DISCARD/ :
+    {
+        /* We have no exceptions, throw this stuff away */
+        *(.eh_frame)
+        *(.eh_frame_hdr)
+        *(.gcc_except_table)
+        
+        /* Throw away the relocation sections, the kernel is not relocatable for now */
+        *(.rel*)
     }
 }
