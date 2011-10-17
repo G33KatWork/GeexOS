@@ -22,6 +22,8 @@ static struct cacheSizes cacheSizes[] = {
     { 1 << 9, NULL },
     { 1 << 10, NULL },
     { 1 << 11, NULL },
+    { 1 << 12, NULL },
+    { 1 << 13, NULL },
     { 0,      NULL }
 };
 
