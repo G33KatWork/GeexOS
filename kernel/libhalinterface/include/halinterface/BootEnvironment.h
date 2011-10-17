@@ -3,6 +3,8 @@
 
 #include <types.h>
 
+#define BOOTMODULES_MAGIC   0xAABB0011
+
 namespace Arch
 {
     typedef struct 
