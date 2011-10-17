@@ -7,6 +7,26 @@
 //TODO: Implement iterators
 // Iterator with methods: HashNext(), Next() and Rewind()
 
+/* Hashtable definitions look like this:
+
+struct HashTableDefinition
+{
+    typedef <Key Type>      KeyType;
+    typedef <Value type>    ValueType;
+
+    HashTableDefinition() {}
+    HashTableDefinition() {}
+
+    size_t HashKey(KeyType key) const
+    {
+        //Calculate hash here and return
+    }
+
+    size_t Hash(ValueType* value) const { return HashKey(<value to hash>); }
+    bool Compare(KeyType key, ValueType* value) const { <compare here> }
+    ValueType*& GetLink(ValueType* value) const { <return next pointer for linked list> }
+};*/
+
 namespace DataStructures
 {
     struct KMallocAllocator
