@@ -33,7 +33,7 @@ $(CC):
 	$(call call_submake,toolchain,all)
 
 # Create bootfloppy
-floppy.img: kernel/kernel/kernel.elf
+floppy.img: kernel/kernel/kernel.elf kernel/loaderstub/loaderStub.elf
 	$(call cmd_msg,MKFLOPPY,floppy.img)
 	$(Q)$(SUDO) -A $(MKDIR) tmp
 	$(Q)$(SUDO) $(CP) resources/floppy.$(FLOPPYTYPE).img ./floppy.img
