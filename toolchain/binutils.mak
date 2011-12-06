@@ -1,4 +1,4 @@
-BINUTILS_VERSION    := 2.21
+BINUTILS_VERSION    := 2.22
 BINUTILS_SOURCE     := $(TOOLCHAIN_SRCDIR)/binutils-$(BINUTILS_VERSION).tar.bz2
 BINUTILS_DOWNLOAD   := http://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
 BINUTILS_PATCHES    := 

@@ -1,4 +1,4 @@
-BOCHS_VERSION		:= 2.4.6
+BOCHS_VERSION		:= 2.5
 BOCHS_SOURCE	    := $(TOOLCHAIN_SRCDIR)/bochs-$(BOCHS_VERSION).tar.gz
 BOCHS_DOWNLOAD	    := http://downloads.sourceforge.net/project/bochs/bochs/$(BOCHS_VERSION)/bochs-$(BOCHS_VERSION).tar.gz
 BOCHS_PATCHES	    := 
@@ -37,9 +37,10 @@ $(TOOLCHAIN_ROOTDIR)/.bochs-configure: $(TOOLCHAIN_ROOTDIR)/.bochs-extract
 		--enable-debugger-gui \
 		--enable-smp \
 		--enable-x86-64 \
-		--enable-smp \
-		--enable-acpi \
 		--enable-pci \
+		--enable-fpu \
+		--enable-usb \
+		--enable-a20-pin \
 		--enable-show-ips \
 		--prefix=$(TOOLCHAIN_ROOTDIR) \
 		$(QOUTPUT)

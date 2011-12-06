@@ -1,7 +1,7 @@
-QEMU_VERSION		:= 0.14.1
+QEMU_VERSION		:= 1.0
 QEMU_SOURCE	     	:= $(TOOLCHAIN_SRCDIR)/qemu-$(QEMU_VERSION).tar.gz
-QEMU_DOWNLOAD	    := http://download.savannah.gnu.org/releases/qemu/qemu-$(QEMU_VERSION).tar.gz
-QEMU_PATCHES	    := 
+QEMU_DOWNLOAD	    := http://wiki.qemu.org/download/qemu-$(QEMU_VERSION).tar.gz
+QEMU_PATCHES	    := $(TOOLCHAIN_PATCHDIR)/qemu-1.0-macos-uint16-hack.patch
 
 # Hack to build on OS X.
 ifeq ($(shell uname),Darwin)
@@ -36,9 +36,8 @@ $(TOOLCHAIN_ROOTDIR)/.qemu-configure: $(TOOLCHAIN_ROOTDIR)/.qemu-extract
 ifeq ($(shell uname),Darwin)
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/qemu-$(QEMU_VERSION); \
 		$(QEMU_CONFENV) ./configure \
-		--enable-cocoa \
 		--disable-sdl \
-		--disable-xen \
+		--enable-cocoa \
 		--disable-kvm \
 		--enable-system \
 		--disable-linux-user \
@@ -52,7 +51,6 @@ else
 		$(QEMU_CONFENV) ./configure \
 		--disable-cocoa \
 		--enable-sdl \
-		--disable-xen \
 		--disable-kqemu \
 		--disable-kvm \
 		--enable-system \
