@@ -3,7 +3,7 @@ resources/OS Test.nvram
 resources/vmware.vmsd
 resources/vmware.vmxf
 serialOut
-toolchain/i686-elf
+toolchain/i686-*
 toolchain/source
 *.img
 *.elf
