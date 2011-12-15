@@ -3,6 +3,11 @@
 [ORG 0x7C00]
 [MAP ALL stage1.map]
 
+ROOTDIRSEGMENT  EQU     0x1000
+LOWFATSEGMENT   EQU     0x2000
+HIGHFATSEGMENT  EQU     0x3000
+STAGE2SEGMENT   EQU     0x4000
+
 ; FAT 12/16 Layout:
 ; +----------------+------------------+------+------+----------------+-------------+
 ; | Hidden Sectors | Reserved Sectors | FAT1 | FAT2 | Root Directory | Data region |
@@ -41,20 +46,18 @@ bsVolumeLabel: 	        DB "NO NAME    "
 bsFileSystem: 	        DB "FAT16   "
 
 entry:
-    cli
     ;set up segment registers
     xor	ax, ax
     mov	ds, ax
-    mov	ss, ax
     
     ;set up a stack
+    mov	ss, ax                                  ;if we set ss and sp in consecutive instructions, we don't need cli/sti'
     mov sp, 0x7C00
-    sti
     
     ;set up fs and gs for high fat and low fat
-    push 0x2000
+    push LOWFATSEGMENT
     pop fs
-    push 0x3000
+    push HIGHFATSEGMENT
     pop gs
     
     ;calculate root directory size
@@ -74,19 +77,21 @@ entry:
     mov DWORD [rootDirStartSector], eax
     
     ;calculate data region start sector
-    mov eax, DWORD [rootDirStartSector]
-    add eax, DWORD [rootDirLenSectors]
-    mov DWORD [dataRegionStartSector], eax
+    mov ebx, DWORD [rootDirStartSector]
+    add ebx, DWORD [rootDirLenSectors]
+    mov DWORD [dataRegionStartSector], ebx
 
 .detectFat:
     ;calculate total data cluster amount for fat12/16 detection
-    sub eax, DWORD [bpbHiddenSectors]
-    mov bx, WORD [bpbTotalSectors]                  ;if total sectors are too big to fit here, the DWORD value is used
-    add ebx, DWORD [bpbTotalSectorsBig]
-    sub ebx, eax
-    add ebx, 2
-    movzx eax, BYTE [bpbSectorsPerCluster]
-    xchg eax, ebx
+    sub ebx, DWORD [bpbHiddenSectors]
+    
+    mov ax, WORD [bpbTotalSectors]                  ;if total sectors are too big to fit here, the DWORD value is used
+    add eax, DWORD [bpbTotalSectorsBig]
+    sub eax, ebx
+    
+    add eax, 2                                      ;FIXME: Use sectors per cluster here?
+    
+    movzx bx, BYTE [bpbSectorsPerCluster]
     div ebx
     
     cmp eax, 4087
@@ -101,7 +106,7 @@ entry:
     ;Read the root dir sectors to 0x10000
     mov eax, DWORD [rootDirStartSector]
     mov ecx, DWORD [rootDirLenSectors]
-    push 0x1000
+    push ROOTDIRSEGMENT
     pop es
     xor di, di
     call readSectors                            ;read ecx sectors starting from eax into es:di
@@ -146,7 +151,7 @@ entry:
     
     ;read second FAT half
     sub cx, 0x80                                ;sectorcount
-    push 0x3000
+    push HIGHFATSEGMENT
     pop es                                      ;destination segment
     xor di, di                                  ;destination offset
     add eax, 0x80                               ;read start
@@ -159,7 +164,7 @@ entry:
     
 .readFirstFATHalf:
     ;read first FAT half
-    push 0x2000
+    push LOWFATSEGMENT
     pop es                                      ;destination segment
     xor di, di                                  ;destination offset
     
@@ -169,7 +174,7 @@ entry:
     
 .loadfile:
     ;now we are going to load the file itself
-    push 0x4000
+    push STAGE2SEGMENT
     pop es                                      ;destination segment
     xor di, di                                  ;destination offset
     mov ax, WORD [fileStartCluster]             ;get first cluster number in eax
@@ -189,6 +194,14 @@ entry:
     mul cx
     add di, ax
     
+    jnc .noNextSegment                          ;if carry is set, we need to write to the next segment
+.nextSeg:
+    push es
+    pop ax
+    add ax, 0x1000
+    mov es, ax
+.noNextSegment:
+    
     pop eax                                     ;get the next cluster
     call getNextCluster
     
@@ -197,11 +210,11 @@ entry:
     jmp .loadNextCluster
 
 .fileLoaded:
-    jmp word 0x4000:0x0                         ;jump to stage2
+    jmp word STAGE2SEGMENT:0x0                  ;jump to stage2
 
 .errorNotFound:
     call bios_print
-    db 'No File', 0
+    db '404', 0
     jmp .hlt
 
 .errorRead:
