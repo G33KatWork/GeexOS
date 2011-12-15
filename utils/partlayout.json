@@ -1,0 +1,20 @@
+{
+    "hddsize": 20480,
+    "mbrCodeFile": "bootloader/mbr/mbr.bin",
+    "partitions": [
+        {
+            "active": true,
+            "startSector": 63,
+            "endSector": 20480,
+            "type": 6,
+            "fstype": "fat16",
+            "mbrCodeFile": "bootloader/stage1_fat16/stage1.bin",
+            "filesToCopy": [
+                {
+                    "source": "bootloader/stage2/stage2.bin",
+                    "destination": "GXLDR"
+                }
+            ]
+        }
+    ]
+}
