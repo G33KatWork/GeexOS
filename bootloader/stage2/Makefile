@@ -7,6 +7,9 @@ TARGETS = stage2.bin
 # List Assembler to be assembled with NASM here
 ASOURCES = stage2.S
 
+# List of assembler includes
+ASDEPENDS = a20.inc gdt.inc pmodePrint.inc
+
 # Additional include paths to consider
 INCLUDES =	include
 
@@ -20,7 +23,7 @@ ASFLAGS = -f bin
 all: $(TARGETS)
 	@:	#Shut up!
 
-$(TARGETS): $(addprefix $(SRCDIR)/, $(OBJECTS))
+$(TARGETS): $(addprefix $(SRCDIR)/, $(OBJECTS)) $(addprefix $(SRCDIR)/, $(ASDEPENDS))
 
 # Cleaning
 clean:
