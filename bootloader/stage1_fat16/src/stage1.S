@@ -63,12 +63,14 @@ entry:
     ;calculate root directory size
     mov ax, 32                      ;root dir entry = 32 Bytes
     mul WORD [bpbRootdirEntries]
+    xor edx, edx
     div WORD [bpbBytesPerSector]
     mov DWORD [rootDirLenSectors], eax
     
     ;calculate root directory start sector
     ;root directory comes after the FATs, reserved sectors and hidden sectors
-    movzx ax, BYTE [bpbNumberOfFATs]
+    mov al, BYTE [bpbNumberOfFATs]
+    cbw                                             ;zero ah
     mov bx, WORD [bpbSectorsPerFAT]
     mul bx
     mov bx, WORD [bpbReservedSectors]
@@ -81,21 +83,31 @@ entry:
     add ebx, DWORD [rootDirLenSectors]
     mov DWORD [dataRegionStartSector], ebx
 
-.detectFat:
+;.detectFat:
     ;calculate total data cluster amount for fat12/16 detection
-    sub ebx, DWORD [bpbHiddenSectors]
+    ;sub ebx, DWORD [bpbHiddenSectors]
     
-    mov ax, WORD [bpbTotalSectors]                  ;if total sectors are too big to fit here, the DWORD value is used
-    add eax, DWORD [bpbTotalSectorsBig]
-    sub eax, ebx
+    ;mov ax, WORD [bpbTotalSectors]                  ;if total sectors are too big to fit here, the DWORD value is used
+    ;add eax, DWORD [bpbTotalSectorsBig]
+    ;sub eax, ebx
     
-    add eax, 2                                      ;FIXME: Use sectors per cluster here?
+    ;add eax, 2                                      ;FIXME: Use sectors per cluster here?
     
-    movzx bx, BYTE [bpbSectorsPerCluster]
-    div ebx
+    ;xor edx, edx
+    ;movzx bx, BYTE [bpbSectorsPerCluster]
+    ;div ebx                                         ;eax=edx:eax/ebx  ebx=remainder
     
-    cmp eax, 4087
-    jae .fat16detected
+    ;cmp eax, 4087
+    ;jae .fat16detected
+;.fat12detected:
+;    mov BYTE [isFat12], 1
+;    jmp .readRootdir
+;.fat16detected:
+;    mov BYTE [isFat12], 0
+
+;FIXME: Does this always work?
+.detectFat:
+    cmp BYTE [bsFileSystem+5], '6'
 .fat12detected:
     mov BYTE [isFat12], 1
     jmp .readRootdir
@@ -214,14 +226,14 @@ entry:
 
 .errorNotFound:
     call bios_print
-    db '404', 0
+    db 'GXLDR missing', 0
     jmp .hlt
 
 .errorRead:
     call bios_print
-    db 'I/O', 0
+    db 'Read Error', 0
 
-.hlt: 
+.hlt:
     cli
     hlt
 
