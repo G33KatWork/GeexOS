@@ -54,6 +54,8 @@ entry:
     mov	ss, ax                                  ;if we set ss and sp in consecutive instructions, we don't need cli/sti'
     mov sp, 0x7C00
     
+    mov BYTE [bsDriveNumber], dl
+    
     ;set up fs and gs for high fat and low fat
     push LOWFATSEGMENT
     pop fs
@@ -61,18 +63,19 @@ entry:
     pop gs
     
     ;calculate root directory size
-    mov ax, 32                      ;root dir entry = 32 Bytes
+    mov eax, 32                      ;root dir entry = 32 Bytes
     mul WORD [bpbRootdirEntries]
     xor edx, edx
     div WORD [bpbBytesPerSector]
     mov DWORD [rootDirLenSectors], eax
-    
+        
     ;calculate root directory start sector
     ;root directory comes after the FATs, reserved sectors and hidden sectors
     mov al, BYTE [bpbNumberOfFATs]
     cbw                                             ;zero ah
     mov bx, WORD [bpbSectorsPerFAT]
     mul bx
+    xor ebx, ebx
     mov bx, WORD [bpbReservedSectors]
     add eax, ebx
     add eax, DWORD [bpbHiddenSectors]
@@ -107,7 +110,8 @@ entry:
 
 ;FIXME: Does this always work?
 .detectFat:
-    cmp BYTE [bsFileSystem+5], '6'
+    cmp BYTE [bsFileSystem+4], '6'
+    je .fat16detected
 .fat12detected:
     mov BYTE [isFat12], 1
     jmp .readRootdir
@@ -133,6 +137,7 @@ entry:
     mov si, Stage2Name
     push di
     rep cmpsb
+    
     pop di
     je .foundFile
     
@@ -231,7 +236,7 @@ entry:
 
 .errorRead:
     call bios_print
-    db 'Read Error', 0
+    db 'IO Error', 0
 
 .hlt:
     cli
@@ -342,3 +347,28 @@ rootDirStartSector:     RESD    1
 dataRegionStartSector:  RESD    1
 isFat12:                RESB    1
 fileStartCluster:       RESW    1
+
+;--------- Misc stuff -----------
+;Converting and dumping a variable for debugging on real hardware
+;    mov DWORD [foovar], eax
+;
+;    mov cx, 0x04
+;    mov si, foovar
+;.again:
+;
+;    mov al, BYTE [ds:si]
+;    and al, 0xF0
+;    shr al, 4
+;    add al, 0x30
+;    mov ah, 0x0E
+;    int 0x10
+;
+;    mov al, BYTE [ds:si]
+;    and al, 0xF
+;    add al, 0x30
+;    mov ah, 0x0E
+;    int 0x10
+;
+;    add si, 1
+;
+;    loop .again
