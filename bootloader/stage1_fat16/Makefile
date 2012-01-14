@@ -27,6 +27,8 @@ clean:
 	$(Q)$(RM) -f $(TARGETS)
 	$(Q)$(RM) -f stage1.map
 
+distclean: clean
+
 # Assembler S files
 %.bin: $(SRCDIR)/%.S
 	$(call cmd_msg,NASM,$<)

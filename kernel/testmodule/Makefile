@@ -79,11 +79,10 @@ $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
 # Cleaning
 clean:
 	$(Q)$(RM) -f $(TARGET)
-#$(Q)$(RM) -f $(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
 	$(Q)$(RM) -f disasm
-	$(Q)$(RM) -f kernel.map
 	$(Q)$(RM) -rf obj
-	$(Q)$(RM) -rf bochs.sym
+
+distclean: clean
 
 # Header dependency generation
 $(OBJDIR)/%.d: $(SRCDIR)/%.cpp
@@ -114,5 +113,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.S
 .PHONY: createdirs clean
 
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),distclean)
 -include $(addprefix $(OBJDIR)/, $(OBJECTS:%.o=%.d))
+endif
 endif

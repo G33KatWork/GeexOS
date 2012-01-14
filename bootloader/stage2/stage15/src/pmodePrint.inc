@@ -88,4 +88,42 @@ Puts32:
     popa
     ret
 
+Puthex32:
+    pusha
+    push    ebx
+    mov     ecx, 4
+    
+.nextByte:
+    ;upper nibble
+    mov     al, BYTE [esp + ecx - 1]
+    and     al, 0xF0
+    shr     al, 4
+    ;make askii char
+    add     al, 0x30
+    cmp     al, 0x39
+    jbe     .notHex
+    add     al, 0x7
+.notHex:
+    xchg    al, bl
+    call    Putch32
+    
+    ;lower nibble
+    mov     al, BYTE [esp + ecx - 1]
+    and     al, 0x0F
+    ;make askii char
+    add     al, 0x30
+    cmp     al, 0x39
+    jbe     .notHexLow
+    add     al, 0x7
+.notHexLow:
+    xchg    al, bl
+    call    Putch32
+    
+    loop    .nextByte
+    
+.done:
+    pop     ebx
+    popa
+    ret
+
 %endif

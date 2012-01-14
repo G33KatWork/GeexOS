@@ -1,9 +1,6 @@
 OUTPUT_FORMAT("elf32-i386")
 ENTRY (start)
 
-PHDRS {
-}
-
 SECTIONS {
     . += 0xC0000000;
     
@@ -44,8 +41,9 @@ SECTIONS {
         *(.gnu.linkonce.b*)
     }
     
-    .dynsym         : { *(.dynsym) }
-    .dynstr         : { *(.dynstr) }
+    .dynamic : { *(.dynamic) }
+    .dynsym  ALIGN (4096)  : AT(ADDR(.dynsym)) { *(.dynsym) }
+    .dynstr  ALIGN (4096)  : AT(ADDR(.dynstr)) { *(.dynstr) }
 
     end = .; _end = .; __end = .;
 
@@ -63,7 +61,10 @@ SECTIONS {
         *(.eh_frame_hdr)
         *(.gcc_except_table)
         
+        *(.comment)
+        *(.note*)
+        
         /* Throw away the relocation sections, the kernel is not relocatable for now */
-        *(.rel*)
+        /**(.rel*)*/
     }
 }

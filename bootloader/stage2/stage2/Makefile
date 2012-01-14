@@ -1,23 +1,23 @@
-SRC                 := ../..
+SRC                 := ../../..
 include $(SRC)/build/base.mak
 
 # Target file name.
-TARGET = libkcpp.a
+TARGET = stage2.exe
 
 # List C source files here.
-CCSOURCES = 
+CCSOURCES = main.c
 
 # List C++ source files here
-CXXSOURCES = cppruntime.cpp \
-			 string.cpp \
-			 typeinfo.cpp \
-			 stdlib.cpp
+CXXSOURCES = 
 
 # List Assembler to be assembled with NASM here
-ASOURCES = 
+ASOURCES = start.S
 
 # Additional include paths to consider
 INCLUDES =	include
+
+# Additional static libs to link agains
+STATICLIBS = 
 
 # Folder for object files
 OBJDIR = obj
@@ -44,6 +44,9 @@ CXXFLAGS += $(addprefix -I,$(INCLUDES))
 # NASM flags
 ASFLAGS = -f elf -ggdb
 
+# Linker flags
+LDFLAGS = -Map stage2.map --image-base 0x50000 --subsystem 0x10
+
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)
 OBJECTS += $(GASOURCES:%.s=%.o)
@@ -65,14 +68,20 @@ $(OBJDIRS):
 
 createdirs: $(OBJDIRS)
 
-$(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS))
-	$(call cmd_msg,AR,$(@))
-	$(Q)$(AR) rcs $@ $^
+$(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
+	$(call cmd_msg,LINK,$(@))
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(STATICLIBS)
+	$(call cmd_msg,DISASM,$(@) -> disasm)
+	$(Q)$(OBJDUMP) -d $(TARGET) > disasm
 
 # Cleaning
 clean:
 	$(Q)$(RM) -f $(TARGET)
+#$(Q)$(RM) -f $(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
+	$(Q)$(RM) -f disasm
+	$(Q)$(RM) -f stage2.map
 	$(Q)$(RM) -rf obj
+	$(Q)$(RM) -rf lib$(TARGET).a
 
 distclean: clean
 

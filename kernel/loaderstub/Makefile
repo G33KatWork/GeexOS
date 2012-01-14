@@ -2,7 +2,7 @@ SRC                 := ../..
 include $(SRC)/build/base.mak
 
 # Target file name.
-TARGET = loaderStub.elf
+TARGET = loaderStub.exe
 
 # List C source files here.
 CCSOURCES = main.c print.c lib.c elf.c paging.c physicalMemory.c
@@ -45,7 +45,7 @@ CXXFLAGS += $(addprefix -I,$(INCLUDES))
 ASFLAGS = -f elf -ggdb
 
 # Linker flags
-LDFLAGS = -T linker.ld -Map kernel.map
+LDFLAGS = -Map loaderstub.map --image-base 0x100000 --subsystem 0x10 --out-implib=lib$(TARGET).a
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)
@@ -73,18 +73,17 @@ $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(STATICLIBS)
 	$(call cmd_msg,DISASM,$(@) -> disasm)
 	$(Q)$(OBJDUMP) -d $(TARGET) > disasm
-	$(call cmd_msg,MKSYMS,$(@) -> bochs.sym)
-	$(Q)$(NM) $@ | awk '{print $1 " " $3}' > bochs.sym
 
 # Cleaning
 clean:
 	$(Q)$(RM) -f $(TARGET)
 #$(Q)$(RM) -f $(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
 	$(Q)$(RM) -f disasm
-	$(Q)$(RM) -f kernel.map
+	$(Q)$(RM) -f loaderstub.map
 	$(Q)$(RM) -rf obj
-	$(Q)$(RM) -rf bochs.sym
-	$(Q)$(RM) -rf floppy.img
+	$(Q)$(RM) -rf lib$(TARGET).a
+
+distclean: clean
 
 # Header dependency generation
 $(OBJDIR)/%.d: $(SRCDIR)/%.cpp
@@ -115,5 +114,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.S
 .PHONY: createdirs clean
 
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),distclean)
 -include $(addprefix $(OBJDIR)/, $(OBJECTS:%.o=%.d))
+endif
 endif

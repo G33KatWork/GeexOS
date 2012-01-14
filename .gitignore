@@ -11,10 +11,12 @@ toolchain/source
 *.a
 *.sym
 *.o
+*.bin
 disasm
 obj
 doc/html
 .gdbhistory
 .project
 .cproject
+oldcode
 

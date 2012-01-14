@@ -3,10 +3,10 @@
 
 using namespace ELF;
 
-ELFFile::ELFFile(Address startAddress, size_t length)
+ELFFile::ELFFile(Address startAddress)
     : start(startAddress),
-    len(length),
-    programHeaderCount(0)
+    programHeaderCount(0),
+    sectionHeaderCount(0)
 {
     this->parse();
 }

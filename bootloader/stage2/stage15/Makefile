@@ -1,11 +1,14 @@
-SRC                 := ../..
+SRC                 := ../../..
 include $(SRC)/build/base.mak
 
 # Target file name.
-TARGETS = mbr.bin
+TARGETS = stage15.bin
 
 # List Assembler to be assembled with NASM here
-ASOURCES = mbr.S
+ASOURCES = stage15.S
+
+# List of assembler includes
+ASDEPENDS = a20.inc gdt.inc pmodePrint.inc
 
 # Additional include paths to consider
 INCLUDES =	include
@@ -20,11 +23,12 @@ ASFLAGS = -f bin
 all: $(TARGETS)
 	@:	#Shut up!
 
-$(TARGETS): $(addprefix $(SRCDIR)/, $(OBJECTS))
+$(TARGETS): $(addprefix $(SRCDIR)/, $(OBJECTS)) $(addprefix $(SRCDIR)/, $(ASDEPENDS)) ../stage2/stage2.exe
 
 # Cleaning
 clean:
 	$(Q)$(RM) -f $(TARGETS)
+	$(Q)$(RM) -f stage15.map
 
 distclean: clean
 

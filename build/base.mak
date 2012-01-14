@@ -66,14 +66,11 @@ endef
 ############################
 
 # Define toolchain target
-TOOLCHAIN_TARGET    := i686-elf
+TOOLCHAIN_TARGET    := i686-pc-mingw32
+#TOOLCHAIN_TARGET    := i686-elf
 
 # Grab the toolchain information.
 include $(SRC)/build/toolchain.mak
-
-# FS-Type for floppy image
-FLOPPYTYPE			:= fat
-#FLOPPYTYPE			:= ext2
 
 ############################
 # Host build configuration #
@@ -81,6 +78,6 @@ FLOPPYTYPE			:= fat
 
 HOSTCC      := gcc
 HOSTCXX     := g++
-HOSTCFLAGS  := 
+HOSTCFLAGS  := -std=gnu99
 
 endif

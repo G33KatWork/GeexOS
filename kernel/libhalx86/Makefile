@@ -82,6 +82,8 @@ clean:
 	$(Q)$(RM) -f $(TARGET)
 	$(Q)$(RM) -rf obj
 
+distclean: clean
+
 # Header dependency generation
 $(OBJDIR)/%.d: $(SRCDIR)/%.cpp
 	$(call cmd_msg,DEPENDS,$@)
@@ -111,5 +113,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.S
 .PHONY: createdirs clean
 
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),distclean)
 -include $(addprefix $(OBJDIR)/, $(OBJECTS:%.o=%.d))
+endif
 endif

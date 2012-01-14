@@ -24,7 +24,8 @@ CXXSOURCES = main.cpp \
 			 Memory/IO/IOMemoryManager.cpp \
 			 Objects/GXMetaClass.cpp \
 			 Objects/GXObject.cpp \
-			 ELF/ELFFile.cpp
+			 ELF/ELFFile.cpp \
+			 Utils/CRC32.cpp
 
 # List Assembler to be assembled with NASM here
 ASOURCES = 
@@ -53,7 +54,7 @@ CFLAGS += $(addprefix -I,$(INCLUDES))
 # C++ compiler flags
 CXXFLAGS += -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
-			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long
+			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long -fvisibility=default
 CXXFLAGS += -DARCH_X86 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
@@ -61,7 +62,7 @@ CXXFLAGS += $(addprefix -I,$(INCLUDES))
 ASFLAGS = -f elf -ggdb
 
 # Linker flags
-LDFLAGS = -T linker.ld -Map kernel.map
+LDFLAGS = -T linker.ld -Map kernel.map -E
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)
@@ -95,11 +96,12 @@ $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
 # Cleaning
 clean:
 	$(Q)$(RM) -f $(TARGET)
-#$(Q)$(RM) -f $(foreach file,$(patsubst %.o,%,$(OBJECTS)),$(foreach ext,o,$(file).$(ext)))
 	$(Q)$(RM) -f disasm
 	$(Q)$(RM) -f kernel.map
 	$(Q)$(RM) -rf obj
 	$(Q)$(RM) -rf bochs.sym
+
+distclean: clean
 
 # Header dependency generation
 $(OBJDIR)/%.d: $(SRCDIR)/%.cpp
@@ -130,5 +132,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.S
 .PHONY: createdirs clean
 
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),distclean)
 -include $(addprefix $(OBJDIR)/, $(OBJECTS:%.o=%.d))
+endif
 endif

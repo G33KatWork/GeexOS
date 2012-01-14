@@ -5,10 +5,10 @@
 #include <kernel/ELF/format/elf.h>
 
 namespace ELF {
-    class ELFFile
+    class __attribute__ ((visibility ("default"))) ELFFile
     {
     public:
-        ELFFile(Address startAddress, size_t length);
+        ELFFile(Address startAddress);
         virtual ~ELFFile();
     
         void Relocate(Address toAddress);
@@ -21,7 +21,6 @@ namespace ELF {
         Elf32SectionHeader* GetSectionHeader(size_t idx);   //FIXME: encapsulate Elf32SectionHeader with a class
         Address GetSectionContents(Elf32SectionHeader* section);
         
-        
         Address GetEntrypoint();
     
     protected:    
@@ -30,7 +29,6 @@ namespace ELF {
     
     private:
         Address start;
-        size_t len;
         
         size_t programHeaderCount;
         size_t sectionHeaderCount;

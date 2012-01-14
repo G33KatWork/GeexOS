@@ -26,6 +26,8 @@ $(TARGETS): $(addprefix $(SRCDIR)/, $(OBJECTS))
 clean:
 	$(Q)$(RM) -f $(TARGETS)
 
+distclean: clean
+
 # Assembler S files
 %.bin: $(SRCDIR)/%.S
 	$(call cmd_msg,NASM,$<)

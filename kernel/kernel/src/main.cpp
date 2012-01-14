@@ -9,14 +9,18 @@
 #include <kernel/Memory/Slab/SlabAllocator.h>
 
 #include <kernel/Modules/KernelModule.h>
+#include <kernel/ELF/ELFFile.h>
 
 #include <string.h>
+
+#include <kernel/DataStructures/Dictionary.h>
 
 using namespace Arch;
 using namespace Debug;
 using namespace Memory;
 using namespace Memory::Slab;
 using namespace Modules;
+using namespace ELF;
 
 #include <kernel/Objects/GXObject.h>
 
@@ -32,6 +36,13 @@ public:
 };
 
 GXImplementMetaClassAndDefaultStructors(TestObject, GXObject)
+
+struct Hasher {
+size_t HashKey(const char* s)
+{
+    return (size_t)s;
+}
+};
 
 int main()
 {
@@ -88,6 +99,33 @@ int main()
     //Create module repository memory region for boot-critical modules
     MAIN_DEBUG_MSG("Module BLOB is at " << hex << (Address)CurrentHAL->GetBootEnvironment()->GetBootModuleRepository() << " with size " << CurrentHAL->GetBootEnvironment()->GetBootModuleRepositorySize());
     
+    KernelBootModuleRepository* bootModules = CurrentHAL->GetBootEnvironment()->GetBootModuleRepository();
+    ASSERT(bootModules->Magic == BOOTMODULES_MAGIC, "Magic value for boot module repository is wrong");
+    for(uint32_t i = 0; i < bootModules->ModuleCount; i++)
+    {
+        MAIN_DEBUG_MSG("magic: " << hex << bootModules->Magic);
+        MAIN_DEBUG_MSG("count: " << dec << bootModules->ModuleCount);
+        MAIN_DEBUG_MSG("Offset: " << dec << bootModules->Offsets[i]);
+        ELFFile* elf = new ELFFile(((Address)bootModules) + bootModules->Offsets[i]);
+        MAIN_DEBUG_MSG("elf has " << dec << elf->GetSectionHeaderCount() << " section headers");
+    }
+
+        MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
+        slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+
+    /*DataStructures::Dictionary<const char*, Address, struct Hasher>* symTbl = new DataStructures::Dictionary<const char*, Address, struct Hasher>();
+    symTbl->Insert("foobar", 1234);
+    MAIN_DEBUG_MSG("sym: " << dec << symTbl->Lookup("foobar"));
+    symTbl->Remove("foobar");
+    if(symTbl->Lookup("foobar") == NULL)
+        MAIN_DEBUG_MSG("yip")
+    
+    symTbl->Clear();
+
+    delete symTbl;*/
+
+    MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
+    slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());
 
 #if 0
 #ifdef EN_DEBUG_MSG_MAIN

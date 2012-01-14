@@ -1,38 +1,27 @@
 SRC                 := ../..
 include $(SRC)/build/base.mak
 
-# Target file name.
-TARGETS = stage2.bin
-
-# List Assembler to be assembled with NASM here
-ASOURCES = stage2.S
-
-# List of assembler includes
-ASDEPENDS = a20.inc gdt.inc pmodePrint.inc
-
-# Additional include paths to consider
-INCLUDES =	include
-
-# Folder for sourcecode
-SRCDIR = src
-
-# NASM flags
-ASFLAGS = -f bin
+SUBTARGETS = stage2 stage15
+DIRS = $(SUBTARGETS:%=%.dir)
 
 # Main targets
-all: $(TARGETS)
-	@:	#Shut up!
+all: $(DIRS)
+	$(Q)cp stage15/stage15.bin stage2.bin
 
-$(TARGETS): $(addprefix $(SRCDIR)/, $(OBJECTS)) $(addprefix $(SRCDIR)/, $(ASDEPENDS))
+%.dir:
+	$(call cmd_msg,SUBDIR,$*)
+	$(call call_submake,$*,all)
 
 # Cleaning
 clean:
-	$(Q)$(RM) -f $(TARGETS)
-	$(Q)$(RM) -f stage2.map
+	@-for i in $(SUBTARGETS); do \
+		$(MAKE) -C $$i clean; \
+	done
+	$(Q)rm -f stage2.bin
 
-# Assembler S files
-%.bin: $(SRCDIR)/%.S
-	$(call cmd_msg,NASM,$<)
-	$(Q)$(NASM) $(ASFLAGS) -o $@ $<
+distclean: clean
+	@-for i in $(SUBTARGETS); do \
+		$(MAKE) -C $$i distclean; \
+	done
 
-.PHONY: clean
+.PHONY: all clean distclean

@@ -4,14 +4,18 @@ include $(SRC)/build/base.mak
 STARTTIME := $(shell date +%s)
 
 # Main targets
-all: kernel drivers servers applications floppy.img
+all: bootloader kernel drivers servers applications bootdisk
 	$(call cmd_msg,NOTICE,Build completed in $$(($$(date +%s)-$(STARTTIME))) seconds)
 
 kernel/kernel/kernel.elf: kernel
 
+bootloader: toolchain
+	$(call cmd_msg,SUBDIR,bootloader)
+	$(call call_submake,bootloader,all)
+
 kernel: toolchain
-	$(call cmd_msg,SUBDIR,kernel)
-	$(call call_submake,kernel,all)
+#	$(call cmd_msg,SUBDIR,kernel)
+#	$(call call_submake,kernel,all)
 
 servers: toolchain
 	$(call cmd_msg,SUBDIR,servers)
@@ -32,45 +36,24 @@ $(CC):
 	$(call cmd_msg,SUBDIR,toolchain)
 	$(call call_submake,toolchain,all)
 
-# Create bootfloppy
-floppy.img: kernel/kernel/kernel.elf kernel/loaderstub/loaderStub.elf
-	$(call cmd_msg,MKFLOPPY,floppy.img)
-	$(Q)$(SUDO) -A $(MKDIR) tmp
-	$(Q)$(SUDO) $(CP) resources/floppy.$(FLOPPYTYPE).img ./floppy.img
-
-ifeq ($(shell uname),Darwin)
-	$(Q)$(SUDO) hdiutil attach floppy.img -mountpoint tmp -readwrite $(QOUTPUT)
-else
-	$(Q)$(SUDO) mount -o loop floppy.img tmp $(QOUTPUT)
-endif
-
-	$(Q)$(SUDO) $(CP) kernel/loaderstub/loaderstub.elf tmp/loader.elf
-	$(Q)$(SUDO) $(CP) kernel/kernel/kernel.elf tmp/kern.elf
-	$(Q)$(SUDO) utils/genmoduleblob.py kernel/testmodule/module.o > tmp/modules
-
-ifeq ($(shell uname),Darwin)
-	$(Q)$(SUDO) hdiutil detach tmp $(QOUTPUT)
-else
-	$(Q)$(SUDO) umount tmp $(QOUTPUT)
-endif
-
-	$(Q)$(SUDO) $(RM) -Rf tmp
-	$(Q)$(SUDO) chmod 666 ./floppy.img
+# Disk for bootloader testing... incorporate into complete bootprocess later
+bootdisk: bootloader
+	utils/buildhddimage.py utils/partlayout.json testhdd.img
 
 # Start bochs
 bochs: all
-	$(call cmd_msg,BOCHS,floppy.img)
+	$(call cmd_msg,BOCHS,testhdd.img)
 	$(Q)$(BOCHS) -f resources/bochsrc.txt -q $(QOUTPUT)
 
 # Start qemu
-qemu: all
-	$(call cmd_msg,QEMU,floppy.img)
-	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut $(QOUTPUT)
+qemu: bootdisk
+	$(call cmd_msg,QEMU,testhdd.img)
+	$(Q)$(QEMU) -net none -hda testhdd.img -serial file:serialOut $(QOUTPUT)
 
-qemudebug: all
-	$(call cmd_msg,QEMU,floppy.img)
+qemudebug: bootdisk
+	$(call cmd_msg,QEMU,testhdd.img)
 	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
-	$(Q)$(QEMU) -net none -fda floppy.img -serial file:serialOut -s -S $(QOUTPUT)
+	$(Q)$(QEMU) -net none -hda testhdd.img -serial file:serialOut -s -S $(QOUTPUT)
 
 ddd: all
 	$(call cmd_msg,NOTE,Attaching ddd to port 1234)
@@ -91,19 +74,21 @@ doxyclean:
 
 # Cleaning
 clean:
+	$(call call_submake,bootloader,clean)
 	$(call call_submake,kernel,clean)
 	$(call call_submake,toolchain,clean)
 	$(call call_submake,applications,clean)
 	$(call call_submake,drivers,clean)
 	$(call call_submake,servers,clean)
-	$(Q)$(RM) -f floppy.img
+	$(Q)$(RM) -f testhdd.img
 	$(Q)$(RM) -f bochsout.txt
 	$(Q)$(RM) -f source
 
-distclean: clean
+distclean: clean doxyclean
+	$(call call_submake,bootloader,distclean)
 	$(call call_submake,kernel,distclean)
 	$(call call_submake,toolchain,distclean)
 	$(call call_submake,toolchain,toolchain-clean)
 
-.PHONY: all kernel servers drivers applications clean distclean qemu qemudebug bochs bochsdebug doxygen
+.PHONY: all bootloader kernel servers drivers applications clean distclean qemu qemudebug bochs bochsdebug doxygen
 
