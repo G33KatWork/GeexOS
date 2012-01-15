@@ -5,13 +5,17 @@ include $(SRC)/build/base.mak
 TARGET = stage2.exe
 
 # List C source files here.
-CCSOURCES = main.c
+CCSOURCES = main.c lib.c print.c
+
+CCSOURCES += arch/i386/arch.c arch/i386/gdt.c arch/i386/idt.c arch/i386/exception.c arch/i386/print.c
 
 # List C++ source files here
 CXXSOURCES = 
 
 # List Assembler to be assembled with NASM here
 ASOURCES = start.S
+
+ASOURCES += arch/i386/trap.S arch/i386/gdt_flush.S
 
 # Additional include paths to consider
 INCLUDES =	include
@@ -31,14 +35,14 @@ CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 			-Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
 			-Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
 			-Wstrict-prototypes #-Wconversion
-CFLAGS += -DARCH_X86 -DDEBUG
+CFLAGS += -DARCH_I386 -DDEBUG
 CFLAGS += $(addprefix -I,$(INCLUDES))
 
 # C++ compiler flags
 CXXFLAGS += -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long
-CXXFLAGS += -DARCH_X86 -DDEBUG
+CXXFLAGS += -DARCH_I386 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
 # NASM flags
