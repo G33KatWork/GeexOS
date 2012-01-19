@@ -1,4 +1,4 @@
-NASM_VERSION		:= 2.09
+NASM_VERSION		:= 2.10rc8
 NASM_SOURCE	     	:= $(TOOLCHAIN_SRCDIR)/nasm-$(NASM_VERSION).tar.bz2
 NASM_DOWNLOAD	    := http://www.nasm.us/pub/nasm/releasebuilds/$(NASM_VERSION)/nasm-$(NASM_VERSION).tar.bz2
 NASM_PATCHES	    := 
