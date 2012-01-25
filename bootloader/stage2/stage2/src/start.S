@@ -2,6 +2,9 @@
 global start
 extern _kmain
 
+extern switchToReal
+extern switchToProt
+
 STACKSIZE         equ         0x4000                ; 16k Stack
 
 section .text
@@ -15,6 +18,17 @@ start:
 
   call _kmain                        ; Jump to C-Code
 
+;  call switchToReal
+;[BITS 16]
+;  mov ah, 0x0E
+;  mov al, 'A'
+;  mov bh, 0
+;  mov bl, 0x14
+;  int 0x10
+;
+;  call DWORD switchToProt
+
+[BITS 32]
 .cpuhalt:
   cli
   hlt

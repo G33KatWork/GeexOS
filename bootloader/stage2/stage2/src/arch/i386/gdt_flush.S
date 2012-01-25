@@ -1,5 +1,7 @@
-global _gdt_flush
-extern _gp
+[BITS 32]
+[GLOBAL _gdt_flush]
+[EXTERN _gp]
+[SECTION .text]
 
 ; load the real gdt
 _gdt_flush:
@@ -10,7 +12,7 @@ _gdt_flush:
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-	jmp 0x08:flush2
+	jmp 0x08:.flush2
 
-flush2:
+.flush2:
 	ret

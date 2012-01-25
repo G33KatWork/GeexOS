@@ -1,4 +1,5 @@
 [BITS 32]
+[SECTION .text]
 
 %macro TRAP_NOERRCODE 1
 	[GLOBAL _ex%1]

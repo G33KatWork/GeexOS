@@ -3,10 +3,10 @@
 [ORG 0x7C00]
 [MAP ALL stage1.map]
 
-ROOTDIRSEGMENT  EQU     0x1000
-LOWFATSEGMENT   EQU     0x2000
-HIGHFATSEGMENT  EQU     0x3000
-STAGE2SEGMENT   EQU     0x4000
+ROOTDIRSEGMENT  EQU     0x2000
+LOWFATSEGMENT   EQU     0x3000
+HIGHFATSEGMENT  EQU     0x4000
+STAGE2SEGMENT   EQU     0x800
 
 ; FAT 12/16 Layout:
 ; +----------------+------------------+------+------+----------------+-------------+

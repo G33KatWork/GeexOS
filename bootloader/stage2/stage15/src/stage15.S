@@ -1,12 +1,14 @@
 ;--------- PE Header ---------
 %include "src/pe.inc"
 
+LOADADDRESS     EQU     0x8000
+
 [BITS 16]
 [ORG 0x0]
 [MAP ALL stage15.map]
 
 start:
-    ;we are loaded at 0x4000:0 and upwards by first stage
+    ;we are loaded at 0x800:0 and upwards by first stage
     
     ;set up segment registers
     push    cs
@@ -16,10 +18,10 @@ start:
     mov     fs, ax
     mov     gs, ax
 
-    ;set up a stack at 0x3000:0 (=0x30000) directly under our code
-    push    0x3000
+    ;set up a stack at 0:8000 (=0x8000) directly under our code
+    push    0
     pop     ss
-    mov     sp, 0x0
+    mov     sp, LOADADDRESS
 
     call    bios_print
     db 'GeexLDR Stage 1.5', 13, 10, 0
@@ -72,16 +74,16 @@ times 512 - ($-$$)  DB 0
 
 ;---------- 32 Bit -----------
 [BITS 32]
-[SEGMENT start=0x40000+512 vstart=0x40000+512]
+[SEGMENT start=LOADADDRESS+512 vstart=LOADADDRESS+512]
 
-TEMPORARY_PE_LOCATION   EQU     0x10000
+TEMPORARY_PE_LOCATION   EQU     0x100000
 
 pmodeEntry:
     mov     ax, GDT_DATA_DESC
     mov     ds, ax
     mov     ss, ax
     mov     es, ax
-    mov     esp, 0x30000
+    mov     esp, LOADADDRESS
     
     call    ClearScreen32
     
@@ -198,7 +200,7 @@ pmodeEntry:
     jmp     .hang
 
 pmodeMsg:
-    db  'GeexLDR Stage 1.5', 10, 0
+    db  'GeexLDR Stage 1.5 PMODE', 10, 0
 peSignatureFailMsg:
     db  'Magic value for Stage2 is not PE', 10, 0
 peRelocSupportFailMsg:

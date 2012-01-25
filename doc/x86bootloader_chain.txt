@@ -1,0 +1,15 @@
+BIOS loads MBR to 0x7C00 in realmode
+MBR relocates itself to 0x1FE0:0x7C00 (=0x9BE0)
+MBR searches for active partition and loads first 512 Bytes to 0x7C00
+
+First stage searches for file GXLDR and loads it to 0x800:0 (=0x8000)
+while doing so, it copies the rootdir to 0x2000:0 (=0x20000) and the FAT to
+the 2 continous segments 0x3000:0 and 0x4000:0
+
+After loading, stage2 takes over.
+The binary consists of a stub (stage 1.5) which switches to protected mode,
+relocates the appended PE file to 0x100000 (=1MB), parses it, copies all
+allocated sections to their locations and jumps into the entrypoint.
+Relocations are not supported at this time.
+
+The real stage 2 is linked to 0x9000.

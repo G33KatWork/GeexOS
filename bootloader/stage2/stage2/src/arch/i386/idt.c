@@ -4,14 +4,14 @@
 #define I86_IDT_ENTRY_COUNT     32
 
 struct idt_entry idt[I86_IDT_ENTRY_COUNT];
-struct idt_ptr ip;
+struct idt_ptr pmodeIdt;
 
 void idt_set_gate(uint8_t i, uint32_t base, uint16_t sel, uint8_t flags);
 
 void idt_init()
 {
-    ip.size = sizeof(struct idt_entry) * I86_IDT_ENTRY_COUNT - 1;
-    ip.offset = (uint32_t)&idt;
+    pmodeIdt.size = sizeof(struct idt_entry) * I86_IDT_ENTRY_COUNT - 1;
+    pmodeIdt.offset = (uint32_t)&idt;
     
     memset(&idt, 0, sizeof(struct idt_entry) * I86_IDT_ENTRY_COUNT);
     
@@ -35,7 +35,7 @@ void idt_init()
     idt_set_gate(18, (uint32_t)ex18, 0x08, I86_IDT_ATTR_PRESENT | I86_IDT_ATTR_32BIT_INT_GATE | I86_IDT_ATTR_PRIV_KERNEL);
     idt_set_gate(19, (uint32_t)ex19, 0x08, I86_IDT_ATTR_PRESENT | I86_IDT_ATTR_32BIT_INT_GATE | I86_IDT_ATTR_PRIV_KERNEL);
     
-    asm("lidt	%0" : "=m" (ip));
+    asm("lidt	%0" : "=m" (pmodeIdt));
 }
 
 void idt_set_gate(uint8_t i, uint32_t base, uint16_t sel, uint8_t flags)

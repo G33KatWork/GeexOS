@@ -15,7 +15,7 @@ CXXSOURCES =
 # List Assembler to be assembled with NASM here
 ASOURCES = start.S
 
-ASOURCES += arch/i386/trap.S arch/i386/gdt_flush.S
+ASOURCES += arch/i386/trap.S arch/i386/gdt_flush.S arch/i386/realmode.S
 
 # Additional include paths to consider
 INCLUDES =	include
@@ -46,10 +46,10 @@ CXXFLAGS += -DARCH_I386 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
 # NASM flags
-ASFLAGS = -f elf -ggdb
+ASFLAGS = -f win32 -ggdb
 
 # Linker flags
-LDFLAGS = -Map stage2.map --image-base 0x50000 --subsystem 0x10
+LDFLAGS = -Map stage2.map --image-base 0x9000 --subsystem 0x10
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)
