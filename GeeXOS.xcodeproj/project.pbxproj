@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 42;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXFileReference section */
@@ -17,12 +17,14 @@
 		A1043AE511D161DD00B10433 /* servers */ = {isa = PBXFileReference; lastKnownFileType = folder; path = servers; sourceTree = "<group>"; };
 		A1043AE811D161DD00B10433 /* utils */ = {isa = PBXFileReference; lastKnownFileType = folder; path = utils; sourceTree = "<group>"; };
 		A1043AF511D1627F00B10433 /* toolchain */ = {isa = PBXFileReference; lastKnownFileType = folder; path = toolchain; sourceTree = "<group>"; };
+		A169606B14CEF8150006EAA1 /* bootloader */ = {isa = PBXFileReference; lastKnownFileType = folder; path = bootloader; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		A1DF5A9111D1606300DAC40F = {
 			isa = PBXGroup;
 			children = (
+				A169606B14CEF8150006EAA1 /* bootloader */,
 				A10439F611D161DC00B10433 /* applications */,
 				A10439F911D161DC00B10433 /* build */,
 				A1043A0E11D161DC00B10433 /* doc */,
@@ -57,9 +59,16 @@
 /* Begin PBXProject section */
 		A1DF5A9311D1606300DAC40F /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
 			buildConfigurationList = A1DF5A9611D1606300DAC40F /* Build configuration list for PBXProject "GeeXOS" */;
-			compatibilityVersion = "Xcode 2.4";
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
 			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
 			mainGroup = A1DF5A9111D1606300DAC40F;
 			projectDirPath = "";
 			projectRoot = "";
@@ -74,31 +83,27 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUILD_COLOUR = 0;
+				V = 1;
 			};
 			name = Debug;
 		};
 		A1043BB211D169B100B10433 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				PRODUCT_NAME = kernel;
-				ZERO_LINK = NO;
+				BUILD_COLOUR = 0;
+				V = 1;
 			};
 			name = Release;
 		};
 		A1DF5A9411D1606300DAC40F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
 			};
 			name = Debug;
 		};
 		A1DF5A9511D1606300DAC40F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
 			};
 			name = Release;
 		};
