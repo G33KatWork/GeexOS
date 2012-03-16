@@ -1,7 +1,7 @@
-QEMU_VERSION		:= 1.0
+QEMU_VERSION		:= 0.15.1
 QEMU_SOURCE	     	:= $(TOOLCHAIN_SRCDIR)/qemu-$(QEMU_VERSION).tar.gz
 QEMU_DOWNLOAD	    := http://wiki.qemu.org/download/qemu-$(QEMU_VERSION).tar.gz
-QEMU_PATCHES	    := $(TOOLCHAIN_PATCHDIR)/qemu-1.0-macos-uint16-hack.patch
+QEMU_PATCHES	    := #$(TOOLCHAIN_PATCHDIR)/qemu-1.0-macos-uint16-hack.patch
 
 # Hack to build on OS X.
 ifeq ($(shell uname),Darwin)
