@@ -1,7 +1,9 @@
 [BITS 32]
 [EXTERN _pmodeIdt]  ;defined in arch/i386/idt.c
 
-RMODESTACK          EQU     0x8000
+;also defined in bioscall.h
+;be sure to change it there too, if necessary
+RMODESTACK          EQU     0x7000
 
 [SECTION .data]
 realmodeIdt:

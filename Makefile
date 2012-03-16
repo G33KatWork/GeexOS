@@ -4,7 +4,7 @@ include $(SRC)/build/base.mak
 STARTTIME := $(shell date +%s)
 
 # Main targets
-all: bootloader kernel drivers servers applications bootdisk
+all: bootloader kernel drivers servers applications
 	$(call cmd_msg,NOTICE,Build completed in $$(($$(date +%s)-$(STARTTIME))) seconds)
 
 kernel/kernel/kernel.elf: kernel
@@ -37,27 +37,29 @@ $(CC):
 	$(call call_submake,toolchain,all)
 
 # Disk for bootloader testing... incorporate into complete bootprocess later
-bootdisk: bootloader
-	utils/buildhddimage.py utils/partlayout.json testhdd.img
+# TODO: build script for automatic disk-image dependency rule creation
+#bootloader/mbr/mbr.bin bootloader/stage1_fat16/stage1.bin bootloader/stage2/stage2.bin: bootloader
+testhdd.img: all bootloader/mbr/mbr.bin bootloader/stage1_fat16/stage1.bin bootloader/stage2/stage2.bin
+	utils/buildhddimage.py utils/partlayout.json $@
 
 # Start bochs
-bochs: all
+bochs: testhdd.img
 	$(call cmd_msg,BOCHS,testhdd.img)
 	$(Q)$(BOCHS) -f resources/bochsrc.txt -q $(QOUTPUT)
 
 # Start qemu
-qemu: bootdisk
+qemu: testhdd.img
 	$(call cmd_msg,QEMU,testhdd.img)
 	$(Q)$(QEMU) -net none -hda testhdd.img -serial file:serialOut $(QOUTPUT)
 
-qemudebug: bootdisk
+qemudebug: testhdd.img
 	$(call cmd_msg,QEMU,testhdd.img)
 	$(call cmd_msg,NOTE,Waiting for gdb attachment on port 1234...)
 	$(Q)$(QEMU) -net none -hda testhdd.img -serial file:serialOut -s -S $(QOUTPUT)
 
 ddd: all
 	$(call cmd_msg,NOTE,Attaching ddd to port 1234)
-	$(Q)ddd --debugger toolchain/i686-elf/bin/i686-elf-gdb --command=resources/gdbinit
+	$(Q)ddd --debugger $(GDB) --command=resources/gdbinit
 
 # Start VMware Fusion
 vmware: all

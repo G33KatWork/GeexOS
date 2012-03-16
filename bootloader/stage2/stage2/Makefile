@@ -5,9 +5,9 @@ include $(SRC)/build/base.mak
 TARGET = stage2.exe
 
 # List C source files here.
-CCSOURCES = main.c lib.c print.c
+CCSOURCES = main.c lib.c print.c memory.c
 
-CCSOURCES += arch/i386/arch.c arch/i386/gdt.c arch/i386/idt.c arch/i386/exception.c arch/i386/print.c
+CCSOURCES += arch/i386/arch.c arch/i386/gdt.c arch/i386/idt.c arch/i386/exception.c arch/i386/print.c arch/i386/memory.c
 
 # List C++ source files here
 CXXSOURCES = 
@@ -49,7 +49,7 @@ CXXFLAGS += $(addprefix -I,$(INCLUDES))
 ASFLAGS = -f win32 -ggdb
 
 # Linker flags
-LDFLAGS = -Map stage2.map --image-base 0x9000 --subsystem 0x10
+LDFLAGS = -Map stage2.map --image-base 0x8000 --subsystem 0x10
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)

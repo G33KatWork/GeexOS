@@ -5,8 +5,11 @@ SUBTARGETS = stage2 stage15
 DIRS = $(SUBTARGETS:%=%.dir)
 
 # Main targets
-all: $(DIRS)
-	$(Q)cp stage15/stage15.bin stage2.bin
+all: $(DIRS) stage2.bin
+	@
+
+stage2.bin: stage15/stage15.bin
+	$(Q)cp $< $@
 
 %.dir:
 	$(call cmd_msg,SUBDIR,$*)

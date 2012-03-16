@@ -16,4 +16,8 @@ typedef signed long long int64_t;	    /**< Signed 64-bit. */
 typedef __SIZE_TYPE__ size_t;
 typedef enum { false=0, true } bool;
 
+typedef uint32_t Address;
+
+typedef uint32_t PageNumber;
+
 #endif

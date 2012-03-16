@@ -8,8 +8,13 @@ the 2 continous segments 0x3000:0 and 0x4000:0
 
 After loading, stage2 takes over.
 The binary consists of a stub (stage 1.5) which switches to protected mode,
-relocates the appended PE file to 0x100000 (=1MB), parses it, copies all
+moves the appended PE file to 0x100000 (=1MB), parses it, copies all
 allocated sections to their locations and jumps into the entrypoint.
 Relocations are not supported at this time.
 
-The real stage 2 is linked to 0x9000.
+The real stage 2 is linked to 0x8000.
+The stage uses a 4K buffer at 0x1000 for bios call results
+The protected mode stack starts at 0x8000 and grows down 0x1000 Bytes.
+The real mode stack for BIOS calls starts at 0x7000 and also grows down
+0x1000 Bytes
+

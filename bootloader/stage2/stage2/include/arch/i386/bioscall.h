@@ -15,6 +15,14 @@ typedef struct
   uint32_t edx;
 } bios_int_registers;
 
+//Also defined in realmode.S!
+#define GXLDR_RMODE_STACKTOP    0x7000
+#define GXLDR_RMODE_STACKSIZE   0x1000
+
+#define BIOSCALLBUFFER          0x1000
+#define BIOSCALLBUF_SEGMENT     0x100
+#define BIOSCALLBUF_OFFSET      0
+
 #define REALMODE_PTR(segment, offset)   ((void*)((((uint16_t)segment) << 4) + ((uint16_t)offset)))
 
 extern void callInt(uint8_t intNum, bios_int_registers *registers);
