@@ -7,7 +7,7 @@ TARGET = stage2.exe
 # List C source files here.
 CCSOURCES = main.c lib.c print.c memory.c
 
-CCSOURCES += arch/i386/arch.c arch/i386/gdt.c arch/i386/idt.c arch/i386/exception.c arch/i386/print.c arch/i386/memory.c
+CCSOURCES += arch/i386/arch.c arch/i386/gdt.c arch/i386/idt.c arch/i386/exception.c arch/i386/serial.c arch/i386/print.c arch/i386/memory.c
 
 # List C++ source files here
 CXXSOURCES = 

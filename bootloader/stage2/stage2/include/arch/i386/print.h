@@ -25,7 +25,6 @@ typedef enum
 } Color;
 
 void print_i386_clear(void);
-void print_i386_string(char* s);
 void print_i386_char(char c);
 void print_i386_setBackgroundColor(Color c);
 void print_i386_setForegroundColor(Color c);

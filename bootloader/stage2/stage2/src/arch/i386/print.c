@@ -36,15 +36,6 @@ void print_i386_clear()
     moveCursor();
 }
 
-void print_i386_string(char* s)
-{
-    while(*s)
-    {
-        print_i386_char(*s);
-        s++;
-    }
-}
-
 void print_i386_char(char c)
 {
     unsigned char attributeByte = (backgroundColor << 4) | (foregroundColor & 0x0F);
