@@ -30,8 +30,9 @@ int kmain()
     arch_machine_setup();
     printf("GXLDR Stage 2\r\n");
     
-    memory_print_map(MemoryMap);
+    memory_print_map(FirmwareMemoryMap);
     
+    memory_init();
     
     //just for testing realmode stuff
     /*struct vbeControllerInfo* info = (struct vbeControllerInfo*)REALMODE_PTR(BIOSCALLBUF_SEGMENT, BIOSCALLBUF_OFFSET);

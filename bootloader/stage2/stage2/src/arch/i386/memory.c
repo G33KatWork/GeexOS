@@ -6,7 +6,7 @@
 
 extern int end; //defined in linker script
 
-MemoryDescriptor MemoryMap[MAX_MEMORY_MAP_ENTRIES] = {
+MemoryDescriptor FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES] = {
     {MemoryTypeFirmware,    0x0,                                                                0x1},       //Realmode interrupt vectors
     {MemoryTypeLoaderTemporary, BIOSCALLBUFFER/ARCH_PAGE_SIZE,                                  0x1},       //Real mode result buffer
     {MemoryTypeFree,        0x2,                                                                0x5},       //Free memory
@@ -17,12 +17,12 @@ MemoryDescriptor MemoryMap[MAX_MEMORY_MAP_ENTRIES] = {
 void mem_i386_build_memory_map()
 {
     //Insert executable location
-    MemoryMap[5].Type = MemoryTypeLoaderExecutable;
-    MemoryMap[5].BasePage = GXLDR_EXEC_BASE/ARCH_PAGE_SIZE;
-    MemoryMap[5].PageCount = ((size_t)&end)/ARCH_PAGE_SIZE;         //TODO: page align?
+    FirmwareMemoryMap[5].Type = MemoryTypeLoaderExecutable;
+    FirmwareMemoryMap[5].BasePage = GXLDR_EXEC_BASE/ARCH_PAGE_SIZE;
+    FirmwareMemoryMap[5].PageCount = ((size_t)&end)/ARCH_PAGE_SIZE;         //TODO: page align?
     
     //NULL out the rest
-    memset(&MemoryMap[6], 0, (MAX_MEMORY_MAP_ENTRIES-4) * sizeof(MemoryDescriptor));
+    memset(&FirmwareMemoryMap[6], 0, (MAX_MEMORY_MAP_ENTRIES-4) * sizeof(MemoryDescriptor));
     
     //TODO: Fallback to other methods for obtaining bios memory map
     mem_i386_e820_detect();
@@ -66,7 +66,7 @@ void mem_i386_e820_detect()
             PageNumber size = map.BaseAddress + map.Length - basePage;
             size = (size + ARCH_PAGE_SIZE - 1) & ~(ARCH_PAGE_SIZE - 1ULL);
             
-            memory_add_map_entry(MemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage / ARCH_PAGE_SIZE, size / ARCH_PAGE_SIZE, t);
+            memory_add_map_entry(FirmwareMemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage / ARCH_PAGE_SIZE, size / ARCH_PAGE_SIZE, t);
         }
         else
         {
@@ -78,7 +78,7 @@ void mem_i386_e820_detect()
             PageNumber size = map.BaseAddress + map.Length - basePage;
             size = (size + ARCH_PAGE_SIZE - 1) & ~(ARCH_PAGE_SIZE - 1ULL);
             
-            memory_add_map_entry(MemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage / ARCH_PAGE_SIZE, size / ARCH_PAGE_SIZE, t);
+            memory_add_map_entry(FirmwareMemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage / ARCH_PAGE_SIZE, size / ARCH_PAGE_SIZE, t);
         }
         
         if(regs.ebx == 0)

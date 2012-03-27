@@ -17,3 +17,9 @@ void arch_dbg_print(char* str)
 {
     print_i386_string(str);
 }
+
+size_t arch_get_page_size()
+{
+    return ARCH_PAGE_SIZE;
+}
+

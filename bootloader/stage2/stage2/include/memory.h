@@ -19,10 +19,21 @@ typedef struct {
     PageNumber PageCount;
 } MemoryDescriptor;
 
+typedef struct {
+    MemoryType type;            //Type of memory allocation
+    PageNumber length;          //Continous length of allocated pages
+} PageLookupTableItem;
+
 #define MAX_MEMORY_MAP_ENTRIES 32
-extern MemoryDescriptor MemoryMap[MAX_MEMORY_MAP_ENTRIES];
+extern MemoryDescriptor FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES];
 
 uint32_t memory_add_map_entry(MemoryDescriptor* map, uint32_t maxEntries, PageNumber base, PageNumber size, MemoryType type);
 void memory_print_map(MemoryDescriptor* map);
+
+void memory_init(void);
+PageNumber memory_count_usable_pages(MemoryDescriptor* map);
+void* memory_find_page_lookup_table_location(PageNumber TotalPageCount, MemoryDescriptor* map);
+void memory_mark_pages(PageNumber start, PageNumber count, MemoryType type);
+void memory_print_alloc_map(void);
 
 #endif
