@@ -10,14 +10,15 @@ typedef enum {
     MemoryTypeLoaderExecutable,
     MemoryTypeLoaderTemporary,
     MemoryTypeLoaderStack,
-    MemoryTypeFirmware
+    MemoryTypeFirmware,
+    MemoryTypePageLookupTable
 } MemoryType;
 
 typedef struct {
     MemoryType Type;
     PageNumber BasePage;
     PageNumber PageCount;
-} MemoryDescriptor;
+} FirmwareMemoryMapItem;
 
 typedef struct {
     MemoryType type;            //Type of memory allocation
@@ -25,14 +26,14 @@ typedef struct {
 } PageLookupTableItem;
 
 #define MAX_MEMORY_MAP_ENTRIES 32
-extern MemoryDescriptor FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES];
+extern FirmwareMemoryMapItem FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES];
 
-uint32_t memory_add_map_entry(MemoryDescriptor* map, uint32_t maxEntries, PageNumber base, PageNumber size, MemoryType type);
-void memory_print_map(MemoryDescriptor* map);
+uint32_t memory_add_map_entry(FirmwareMemoryMapItem* map, uint32_t maxEntries, PageNumber base, PageNumber size, MemoryType type);
+void memory_print_map(FirmwareMemoryMapItem* map);
 
 void memory_init(void);
-PageNumber memory_count_usable_pages(MemoryDescriptor* map);
-void* memory_find_page_lookup_table_location(PageNumber TotalPageCount, MemoryDescriptor* map);
+PageNumber memory_count_usable_pages(FirmwareMemoryMapItem* map);
+void* memory_find_page_lookup_table_location(PageNumber TotalPageCount, FirmwareMemoryMapItem* map);
 void memory_mark_pages(PageNumber start, PageNumber count, MemoryType type);
 void memory_print_alloc_map(void);
 

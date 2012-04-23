@@ -6,7 +6,9 @@
 #define min(a, b) \
     (a < b) ? (a) : (b)
 
-static PageNumber highestPhysicalPage, lowestPhysicalPage;
+#define PAGENUM(addr)    ((PageNumber)(((Address)addr) / arch_get_page_size()))
+
+static PageNumber highestPhysicalPage = 0xFFFFFFFF, lowestPhysicalPage = 0x0;
 static PageLookupTableItem* pageLookupTable;
 
 static const char* MemoryTypeNames[] = {
@@ -16,10 +18,11 @@ static const char* MemoryTypeNames[] = {
     "MemoryTypeLoaderExecutable",
     "MemoryTypeLoaderTemporary",
     "MemoryTypeLoaderStack",
-    "MemoryTypeFirmware"
+    "MemoryTypeFirmware",
+    "MemoryTypePageLookupTable"
 };
 
-uint32_t memory_add_map_entry(MemoryDescriptor* map, uint32_t maxEntries, PageNumber base, PageNumber size, MemoryType type)
+uint32_t memory_add_map_entry(FirmwareMemoryMapItem* map, uint32_t maxEntries, PageNumber base, PageNumber size, MemoryType type)
 {
     uint32_t i, c;
     
@@ -72,32 +75,42 @@ uint32_t memory_add_map_entry(MemoryDescriptor* map, uint32_t maxEntries, PageNu
     return c;
 }
 
-void memory_print_map(MemoryDescriptor* map)
+void memory_print_map(FirmwareMemoryMapItem* map)
 {
-    for(MemoryDescriptor* cur = map; cur->PageCount > 0; cur++)
+    for(FirmwareMemoryMapItem* cur = map; cur->PageCount > 0; cur++)
         printf("Start: 0x%x Size: 0x%x Type: %s\r\n", cur->BasePage, cur->PageCount, MemoryTypeNames[cur->Type]);
 }
 
 void memory_init()
 {
     PageNumber usablePages = memory_count_usable_pages(FirmwareMemoryMap);
-    printf("MM: Having %d usable physical pages\n", usablePages);
+    printf("MM: Having %d usable physical pages. highest: 0x%x, lowest: 0x%x\n", usablePages, highestPhysicalPage, lowestPhysicalPage);
     void* tableLocation = memory_find_page_lookup_table_location(usablePages, FirmwareMemoryMap);
     printf("MM: Page lookup table location: 0x%x\n", tableLocation);
     pageLookupTable = (PageLookupTableItem*)tableLocation;
     
     memory_mark_pages(lowestPhysicalPage, usablePages, MemoryTypeFirmware);
     
+    for(FirmwareMemoryMapItem* cur = FirmwareMemoryMap; cur->PageCount > 0; cur++)
+        //We won't allocate any special MMIO pages at the top of the address space, so we won't consider them
+        if(cur->BasePage < highestPhysicalPage)
+            memory_mark_pages(cur->BasePage, cur->PageCount, cur->Type);
+    
+    PageNumber lookupTableStartPage = PAGENUM(pageLookupTable);
+    PageNumber lookupTablePageLen = PAGENUM((usablePages * sizeof(PageLookupTableItem)) + arch_get_page_size());
+    printf("MM: startpage: 0x%x plen: 0x%x\n", lookupTableStartPage, lookupTablePageLen);
+    memory_mark_pages(lookupTableStartPage, lookupTablePageLen, MemoryTypePageLookupTable);
+    
     memory_print_alloc_map();
 }
 
-PageNumber memory_count_usable_pages(MemoryDescriptor* map)
+PageNumber memory_count_usable_pages(FirmwareMemoryMapItem* map)
 {
     //Find upper and lower memory boundaries
     //Holes are not considered here
     highestPhysicalPage = lowestPhysicalPage = 0;
     
-    for(MemoryDescriptor* cur = map; cur->PageCount > 0; cur++)
+    for(FirmwareMemoryMapItem* cur = map; cur->PageCount > 0; cur++)
     {
         if(cur->BasePage + cur->PageCount > highestPhysicalPage)
             if(cur->Type == MemoryTypeFree)
@@ -110,7 +123,7 @@ PageNumber memory_count_usable_pages(MemoryDescriptor* map)
     return highestPhysicalPage - lowestPhysicalPage;
 }
 
-void* memory_find_page_lookup_table_location(PageNumber totalPageCount, MemoryDescriptor* map)
+void* memory_find_page_lookup_table_location(PageNumber totalPageCount, FirmwareMemoryMapItem* map)
 {
     //Search in memory for uppermost region which is big enough to hold array of all available pages
     
@@ -122,7 +135,7 @@ void* memory_find_page_lookup_table_location(PageNumber totalPageCount, MemoryDe
     size_t totalTableSize = totalPageCount * sizeof(PageLookupTableItem);
     PageNumber totalTableSizeInPages = totalTableSize / pageSize;            //FIXME: align up to pagesize?
     
-    for(MemoryDescriptor* cur = map; cur->PageCount > 0; cur++)
+    for(FirmwareMemoryMapItem* cur = map; cur->PageCount > 0; cur++)
     {
         if(cur->Type != MemoryTypeFree) continue;
         if(cur->PageCount < totalTableSizeInPages) continue;
@@ -137,6 +150,14 @@ void* memory_find_page_lookup_table_location(PageNumber totalPageCount, MemoryDe
 
 void memory_mark_pages(PageNumber start, PageNumber count, MemoryType type)
 {
+    if(start < lowestPhysicalPage || start + count > highestPhysicalPage)
+        arch_panic(
+            "MM: memory_mark_pages() start or count out of bounds:\n"
+            "start: 0x%x, count: 0x%x, type: %s\n"
+            "lowestPhysicalPage: 0x%x, highestPhysicalPage: 0x%x",
+            start, count, type, lowestPhysicalPage, highestPhysicalPage
+        );
+    
     start -= lowestPhysicalPage;
     
     PageNumber i = 0;
@@ -179,6 +200,9 @@ void memory_print_alloc_map()
                 break;
             case MemoryTypeFirmware:
                 printf("F");
+                break;
+            case MemoryTypePageLookupTable:
+                printf("L");
                 break;
             default:
                 printf("?");

@@ -6,7 +6,7 @@
 
 extern int end; //defined in linker script
 
-MemoryDescriptor FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES] = {
+FirmwareMemoryMapItem FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES] = {
     {MemoryTypeFirmware,    0x0,                                                                0x1},       //Realmode interrupt vectors
     {MemoryTypeLoaderTemporary, BIOSCALLBUFFER/ARCH_PAGE_SIZE,                                  0x1},       //Real mode result buffer
     {MemoryTypeFree,        0x2,                                                                0x5},       //Free memory
@@ -22,7 +22,7 @@ void mem_i386_build_memory_map()
     FirmwareMemoryMap[5].PageCount = ((size_t)&end)/ARCH_PAGE_SIZE;         //TODO: page align?
     
     //NULL out the rest
-    memset(&FirmwareMemoryMap[6], 0, (MAX_MEMORY_MAP_ENTRIES-4) * sizeof(MemoryDescriptor));
+    memset(&FirmwareMemoryMap[6], 0, (MAX_MEMORY_MAP_ENTRIES-4) * sizeof(FirmwareMemoryMapItem));
     
     //TODO: Fallback to other methods for obtaining bios memory map
     mem_i386_e820_detect();
