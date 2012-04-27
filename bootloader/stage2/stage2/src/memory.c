@@ -1,12 +1,9 @@
 #include <memory.h>
-#include <arch.h>
 #include <lib.h>
 #include <print.h>
 
 #define min(a, b) \
     (a < b) ? (a) : (b)
-
-#define PAGENUM(addr)    ((PageNumber)(((Address)addr) / arch_get_page_size()))
 
 static PageNumber highestPhysicalPage = 0xFFFFFFFF, lowestPhysicalPage = 0x0;
 static PageLookupTableItem* pageLookupTable;
@@ -18,6 +15,7 @@ static const char* MemoryTypeNames[] = {
     "MemoryTypeLoaderExecutable",
     "MemoryTypeLoaderTemporary",
     "MemoryTypeLoaderStack",
+    "MemoryTypeLoaderHeap",
     "MemoryTypeFirmware",
     "MemoryTypePageLookupTable"
 };
@@ -100,8 +98,6 @@ void memory_init()
     PageNumber lookupTablePageLen = PAGENUM((usablePages * sizeof(PageLookupTableItem)) + arch_get_page_size());
     printf("MM: startpage: 0x%x plen: 0x%x\n", lookupTableStartPage, lookupTablePageLen);
     memory_mark_pages(lookupTableStartPage, lookupTablePageLen, MemoryTypePageLookupTable);
-    
-    memory_print_alloc_map();
 }
 
 PageNumber memory_count_usable_pages(FirmwareMemoryMapItem* map)
@@ -167,6 +163,41 @@ void memory_mark_pages(PageNumber start, PageNumber count, MemoryType type)
     }
 }
 
+PageNumber memory_find_available_pages(PageNumber count)
+{
+    PageNumber currentFree = 0;
+
+    //FIXME: slow, save hints and search from there... otherwise, we are just a fscking bootloader
+    for(PageNumber i = 0; i < highestPhysicalPage - lowestPhysicalPage; i++)
+    {
+        if(pageLookupTable[i].type == MemoryTypeFree)
+            currentFree++;
+        else
+            currentFree = 0;
+
+        if(currentFree >= count)
+            return lowestPhysicalPage + (i - currentFree + 1);
+    }
+
+    arch_panic("MM: memory_find_available_pages() tried to find 0x%x free pages, can't find enough", count);
+}
+
+void* memory_allocate(size_t s, MemoryType type)
+{
+    if(s <= 0)
+        arch_panic("MM: memory_allocate() size was <= 0");
+
+    PageNumber pagesNeeded = PAGEALIGN_UP(s) / arch_get_page_size();
+    printf("%x pages needed for memalloc\n", pagesNeeded);
+
+    PageNumber firstFreePage = memory_find_available_pages(pagesNeeded);
+    printf("allocating 0x%x pages beginning at 0x%x\n", pagesNeeded, firstFreePage);
+
+    memory_mark_pages(firstFreePage, pagesNeeded, type);
+
+    return (void*)(firstFreePage * arch_get_page_size());
+}
+
 void memory_print_alloc_map()
 {
     printf("Page lookup table at 0x%x\n", pageLookupTable);
@@ -198,6 +229,9 @@ void memory_print_alloc_map()
             case MemoryTypeLoaderStack:
                 printf("S");
                 break;
+            case MemoryTypeLoaderHeap:
+                printf("H");
+                break;
             case MemoryTypeFirmware:
                 printf("F");
                 break;
@@ -209,6 +243,7 @@ void memory_print_alloc_map()
                 break;
         }
     }
+    printf("\n");
 }
 
 

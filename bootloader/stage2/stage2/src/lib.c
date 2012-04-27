@@ -1,4 +1,32 @@
 #include <lib.h>
+#include <heap.h>
+#include <arch.h>
+
+static Heap* default_heap = NULL;
+
+void default_heap_init(void)
+{
+    if(default_heap)
+        return;
+
+    default_heap = heap_create(DEFAULT_HEAP_SIZE);
+}
+
+void* malloc(size_t len)
+{
+    if(!default_heap)
+        arch_panic("Tried to malloc() without initialized heap");
+
+    return heap_alloc(default_heap, len);
+}
+
+void free(void* p)
+{
+    if(!default_heap)
+        arch_panic("Tried to free() without initialized heap");
+
+    heap_free(default_heap, p);
+}
 
 void memset(void *dest, int val, size_t count)
 {

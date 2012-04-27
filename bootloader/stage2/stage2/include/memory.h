@@ -2,6 +2,11 @@
 #define _GXLDR_MEMORY_H_
 
 #include <types.h>
+#include <arch.h>
+
+#define PAGENUM(addr)           ((PageNumber)(((Address)addr) / arch_get_page_size()))
+#define PAGEALIGN_DOWN(addr)    (((Address)addr) & ~((arch_get_page_size()) - 1))
+#define PAGEALIGN_UP(addr)      PAGEALIGN_DOWN(((Address)addr) + (arch_get_page_size()) - 1)
 
 typedef enum {
     MemoryTypeFree,
@@ -10,6 +15,7 @@ typedef enum {
     MemoryTypeLoaderExecutable,
     MemoryTypeLoaderTemporary,
     MemoryTypeLoaderStack,
+    MemoryTypeLoaderHeap,
     MemoryTypeFirmware,
     MemoryTypePageLookupTable
 } MemoryType;
@@ -35,6 +41,10 @@ void memory_init(void);
 PageNumber memory_count_usable_pages(FirmwareMemoryMapItem* map);
 void* memory_find_page_lookup_table_location(PageNumber TotalPageCount, FirmwareMemoryMapItem* map);
 void memory_mark_pages(PageNumber start, PageNumber count, MemoryType type);
+PageNumber memory_find_available_pages(PageNumber count);
+void* memory_allocate(size_t s, MemoryType type);
+
 void memory_print_alloc_map(void);
+
 
 #endif

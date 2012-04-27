@@ -3,6 +3,8 @@
 
 #include <types.h>
 
+#define DEFAULT_HEAP_SIZE	1*1024*1024
+
 //gcc builtin va_list
 #define va_start(v,l) __builtin_va_start(v,l)
 #define va_arg(v,l)   __builtin_va_arg(v,l)
@@ -10,6 +12,10 @@
 #define va_copy(d,s)  __builtin_va_copy(d,s)
 typedef __builtin_va_list va_list;
 
+void default_heap_init(void);
+
+void* malloc(size_t len);
+void free(void* p);
 
 void memset(void *dest, int val, size_t count);
 size_t strlen(const char *str);
