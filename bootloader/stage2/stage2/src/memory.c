@@ -82,9 +82,9 @@ void memory_print_map(FirmwareMemoryMapItem* map)
 void memory_init()
 {
     PageNumber usablePages = memory_count_usable_pages(FirmwareMemoryMap);
-    printf("MM: Having %d usable physical pages. highest: 0x%x, lowest: 0x%x\n", usablePages, highestPhysicalPage, lowestPhysicalPage);
+    //printf("MM: Having %d usable physical pages. highest: 0x%x, lowest: 0x%x\n", usablePages, highestPhysicalPage, lowestPhysicalPage);
     void* tableLocation = memory_find_page_lookup_table_location(usablePages, FirmwareMemoryMap);
-    printf("MM: Page lookup table location: 0x%x\n", tableLocation);
+    //printf("MM: Page lookup table location: 0x%x\n", tableLocation);
     pageLookupTable = (PageLookupTableItem*)tableLocation;
     
     memory_mark_pages(lowestPhysicalPage, usablePages, MemoryTypeFirmware);
@@ -96,7 +96,7 @@ void memory_init()
     
     PageNumber lookupTableStartPage = PAGENUM(pageLookupTable);
     PageNumber lookupTablePageLen = PAGENUM((usablePages * sizeof(PageLookupTableItem)) + arch_get_page_size());
-    printf("MM: startpage: 0x%x plen: 0x%x\n", lookupTableStartPage, lookupTablePageLen);
+    //printf("MM: startpage: 0x%x plen: 0x%x\n", lookupTableStartPage, lookupTablePageLen);
     memory_mark_pages(lookupTableStartPage, lookupTablePageLen, MemoryTypePageLookupTable);
 }
 
@@ -188,10 +188,10 @@ void* memory_allocate(size_t s, MemoryType type)
         arch_panic("MM: memory_allocate() size was <= 0");
 
     PageNumber pagesNeeded = PAGEALIGN_UP(s) / arch_get_page_size();
-    printf("%x pages needed for memalloc\n", pagesNeeded);
+    //printf("%x pages needed for memalloc\n", pagesNeeded);
 
     PageNumber firstFreePage = memory_find_available_pages(pagesNeeded);
-    printf("allocating 0x%x pages beginning at 0x%x\n", pagesNeeded, firstFreePage);
+    //printf("allocating 0x%x pages beginning at 0x%x\n", pagesNeeded, firstFreePage);
 
     memory_mark_pages(firstFreePage, pagesNeeded, type);
 

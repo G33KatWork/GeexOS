@@ -44,13 +44,11 @@ Heap* heap_create(size_t MaxSize)
 
 	MaxSize = PAGEALIGN_UP(MaxSize);
 	heap = (Heap*)memory_allocate(MaxSize, MemoryTypeLoaderHeap);
-	printf("Creating heap at 0x%x\n", (uint32_t)heap);
 
 	heap->MaxSize = MaxSize;
 	heap->Freelist = NULL;
 
 	size_t dataSpace = MaxSize - sizeof(Heap) - sizeof(size_t);
-	printf("Heap has space for 0x%x bytes of usable space\n", dataSpace);
 
 	struct __freelist* firstBlock = (struct __freelist*)((Address)heap + sizeof(Heap));
 	firstBlock->sz = dataSpace;
