@@ -7,7 +7,14 @@ TARGET = stage2.exe
 # List C source files here.
 CCSOURCES = main.c lib.c print.c memory.c heap.c
 
-CCSOURCES += arch/i386/arch.c arch/i386/gdt.c arch/i386/idt.c arch/i386/exception.c arch/i386/serial.c arch/i386/print.c arch/i386/memory.c
+CCSOURCES += arch/i386/arch.c \
+			 arch/i386/gdt.c \
+			 arch/i386/idt.c \
+			 arch/i386/exception.c \
+			 arch/i386/serial.c \
+			 arch/i386/print.c \
+			 arch/i386/memory.c \
+			 arch/i386/biosdisk.c
 
 # List C++ source files here
 CXXSOURCES = 
@@ -30,7 +37,9 @@ OBJDIR = obj
 SRCDIR = src
 
 # C compiler flags
-CFLAGS += -ggdb -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99
+CFLAGS += -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99
+#TODO: add library support for security features below
+CFLAGS += -fno-stack-check -mno-stack-arg-probe -fno-stack-protector
 CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 			-Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
 			-Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
@@ -49,7 +58,9 @@ CXXFLAGS += $(addprefix -I,$(INCLUDES))
 ASFLAGS = -f win32 -ggdb
 
 # Linker flags
-LDFLAGS = -Map stage2.map --image-base 0x8000 --subsystem 0x10
+LDFLAGS = -Map stage2.map --image-base 0x8000 --subsystem 0x10 -nostdlib
+#uncomment following line to strip binary
+#LDFLAGS += -s
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)

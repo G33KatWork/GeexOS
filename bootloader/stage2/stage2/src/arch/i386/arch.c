@@ -6,6 +6,7 @@
 #include <arch/i386/print.h>
 #include <arch/i386/serial.h>
 #include <arch/i386/memory.h>
+#include <arch/i386/biosdisk.h>
 
 void arch_machine_setup()
 {
@@ -15,6 +16,11 @@ void arch_machine_setup()
     idt_init();
     
     mem_i386_build_memory_map();
+}
+
+void arch_disksystem_setup()
+{
+    biosdisk_i386_initialize();
 }
 
 //TODO: make configurable which devices are used

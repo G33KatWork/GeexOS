@@ -273,6 +273,7 @@ class MBR:
       if partition.active:
         activeByte = 0x80
       
+      #TODO: calculate real CHS values
       if index == 0:
         (chs_start1, chs_start2, chs_start3) = self.__calcCHSValue(0, 1, 1)
       else:

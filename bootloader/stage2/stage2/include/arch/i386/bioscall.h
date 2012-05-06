@@ -15,6 +15,18 @@ typedef struct
   uint32_t edx;
 } bios_int_registers;
 
+#define EFLAGS_CARRY            (1<<0)
+#define EFLAGS_PARITY           (1<<2)
+#define EFLAGS_ADJUST           (1<<4)
+#define EFLAGS_ZERO             (1<<6)
+#define EFLAGS_SIGN             (1<<7)
+#define EFLAGS_TRAP             (1<<8)
+#define EFLAGS_INTERRUPT        (1<<9)
+#define EFLAGS_DIRECTION        (1<<10)
+#define EFLAGS_OVERFLOW         (1<<11)
+
+#define EFLAGS_IS_SET(flags, flag) ((flags & flag) != 0)
+
 //Also defined in realmode.S!
 #define GXLDR_RMODE_STACKTOP    0x7000
 #define GXLDR_RMODE_STACKSIZE   0x1000
