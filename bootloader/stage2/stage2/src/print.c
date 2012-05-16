@@ -100,7 +100,7 @@ static inline void __format_add_bin(buffer_t *buf, size_t len, int64_t value, ui
    }
 }
 
-static inline void __format_add_dec(buffer_t *buf, size_t len, int32_t value)
+static inline void __format_add_dec(buffer_t *buf, size_t len, int64_t value)
 {
    char     rep[24];
    buffer_t dec;
@@ -188,6 +188,9 @@ size_t vsnprintf(char *buffer, size_t len, const char *format, va_list params)
 	 } else if(c == 'd'){
 	    int64_t value = va_arg(params, int32_t);
 	    __format_add_dec(&buf, len, value);
+    } else if(c == 'D'){
+       int64_t value = va_arg(params, int64_t);
+       __format_add_dec(&buf, len, value);
 	 } else if(c == 'x'){
 	    uint64_t value = va_arg(params, uint32_t);
 	    __format_add_hex(&buf, len, value);

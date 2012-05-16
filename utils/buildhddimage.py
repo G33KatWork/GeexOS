@@ -10,7 +10,7 @@
 #         {
 #             "active": true,
 #             "startSector": 63,
-#             "endSector": 204800,
+#             "size": 204800,
 #             "type": 6,
 #             "fstype": "fat16",
 #             "mbrCodeFile": "/path/to/partition/mbr.bin",
@@ -62,7 +62,7 @@ def main(argv):
 
   i = 0
   for partition in partdefinition["partitions"]:
-    m.setPartition(i, PrimaryPartition(partition["startSector"], partition["endSector"], partition["type"], partition["active"]))
+    m.setPartition(i, PrimaryPartition(partition["startSector"], partition["size"], partition["type"], partition["active"]))
     i += 1
   
   print "-> Writing MBR to file"
@@ -75,7 +75,12 @@ def main(argv):
   i = 0
   for partition in partdefinition["partitions"]:
     if partition["fstype"] != None:
-      fs.createFilesystem(i, partition["fstype"], partition["mbrCodeFile"])
+      if partition.has_key("mbrCodeFile"):
+        partitionBootRecord = partition["mbrCodeFile"]
+      else:
+        partitionBootRecord = None
+
+      fs.createFilesystem(i, partition["fstype"], partitionBootRecord)
     i += 1
   
   #HACK HACK
@@ -86,7 +91,7 @@ def main(argv):
   print "-> Copying files to partitions"
   i = 0
   for partition in partdefinition["partitions"]:
-    if partition["filesToCopy"] != None:
+    if partition.has_key("filesToCopy"):
       target = fs.mountFilesystem(i)
       
       for fileToCopy in partition["filesToCopy"]:
@@ -230,9 +235,9 @@ class MacOSFilesystemCreator:
 
 
 class PrimaryPartition:
-  def __init__(self, startSector, endSector, type, active):
+  def __init__(self, startSector, size, type, active):
     self.startSector = startSector
-    self.endSector = endSector
+    self.size = size
     self.type = type
     self.active = active
 
@@ -286,7 +291,7 @@ class MBR:
         chs_start1, chs_start2, chs_start3,
         partition.type,
         chs_end1, chs_end2, chs_end3,
-        partition.startSector, partition.endSector
+        partition.startSector, partition.size
       )
       
       index += 1

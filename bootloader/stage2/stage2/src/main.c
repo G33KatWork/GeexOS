@@ -2,6 +2,7 @@
 #include <arch.h>
 #include <print.h>
 #include <memory.h>
+#include <disk.h>
 
 int kmain(void);
 
@@ -17,7 +18,9 @@ int kmain()
     
     memory_init();
     default_heap_init();
-    arch_disksystem_setup();
+    disk_init();
+
+    disk_printdevices();
 
     //memory_print_alloc_map();
     

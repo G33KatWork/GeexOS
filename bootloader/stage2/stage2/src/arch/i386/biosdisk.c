@@ -1,21 +1,36 @@
 #include <arch/i386/biosdisk.h>
 #include <arch/i386/bioscall.h>
+#include <arch/i386/mbr_partmap.h>
 
 #include <lib.h>
 #include <arch.h>
 #include <print.h>
 
-void biosdisk_i386_initialize(void)
+typedef bool (*detect_partitions)(DiskDevice*);
+detect_partitions partmap_handlers[] = {
+	mbr_detectPartitions,
+};
+
+void biosdisk_i386_initialize(AddDiskDeviceCallback cb)
 {
 	//detect floppies
 	for(int floppy = 0; floppy < 2; floppy++) {
-		bootdisk_i386_reset_controller(floppy);
+		biosdisk_i386_reset_controller(floppy);
 
 		DiskType t = biosdisk_i386_get_disk_type(floppy);
 		if(t == DISKTYPE_FLOPPY || t == DISKTYPE_FLOPPY_CHANGEDETECT)
 		{
-			//do smth
+			DiskDevice* dev = (DiskDevice*)malloc(sizeof(DiskDevice));
+			memset(dev, 0, sizeof(DiskDevice));
+			snprintf(dev->name, sizeof(dev->name), "fd(%d)", floppy);
+			dev->type = DEVICETYPE_FLOPPY;
+			dev->diskNumber = floppy;
+			dev->read_sectors = disk_interface_read_sectors;
+			dev->get_disk_geometry = disk_interface_get_disk_geometry;
+			INIT_LIST_HEAD(&dev->partitions);
+
 			printf("Detected floppy at drive num 0x%x with type %x\n", floppy, t);
+			cb(dev);
 		}
 	}
 
@@ -24,14 +39,30 @@ void biosdisk_i386_initialize(void)
 		DiskType t = biosdisk_i386_get_disk_type(hdd);
 		if(t == DISKTYPE_FIXED)
 		{
+			DiskDevice* dev = (DiskDevice*)malloc(sizeof(DiskDevice));
+			memset(dev, 0, sizeof(DiskDevice));
+			snprintf(dev->name, sizeof(dev->name), "hd(%d)", hdd - 0x80);
+			dev->type = DEVICETYPE_HDD;
+			dev->diskNumber = hdd - 0x80;
+			dev->read_sectors = disk_interface_read_sectors;
+			dev->get_disk_geometry = disk_interface_get_disk_geometry;
+			INIT_LIST_HEAD(&dev->partitions);
+
+			for(uint32_t i = 0; i < sizeof(partmap_handlers) / sizeof(detect_partitions); i++)
+			{
+				if(partmap_handlers[i](dev))
+					break;
+			}
+
 			printf("Detected hdd at drive num 0x%x with type %x\n", hdd, t);
+			cb(dev);
 		}
 	}
 
 	//TODO: detect cdroms
 }
 
-bool bootdisk_i386_reset_controller(uint8_t driveNumber)
+bool biosdisk_i386_reset_controller(uint8_t driveNumber)
 {
 	bios_int_registers regs;
 	memset(&regs, 0, sizeof(bios_int_registers));
@@ -79,7 +110,8 @@ bool biosdisk_i386_get_disk_geometry(uint8_t driveNumber, DiskGeometry* geometry
 	{
 		geometry->Cylinders = extParams.Cylinders;
 		geometry->Heads = extParams.Heads;
-		geometry->Sectors = extParams.Sectors;
+		geometry->SectorsPerTrack = extParams.Sectors;
+		geometry->TotalLBASectors = extParams.TotalLBASectors;
 		geometry->BytesPerSector = extParams.BytesPerSector;
 
 		return true;
@@ -102,7 +134,8 @@ bool biosdisk_i386_get_disk_geometry(uint8_t driveNumber, DiskGeometry* geometry
 		c++;
 		geometry->Cylinders = c;
 		geometry->Heads = ((regs.ebx & 0xFF00) >> 8) + 1;
-		geometry->Sectors = (regs.ecx & 0xFF) & 0x3F;
+		geometry->SectorsPerTrack = (regs.ecx & 0xFF) & 0x3F;
+		geometry->TotalLBASectors = geometry->Cylinders * geometry->Heads * geometry->SectorsPerTrack;
 		geometry->BytesPerSector = 512;
 
 		return true;
@@ -181,7 +214,7 @@ bool biosdisk_i386_read_lba(uint8_t driveNumber, uint64_t startSector, uint32_t 
 			return true;
 
 		printf("WARN: LBA disk read failed. Retrying...\n");
-		bootdisk_i386_reset_controller(driveNumber);
+		biosdisk_i386_reset_controller(driveNumber);
 	}
 	
 	printf("ERR: LBA disk read failed.\n");
@@ -201,23 +234,23 @@ bool biosdisk_i386_read_chs(uint8_t driveNumber, uint64_t startSector, uint32_t 
 
    	while(sectorCount)
    	{
-   		uint8_t physicalSector = 1 + (uint8_t)(startSector32 % g.Sectors);
-   		uint8_t physicalHead = (uint8_t)((startSector32 / g.Sectors) % g.Heads);
-   		uint32_t physicalTrack = (uint32_t)((startSector32 / g.Sectors) / g.Heads);
+   		uint8_t physicalSector = 1 + (uint8_t)(startSector32 % g.SectorsPerTrack);
+   		uint8_t physicalHead = (uint8_t)((startSector32 / g.SectorsPerTrack) % g.Heads);
+   		uint32_t physicalTrack = (uint32_t)((startSector32 / g.SectorsPerTrack) / g.Heads);
 
    		//printf("CHS Read from \nCylinder %x\nHead %x\nSector %x\n", physicalTrack, physicalHead, physicalSector);
 
    		if(physicalSector > 1)
    		{
-   			if(sectorCount >= (uint32_t)(g.Sectors - (physicalSector - 1)))
-   				numberOfSectorsToRead = (g.Sectors) - (physicalSector - 1);
+   			if(sectorCount >= (uint32_t)(g.SectorsPerTrack - (physicalSector - 1)))
+   				numberOfSectorsToRead = (g.SectorsPerTrack) - (physicalSector - 1);
    			else
    				numberOfSectorsToRead = sectorCount;
    		}
    		else
    		{
-   			if(sectorCount >= g.Sectors)
-   				numberOfSectorsToRead = g.Sectors;
+   			if(sectorCount >= g.SectorsPerTrack)
+   				numberOfSectorsToRead = g.SectorsPerTrack;
    			else
    				numberOfSectorsToRead = sectorCount;
    		}
@@ -228,8 +261,8 @@ bool biosdisk_i386_read_chs(uint8_t driveNumber, uint64_t startSector, uint32_t 
    		if (
    			physicalHead >= g.Heads ||
    			physicalTrack >= g.Cylinders ||
-   			(numberOfSectorsToRead + physicalSector) > (g.Sectors + 1) ||
-   			physicalSector > g.Sectors
+   			(numberOfSectorsToRead + physicalSector) > (g.SectorsPerTrack + 1) ||
+   			physicalSector > g.SectorsPerTrack
    		)
    		{
    			printf("ERR: CHS Disk read parameters exceed geometry limits\n");
@@ -254,7 +287,7 @@ bool biosdisk_i386_read_chs(uint8_t driveNumber, uint64_t startSector, uint32_t 
 				break;
 
 			printf("WARN: LBA disk read failed. Retrying...\n");
-			bootdisk_i386_reset_controller(driveNumber);
+			biosdisk_i386_reset_controller(driveNumber);
 			continue;
 		}
 
@@ -270,4 +303,22 @@ bool biosdisk_i386_read_chs(uint8_t driveNumber, uint64_t startSector, uint32_t 
    	}
 
    	return true;
+}
+
+bool disk_interface_read_sectors(struct DiskDevice_* device, uint64_t startSector, uint32_t sectorCount, void* buffer)
+{
+	int diskNumber = device->diskNumber;
+	if(device->type == DEVICETYPE_HDD)
+		diskNumber += 0x80;
+
+	return biosdisk_i386_read_sectors(diskNumber, startSector, sectorCount, buffer);
+}
+
+bool disk_interface_get_disk_geometry(struct DiskDevice_* device, DiskGeometry* geometry)
+{
+	int diskNumber = device->diskNumber;
+	if(device->type == DEVICETYPE_HDD)
+		diskNumber += 0x80;
+
+	return biosdisk_i386_get_disk_geometry(diskNumber, geometry);
 }

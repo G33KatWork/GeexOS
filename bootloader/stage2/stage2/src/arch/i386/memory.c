@@ -22,7 +22,7 @@ void mem_i386_build_memory_map()
     FirmwareMemoryMap[5].PageCount = ((size_t)&end)/ARCH_PAGE_SIZE;         //TODO: page align?
     
     //NULL out the rest
-    memset(&FirmwareMemoryMap[6], 0, (MAX_MEMORY_MAP_ENTRIES-4) * sizeof(FirmwareMemoryMapItem));
+    memset(&FirmwareMemoryMap[6], 0, (MAX_MEMORY_MAP_ENTRIES-6) * sizeof(FirmwareMemoryMapItem));
     
     //TODO: Fallback to other methods for obtaining bios memory map
     mem_i386_e820_detect();

@@ -1,6 +1,7 @@
 #include <arch.h>
 #include <lib.h>
 #include <print.h>
+#include <disk.h>
 #include <arch/i386/gdt.h>
 #include <arch/i386/idt.h>
 #include <arch/i386/print.h>
@@ -18,9 +19,9 @@ void arch_machine_setup()
     mem_i386_build_memory_map();
 }
 
-void arch_disksystem_setup()
+void arch_disksystem_setup(AddDiskDeviceCallback cb)
 {
-    biosdisk_i386_initialize();
+    biosdisk_i386_initialize(cb);
 }
 
 //TODO: make configurable which devices are used

@@ -2,6 +2,7 @@
 #define _GXLDR_ARCH_I386_BIOSDISK_H_
 
 #include <types.h>
+#include <disk.h>
 
 struct INT13_LBA_Packet {
 	uint8_t Size;
@@ -13,20 +14,13 @@ struct INT13_LBA_Packet {
 	uint32_t LBAStartSectorHigh;
 } __attribute__((packed));
 
-//TODO: move to general disk read module:
-typedef struct {
-	uint32_t Heads;
-	uint32_t Cylinders;
-	uint32_t Sectors;
-	uint32_t BytesPerSector;
-} DiskGeometry;
-
 struct _ExtendedDiskParameters {
 	uint16_t Size;
 	uint16_t Flags;
 	uint32_t Cylinders;
 	uint32_t Heads;
 	uint32_t Sectors;
+	uint64_t TotalLBASectors;
 	uint16_t BytesPerSector;
 	uint32_t EDDPTR;
 } __attribute__((packed));
@@ -40,9 +34,9 @@ typedef enum {
 	DISKTYPE_DETECTION_ERROR = -1
 } DiskType;
 
-void biosdisk_i386_initialize(void);
+void biosdisk_i386_initialize(AddDiskDeviceCallback cb);
 
-bool bootdisk_i386_reset_controller(uint8_t driveNumber);
+bool biosdisk_i386_reset_controller(uint8_t driveNumber);
 bool biosdisk_i386_extendedmode_supported(uint8_t driveNumber);
 bool biosdisk_i386_get_disk_geometry(uint8_t driveNumber, DiskGeometry* geometry);
 bool biosdisk_i386_get_extended_drive_parameters(uint8_t driveNumber, ExtendedDiskParameters* parameters);
@@ -52,5 +46,9 @@ bool biosdisk_i386_read_sectors(uint8_t driveNumber, uint64_t startSector, uint3
 
 bool biosdisk_i386_read_lba(uint8_t driveNumber, uint64_t startSector, uint32_t sectorCount, void* buffer);
 bool biosdisk_i386_read_chs(uint8_t driveNumber, uint64_t startSector, uint32_t sectorCount, void* buffer);
+
+/* Disk interface functions */
+bool disk_interface_read_sectors(struct DiskDevice_* device, uint64_t startSector, uint32_t sectorCount, void* buffer);
+bool disk_interface_get_disk_geometry(struct DiskDevice_* device, DiskGeometry* geometry);
 
 #endif

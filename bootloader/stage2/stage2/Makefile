@@ -5,7 +5,7 @@ include $(SRC)/build/base.mak
 TARGET = stage2.exe
 
 # List C source files here.
-CCSOURCES = main.c lib.c print.c memory.c heap.c
+CCSOURCES = main.c lib.c print.c memory.c heap.c disk.c
 
 CCSOURCES += arch/i386/arch.c \
 			 arch/i386/gdt.c \
@@ -14,7 +14,9 @@ CCSOURCES += arch/i386/arch.c \
 			 arch/i386/serial.c \
 			 arch/i386/print.c \
 			 arch/i386/memory.c \
-			 arch/i386/biosdisk.c
+			 arch/i386/biosdisk.c \
+			 arch/i386/mbr_partmap.c \
+			 arch/i386/math_support.c
 
 # List C++ source files here
 CXXSOURCES = 
