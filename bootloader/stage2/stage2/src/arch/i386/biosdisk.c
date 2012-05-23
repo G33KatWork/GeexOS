@@ -6,7 +6,7 @@
 #include <arch.h>
 #include <print.h>
 
-typedef bool (*detect_partitions)(DiskDevice*);
+typedef bool (*detect_partitions)(DiskDevice*, AddDiskDeviceCallback);
 detect_partitions partmap_handlers[] = {
 	mbr_detectPartitions,
 };
@@ -27,7 +27,6 @@ void biosdisk_i386_initialize(AddDiskDeviceCallback cb)
 			dev->diskNumber = floppy;
 			dev->read_sectors = disk_interface_read_sectors;
 			dev->get_disk_geometry = disk_interface_get_disk_geometry;
-			INIT_LIST_HEAD(&dev->partitions);
 
 			printf("Detected floppy at drive num 0x%x with type %x\n", floppy, t);
 			cb(dev);
@@ -46,11 +45,10 @@ void biosdisk_i386_initialize(AddDiskDeviceCallback cb)
 			dev->diskNumber = hdd - 0x80;
 			dev->read_sectors = disk_interface_read_sectors;
 			dev->get_disk_geometry = disk_interface_get_disk_geometry;
-			INIT_LIST_HEAD(&dev->partitions);
 
 			for(uint32_t i = 0; i < sizeof(partmap_handlers) / sizeof(detect_partitions); i++)
 			{
-				if(partmap_handlers[i](dev))
+				if(partmap_handlers[i](dev, cb))
 					break;
 			}
 

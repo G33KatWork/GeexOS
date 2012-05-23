@@ -38,7 +38,7 @@ static bool mbr_isValid(MBR* mbr, uint64_t totalSectors)
 	return valid;
 }
 
-bool mbr_detectPartitions(struct DiskDevice_* device)
+bool mbr_detectPartitions(struct DiskDevice_* device, AddDiskDeviceCallback cb)
 {
 	DiskGeometry geometry;
 	if(!device->get_disk_geometry(device, &geometry))
@@ -62,16 +62,37 @@ bool mbr_detectPartitions(struct DiskDevice_* device)
 			continue;
 
 		//TODO: handle extended partitions
-		Partition* part = (Partition*)malloc(sizeof(Partition));
-		memset(part, 0, sizeof(Partition));
-		part->disk = device;
+		DiskDevice* part = (DiskDevice*)malloc(sizeof(DiskDevice));
+		memset(part, 0, sizeof(DiskDevice));
+		part->parentDevice = device;
 		part->startLBA = LE_TO_HOST32(mbr->Partition[i].StartingLBA);
 		part->endLBA = LE_TO_HOST32(mbr->Partition[i].StartingLBA) + LE_TO_HOST32(mbr->Partition[i].SizeInLBA) - 1;
-		part->partitionNumber = i;
+		part->diskNumber = i;
+		part->type = DEVICETYPE_PARTITION;
+		part->read_sectors = mbr_read_sectors;
+		part->get_disk_geometry = mbr_get_disk_geometry;
 		snprintf(part->name, sizeof(part->name), "hd(%d,%d)", device->diskNumber, i);
 
-		list_add(&part->Link, &device->partitions);
+		cb(part);
 	}
 
 	return true;
+}
+
+bool mbr_read_sectors(DiskDevice* device, uint64_t startSector, uint32_t sectorCount, void* buffer)
+{
+	if(device->type != DEVICETYPE_PARTITION)
+		return false;
+
+	if(!device->parentDevice)
+		return false;
+
+	//FIXME: check if read is in bounds of this partition
+
+	return device->parentDevice->read_sectors(device->parentDevice, startSector + device->startLBA, sectorCount, buffer);
+}
+
+bool mbr_get_disk_geometry(DiskDevice* device, DiskGeometry* geometry)
+{
+	return device->parentDevice->get_disk_geometry(device->parentDevice, geometry);
 }

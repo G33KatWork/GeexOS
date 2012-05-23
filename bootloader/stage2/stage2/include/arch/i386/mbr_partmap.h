@@ -2,6 +2,7 @@
 #define _GXLDR_ARCH_I386_MBR_PARTMAP_H_
 
 #include <types.h>
+#include <disk.h>
 
 struct DiskDevice_;
 
@@ -45,6 +46,10 @@ typedef struct {
 
 #pragma pack()
 
-bool mbr_detectPartitions(struct DiskDevice_* device);
+bool mbr_detectPartitions(struct DiskDevice_* device, AddDiskDeviceCallback cb);
+
+//disk read callbacks
+bool mbr_read_sectors(struct DiskDevice_* device, uint64_t startSector, uint32_t sectorCount, void* buffer);
+bool mbr_get_disk_geometry(struct DiskDevice_* device, DiskGeometry* geometry);
 
 #endif

@@ -50,6 +50,29 @@ char* strcpy(char *dest, const char *src)
 	return dest;
 }
 
+int strcmp(const char *s1, const char *s2)
+{
+    while (*s1 != 0 && *s1 == *s2)
+        s1++, s2++;
+
+    if (*s1 == 0 || *s2 == 0)
+        return (unsigned char) *s1 - (unsigned char) *s2;
+    
+    return *s1 - *s2;
+}
+
+char* strchr(const char *s, int c)
+{
+    for (;;)
+    {
+        if (*s == c)
+            return (char *) s;
+        if (*s == 0)
+            return 0;
+        s++;
+    }
+}
+
 void* memcpy(void *dest, const void* src, size_t count)
 {
     char *d = (char *)dest;
@@ -89,4 +112,20 @@ void* memmove(void *dest, const void* src, size_t count)
     }
     
     return dest;
+}
+
+int memcmp(const void *s1, const void *s2, size_t len)
+{
+    const unsigned char *sp1, *sp2;
+    
+    sp1 = s1;
+    sp2 = s2;
+    
+    while (len != 0 && *sp1 == *sp2)
+        sp1++, sp2++, len--;
+
+    if (len == 0)
+        return 0;
+    
+    return *sp1 - *sp2;
 }

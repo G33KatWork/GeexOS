@@ -3,6 +3,7 @@
 #include <print.h>
 #include <memory.h>
 #include <disk.h>
+#include <fs.h>
 
 int kmain(void);
 
@@ -19,8 +20,11 @@ int kmain()
     memory_init();
     default_heap_init();
     disk_init();
+    fs_init();
 
     disk_printdevices();
+
+    open("hd(0,0)/GXLDR");
 
     //memory_print_alloc_map();
     
