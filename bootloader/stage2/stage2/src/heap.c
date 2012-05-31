@@ -155,7 +155,7 @@ void heap_free(Heap* heap, void* p)
 	char *cp1, *cp2, *cpnew;
 
 	/* ISO C says free(NULL) must be a no-op */
-	if (p == 0)
+	if (p == NULL)
 		return;
 
 	cpnew = p;
