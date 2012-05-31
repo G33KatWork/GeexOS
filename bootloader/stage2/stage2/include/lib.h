@@ -20,8 +20,11 @@ void free(void* p);
 void memset(void *dest, int val, size_t count);
 size_t strlen(const char *str);
 
+char tolower(char c);
+
 char* strcpy(char *dest, const char *src);
-int strcmp (const char *s1, const char *s2);
+int strcmp(const char *s1, const char *s2);
+int stricmp(const char *s1, const char *s2);
 char* strchr(const char *s, int c);
 void* memcpy(void *dest, const void* src, size_t count);
 void* memmove(void *dest, const void* src, size_t count);
