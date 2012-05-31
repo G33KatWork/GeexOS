@@ -13,6 +13,18 @@
                 {
                     "source": "bootloader/stage2/stage2.bin",
                     "destination": "GXLDR"
+                },
+                {
+                    "source": "utils/bin2hex.pl",
+                    "destination": "somedir/afile.txt"
+                },
+                {
+                    "source": "utils/buildhddimage.py",
+                    "destination": "file.foo"
+                },
+                {
+                    "source": "utils/buildhddimage.py",
+                    "destination": "bar"
                 }
             ]
         },
