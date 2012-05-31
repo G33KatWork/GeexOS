@@ -89,13 +89,37 @@ bool biosdisk_i386_extendedmode_supported(uint8_t driveNumber)
 
 bool biosdisk_i386_read_sectors(uint8_t driveNumber, uint64_t startSector, uint32_t sectorCount, void* buffer)
 {
-	if((Address)buffer > 0x100000)
-		arch_panic("Can't perform a disk read into a buffer above 1M");
+	//if((Address)buffer > 0x100000)
+	//	arch_panic("Can't perform a disk read into a buffer above 1M. Buffer is at 0x%x\n", buffer);
 
-	if(biosdisk_i386_extendedmode_supported(driveNumber))
-		return biosdisk_i386_read_lba(driveNumber, startSector, sectorCount, buffer);
+	if((Address)buffer > 0x100000)
+	{
+		//FIXME: HACKHACK do this in a loop to read more than 64k
+		//read 64k into the bios buffer in low memory and then copy it over
+
+		DiskGeometry geometry;
+		if(!biosdisk_i386_get_disk_geometry(driveNumber, &geometry))
+			return false;
+
+		if(sectorCount * geometry.BytesPerSector > BIOSCALLBUFFER_SIZE)
+			arch_panic("Can't perform a disk read into a buffer above 1M with more than 64K at once");
+
+		bool ret;
+		if(biosdisk_i386_extendedmode_supported(driveNumber))
+			ret = biosdisk_i386_read_lba(driveNumber, startSector, sectorCount, (void*)BIOSCALLBUFFER);
+		else
+			ret = biosdisk_i386_read_chs(driveNumber, startSector, sectorCount, (void*)BIOSCALLBUFFER);
+
+		memcpy(buffer, (void*)BIOSCALLBUFFER, sectorCount * geometry.BytesPerSector);
+		return ret;
+	}
 	else
-		return biosdisk_i386_read_chs(driveNumber, startSector, sectorCount, buffer);
+	{
+		if(biosdisk_i386_extendedmode_supported(driveNumber))
+			return biosdisk_i386_read_lba(driveNumber, startSector, sectorCount, buffer);
+		else
+			return biosdisk_i386_read_chs(driveNumber, startSector, sectorCount, buffer);
+	}
 }
 
 bool biosdisk_i386_get_disk_geometry(uint8_t driveNumber, DiskGeometry* geometry)
