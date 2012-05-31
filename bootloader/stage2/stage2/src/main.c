@@ -24,7 +24,48 @@ int kmain()
 
     disk_printdevices();
 
-    open("hd(0,0)/GXLDR");
+    FILE* file = open("hd(0,0)/GXLDR");
+    if(file)
+    {
+      printf("File seems successfully opened...\n");
+      
+
+      printf("Reading 0x10000 bytes...\n");
+      uint8_t* buffer = malloc(0x100);
+      size_t r = read(file, buffer, 0x100);
+      printf("Read returned %x\n", r);
+      printf("First few bytes: %x %x %x %x\n", buffer[0], buffer[1], buffer[2], buffer[3]);
+
+      seek(file, -1000, SEEK_END);
+
+      r = read(file, buffer, 0x100);
+      printf("Read returned %x\n", r);
+      printf("First few bytes: %x %x %x %x\n", buffer[0], buffer[1], buffer[2], buffer[3]);
+    }
+      
+
+    
+
+    /*FILE* file2 = open("hd(0,0)/SOMEDIR/AFILE.TXT");
+    if(file2)
+      printf("File 2 seems successfully opened...\n");
+    else
+      printf("file2? Nope...\n");
+
+    FILE* file3 = open("hd(0,0)/FILE.FOO");
+    if(file3)
+      printf("File 3 seems successfully opened...\n");
+    else
+      printf("file3? Nope...\n");
+
+    FILE* file4 = open("hd(0,0)/BaR");
+    if(file4)
+      printf("File 4 seems successfully opened...\n");
+    else
+      printf("file4? Nope...\n");*/
+
+    //close(file);
+    //close(file2);
 
     //memory_print_alloc_map();
     

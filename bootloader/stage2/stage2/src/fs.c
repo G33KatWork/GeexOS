@@ -16,8 +16,10 @@ void fs_init()
 	INIT_LIST_HEAD(&FsMountList);
 }
 
-FILE open(const char* path)
+FILE* open(const char* path)
 {
+	printf("FS: opening %s\n", path);
+
 	char* filename = strchr(path, ')');
 	if(!filename)
 		return 0;
@@ -28,13 +30,25 @@ FILE open(const char* path)
 	memset(devicename, 0, filename - path + 1);
 	memcpy(devicename, path, filename - path);
 
-	printf("Opening disk device %s\n", devicename);
+	//skip leading slash or backslash
+	if(*filename == '\\' || *filename == '/')
+		filename++;
 
-	//TODO: search in mounts... if not found, search for fs and create mount (see below)
+	printf("Opening file %s disk device %s\n", filename, devicename);
 
+	FilesystemMount *mount;
+	list_for_each_entry(mount, &FsMountList, Link) {
+		if(strcmp(devicename, mount->Device->name) == 0)
+		{
+			printf("FS on device %s already mounted\n", devicename);
+			return mount->fsops->open(filename, mount);
+		}
+	}
+
+	//Device not mounted yet, try to do that
 	DiskDevice* device = disk_getDeviceByName(devicename);
 	if(!device)
-		return 0;
+		return NULL;
 
 	FilesystemMount* fsmount = NULL;
 	for(uint32_t i = 0; i < sizeof(filesystem_handlers) / sizeof(filesystem_mount); i++)
@@ -52,5 +66,56 @@ FILE open(const char* path)
 
 	list_add(&fsmount->Link, &FsMountList);
 
-	return 1;
+	return fsmount->fsops->open(filename, fsmount);
+}
+
+bool close(FILE* f)
+{
+	if(f)
+		return f->mount->fsops->close(f);
+
+	return false;
+}
+
+void seek(FILE* f, long offset, SeekMode m)
+{
+	if(f)
+		f->mount->fsops->seek(f, offset, m);
+}
+
+size_t read(FILE* f, void* buffer, size_t s)
+{
+	if(f)
+		return f->mount->fsops->read(f, buffer, s);
+
+	return 0;
+}
+
+uint32_t fs_getNumPathParts(const char* path)
+{
+	size_t i;
+	uint32_t num;
+
+	for(i = 0, num = 0; i < strlen(path); i++)
+	{
+		if(path[i] == '\\' || path[i] == '/')
+			num++;
+	}
+	num++;
+
+	return num;
+}
+
+void fs_getFirstElementFromPath(const char* path, char* buffer)
+{
+	size_t i;
+	for(i = 0; i < strlen(path); i++)
+	{
+		if(path[i] == '\\' || path[i] == '/')
+			break;
+		else
+			buffer[i] = path[i];
+	}
+
+	buffer[i] = 0;
 }
