@@ -97,6 +97,8 @@ def main(argv):
       for fileToCopy in partition["filesToCopy"]:
         #TODO: create subdirectories on partition
         print "-> Copying from %s to %s" % (fileToCopy["source"], fileToCopy["destination"])
+        if not os.path.exists(os.path.dirname(os.path.join(target, fileToCopy["destination"]))):
+          os.makedirs(os.path.dirname(os.path.join(target, fileToCopy["destination"])))
         shutil.copyfile(fileToCopy["source"], os.path.join(target, fileToCopy["destination"]))
     i += 1
 
