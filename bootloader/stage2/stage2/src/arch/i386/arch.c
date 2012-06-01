@@ -8,6 +8,7 @@
 #include <arch/i386/serial.h>
 #include <arch/i386/memory.h>
 #include <arch/i386/biosdisk.h>
+#include <arch/i386/cpuid.h>
 
 void arch_machine_setup()
 {
@@ -17,6 +18,15 @@ void arch_machine_setup()
     idt_init();
     
     mem_i386_build_memory_map();
+
+    printf("GXLDR machine setup done.\n");
+    char cpuvendor[17] = {0};
+    char cpubrand[49] = {0};
+
+    cpuid_getVendorString(cpuvendor);
+    cpuid_getBrandString(cpubrand);
+
+    printf("Running on %s - %s\n", cpuvendor, cpubrand);
 }
 
 void arch_disksystem_setup(AddDiskDeviceCallback cb)
@@ -53,5 +63,10 @@ void arch_panic(const char* format, ...)
 size_t arch_get_page_size()
 {
     return ARCH_PAGE_SIZE;
+}
+
+void arch_initialize_virtual_memory()
+{
+    
 }
 
