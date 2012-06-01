@@ -108,7 +108,7 @@ FilesystemMount* fat_mount(DiskDevice* device)
 
 void fat_umount(FilesystemMount* mount)
 {
-	//FIXME: free directory cache
+	//FIXME: close all open files
 	if(mount)
 	{
 		FatVolumeInformation* volume = fat_get_device_context(mount);

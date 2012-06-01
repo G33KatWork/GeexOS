@@ -2,7 +2,7 @@
 #include <heap.h>
 #include <arch.h>
 
-static Heap* default_heap = NULL;
+Heap* default_heap = NULL;
 
 void default_heap_init(void)
 {

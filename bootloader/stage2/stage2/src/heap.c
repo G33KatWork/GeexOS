@@ -47,6 +47,8 @@ Heap* heap_create(size_t MaxSize)
 
 	heap->MaxSize = MaxSize;
 	heap->Freelist = NULL;
+	heap->allocationCount = 0;
+	heap->deallocationCount = 0;
 
 	size_t dataSpace = MaxSize - sizeof(Heap) - sizeof(size_t);
 
@@ -73,6 +75,8 @@ void* heap_alloc(Heap* heap, size_t len)
 
 	if (len < sizeof(struct __freelist) - sizeof(size_t))
 		len = sizeof(struct __freelist) - sizeof(size_t);
+
+	heap->allocationCount++;
 
 	/*
 	 * First, walk the free list and try finding a chunk that
@@ -158,6 +162,8 @@ void heap_free(Heap* heap, void* p)
 	if (p == NULL)
 		return;
 
+	heap->deallocationCount++;
+
 	cpnew = p;
 	cpnew -= sizeof(size_t);
 	fpnew = (struct __freelist *)cpnew;
@@ -215,6 +221,8 @@ void heap_printFreelist(Heap* heap)
 {
 	struct __freelist *fp1;
 	int i;
+
+	printf("Allocation count: %d, DeallocationCount: %d\n", heap->allocationCount, heap->deallocationCount);
 
 	if (!heap->Freelist) {
 		printf("no free list\n");

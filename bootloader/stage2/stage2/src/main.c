@@ -4,12 +4,14 @@
 #include <memory.h>
 #include <disk.h>
 #include <fs.h>
+#include <heap.h>
 
 int kmain(void);
 
 //extern int start;
 //extern int end;
 
+extern Heap* default_heap;
 int kmain()
 {
     arch_machine_setup();
@@ -23,6 +25,8 @@ int kmain()
     fs_init();
 
     disk_printdevices();
+
+    heap_printFreelist(default_heap);
 
     FILE* file = open("hd(0,0)/GXLDR");
     if(file)
@@ -41,10 +45,17 @@ int kmain()
       r = read(file, buffer, 0x100);
       printf("Read returned %x\n", r);
       printf("First few bytes: %x %x %x %x\n", buffer[0], buffer[1], buffer[2], buffer[3]);
-    }
-      
 
+      free(buffer);
+    }
     
+    heap_printFreelist(default_heap);
+
+    close(file);
+    fs_shutdown();
+    disk_destroy();
+
+    heap_printFreelist(default_heap);
 
     /*FILE* file2 = open("hd(0,0)/SOMEDIR/AFILE.TXT");
     if(file2)

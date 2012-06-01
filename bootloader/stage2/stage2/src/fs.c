@@ -16,6 +16,14 @@ void fs_init()
 	INIT_LIST_HEAD(&FsMountList);
 }
 
+void fs_shutdown()
+{
+	FilesystemMount *mount;
+	list_for_each_entry(mount, &FsMountList, Link) {
+		mount->umount(mount);
+	}
+}
+
 FILE* open(const char* path)
 {
 	printf("FS: opening %s\n", path);
@@ -47,6 +55,7 @@ FILE* open(const char* path)
 
 	//Device not mounted yet, try to do that
 	DiskDevice* device = disk_getDeviceByName(devicename);
+	free(devicename);
 	if(!device)
 		return NULL;
 

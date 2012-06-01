@@ -13,6 +13,8 @@ struct __freelist {
 typedef struct {
 	size_t MaxSize;
 	struct __freelist* Freelist;
+	uint32_t allocationCount;
+	uint32_t deallocationCount;
 } Heap;
 
 Heap* heap_create(size_t MaxSize);

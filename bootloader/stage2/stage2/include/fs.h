@@ -38,6 +38,7 @@ struct FilesystemMount_ {
 typedef struct FilesystemMount_ FilesystemMount;
 
 void fs_init(void);
+void fs_shutdown(void);
 
 //file functions
 FILE* open(const char* path);
