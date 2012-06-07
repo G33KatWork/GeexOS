@@ -7,7 +7,7 @@
 extern int end; //defined in linker script
 
 FirmwareMemoryMapItem FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES] = {
-    {MemoryTypeFirmware,    0x0,                                                                0x1},       //Realmode interrupt vectors
+    {MemoryTypeLoaderTemporary, 0x0,                                                            0x1},       //Realmode interrupt vectors
     {MemoryTypeLoaderTemporary, BIOSCALLBUFFER/ARCH_PAGE_SIZE,                                  0x1},       //Real mode result buffer
     {MemoryTypeFree,        0x2,                                                                0x5},       //Free memory
     {MemoryTypeLoaderStack, (GXLDR_RMODE_STACKTOP-GXLDR_RMODE_STACKSIZE)/ARCH_PAGE_SIZE,        0x1},       //Real mode stack

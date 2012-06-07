@@ -8,6 +8,7 @@
 #include <arch/i386/serial.h>
 #include <arch/i386/memory.h>
 #include <arch/i386/biosdisk.h>
+#include <arch/i386/paging.h>
 #include <arch/i386/cpuid.h>
 
 void arch_machine_setup()
@@ -67,6 +68,31 @@ size_t arch_get_page_size()
 
 void arch_initialize_virtual_memory()
 {
+    if(cpuid_hasfeature(CPUID_FLAG_PAE, false))
+    {
+        printf("CPU has PAE support\n");
+        //TODO: implement PAE paging
+    }
+
+    paging_allocateNonPAE();
     
 }
 
+void arch_map_virtual_memory(Address physical, Address virtual, bool writable, bool UNUSED(executable))
+{
+    //TDOO: if PAE is enabled, call PAE function
+
+    paging_mapVirtualMemoryNonPAE(physical, virtual, false, writable);
+}
+
+void arch_map_virtual_memory_range(Address physical, Address virtual, size_t len, bool writable, bool UNUSED(executable))
+{
+    //TDOO: if PAE is enabled, call PAE function
+
+    paging_mapRangeNonPAE(physical, virtual, len, false, writable);
+}
+
+void arch_enable_paging()
+{
+    paging_set_page_directory(pageDirectory);
+}

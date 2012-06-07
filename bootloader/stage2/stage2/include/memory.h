@@ -17,7 +17,11 @@ typedef enum {
     MemoryTypeLoaderStack,
     MemoryTypeLoaderHeap,
     MemoryTypeFirmware,
-    MemoryTypePageLookupTable
+    MemoryTypePageLookupTable,
+    MemoryTypeGeexOSPageStructures,
+    MemoryTypeGeexOSKernelEnvironmentInformation,
+    MemoryTypeGeexOSKernelExecutable,
+    MemoryTypeGeexOSKernelStack
 } MemoryType;
 
 typedef struct {

@@ -12,7 +12,9 @@ CCSOURCES = main.c \
 			heap.c \
 			disk.c \
 			fs/fat.c \
-			fs.c
+			fs.c \
+			loaders/geexos.c \
+			exeformats/peloader.c
 
 CCSOURCES += arch/i386/arch.c \
 			 arch/i386/gdt.c \
@@ -23,7 +25,8 @@ CCSOURCES += arch/i386/arch.c \
 			 arch/i386/memory.c \
 			 arch/i386/biosdisk.c \
 			 arch/i386/mbr_partmap.c \
-			 arch/i386/math_support.c
+			 arch/i386/math_support.c \
+			 arch/i386/paging.c
 
 # List C++ source files here
 CXXSOURCES = 

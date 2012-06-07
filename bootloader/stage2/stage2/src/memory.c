@@ -17,7 +17,11 @@ static const char* MemoryTypeNames[] = {
     "MemoryTypeLoaderStack",
     "MemoryTypeLoaderHeap",
     "MemoryTypeFirmware",
-    "MemoryTypePageLookupTable"
+    "MemoryTypePageLookupTable",
+    "MemoryTypeGeexOSPageStructures",
+    "MemoryTypeGeexOSKernelEnvironmentInformation",
+    "MemoryTypeGeexOSKernelExecutable",
+    "MemoryTypeGeexOSKernelStack"
 };
 
 uint32_t memory_add_map_entry(FirmwareMemoryMapItem* map, uint32_t maxEntries, PageNumber base, PageNumber size, MemoryType type)
@@ -218,7 +222,7 @@ void memory_print_alloc_map()
                 printf("-");
                 break;
             case MemoryTypeSpecial:
-                printf("S");
+                printf("+");
                 break;
             case MemoryTypeLoaderExecutable:
                 printf("X");
@@ -237,6 +241,18 @@ void memory_print_alloc_map()
                 break;
             case MemoryTypePageLookupTable:
                 printf("L");
+                break;
+            case MemoryTypeGeexOSPageStructures:
+                printf("P");
+                break;
+            case MemoryTypeGeexOSKernelEnvironmentInformation:
+                printf("A");
+                break;
+            case MemoryTypeGeexOSKernelExecutable:
+                printf("K");
+                break;
+            case MemoryTypeGeexOSKernelStack:
+                printf("C");
                 break;
             default:
                 printf("?");

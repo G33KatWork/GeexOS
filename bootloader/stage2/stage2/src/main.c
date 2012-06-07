@@ -5,6 +5,7 @@
 #include <disk.h>
 #include <fs.h>
 #include <heap.h>
+#include <loaders/geexos.h>
 
 int kmain(void);
 
@@ -17,97 +18,21 @@ int kmain()
     arch_machine_setup();
     printf("GXLDR Stage 2\r\n");
     
-    //memory_print_map(FirmwareMemoryMap);
+    memory_print_map(FirmwareMemoryMap);
     
     memory_init();
     default_heap_init();
     disk_init();
     fs_init();
 
-    disk_printdevices();
+    //TODO: parse a config here or drop to a shell
 
-    heap_printFreelist(default_heap);
-
-    FILE* file = open("hd(0,0)/GXLDR");
-    if(file)
-    {
-      printf("File seems successfully opened...\n");
-      
-
-      printf("Reading 0x10000 bytes...\n");
-      uint8_t* buffer = malloc(0x100);
-      size_t r = read(file, buffer, 0x100);
-      printf("Read returned %x\n", r);
-      printf("First few bytes: %x %x %x %x\n", buffer[0], buffer[1], buffer[2], buffer[3]);
-
-      seek(file, -1000, SEEK_END);
-
-      r = read(file, buffer, 0x100);
-      printf("Read returned %x\n", r);
-      printf("First few bytes: %x %x %x %x\n", buffer[0], buffer[1], buffer[2], buffer[3]);
-
-      free(buffer);
-    }
-    
-    heap_printFreelist(default_heap);
-
-    close(file);
-    fs_shutdown();
-    disk_destroy();
-
-    heap_printFreelist(default_heap);
-
-    /*FILE* file2 = open("hd(0,0)/SOMEDIR/AFILE.TXT");
-    if(file2)
-      printf("File 2 seems successfully opened...\n");
-    else
-      printf("file2? Nope...\n");
-
-    FILE* file3 = open("hd(0,0)/FILE.FOO");
-    if(file3)
-      printf("File 3 seems successfully opened...\n");
-    else
-      printf("file3? Nope...\n");
-
-    FILE* file4 = open("hd(0,0)/BaR");
-    if(file4)
-      printf("File 4 seems successfully opened...\n");
-    else
-      printf("file4? Nope...\n");*/
-
-    //close(file);
-    //close(file2);
+    loader_loadGeexOS();
 
     //memory_print_alloc_map();
-    
-    /*DiskGeometry g;
-    if(biosdisk_i386_get_disk_geometry(0, &g))
-    {
-        printf("BIOS disk read succeeded :)\n");
-        printf("%x Cylinders\n%x Heads\n%x Sectors\n%x BytesPerSector\n", g.Cylinders, g.Heads, g.Sectors, g.BytesPerSector);
-    }
-    else
-        printf("BIOS disk geometry get failed :(\n");*/
 
-    /*if(biosdisk_i386_get_disk_geometry(0x80, &g))
-    {
-        printf("BIOS disk read succeeded :)\n");
-        printf("%x Cylinders\n%x Heads\n%x Sectors\n%x BytesPerSector\n", g.Cylinders, g.Heads, g.Sectors, g.BytesPerSector);
-    }
-    else
-        printf("BIOS disk geometry get failed :(\n");*/
-
-    /*#define NUMBLOCKS 6
-    uint8_t buffer[NUMBLOCKS * 512];
-    //uint8_t* buffer = malloc(1440*1024);
-    if(biosdisk_i386_read_sectors(0x0, 50, NUMBLOCKS, buffer))
-    {
-        printf("BIOS disk read succeeded :)\n");
-    }
-    else
-    {
-        printf("BIOS disk read failed :(\n");
-    }*/
+    fs_shutdown();
+    disk_destroy();
 
     return 0;
 }
