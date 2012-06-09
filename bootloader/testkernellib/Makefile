@@ -2,22 +2,22 @@ SRC                 := ../..
 include $(SRC)/build/base.mak
 
 # Target file name.
-TARGET = testkernel.exe
+TARGET = testkernellib.dll
 
 # List C source files here.
-CCSOURCES = main.c
+CCSOURCES = lib.c
 
 # List C++ source files here
 CXXSOURCES = 
 
 # List Assembler to be assembled with NASM here
-ASOURCES = start.S
+ASOURCES = 
 
 # Additional include paths to consider
-INCLUDES = ../testkernellib/include
+INCLUDES =	include
 
 # Additional static libs to link agains
-STATICLIBS = ../testkernellib/testkernellib_imp.a
+STATICLIBS = 
 
 # Folder for object files
 OBJDIR = obj
@@ -31,28 +31,20 @@ CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 			-Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
 			-Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
 			-Wstrict-prototypes #-Wconversion
-CFLAGS += -DARCH_X86 -DDEBUG
+CFLAGS += -DARCH_X86 -DDEBUG -DTESTKERNELLIB_EXPORTS
 CFLAGS += $(addprefix -I,$(INCLUDES))
-
-# C++ compiler flags
-CXXFLAGS += -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
-CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
-			-Wwrite-strings -Wredundant-decls -Winline -Wno-long-long -fvisibility=default
-CXXFLAGS += -DARCH_X86 -DDEBUG
-CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
 # NASM flags
 ASFLAGS = -f win32 -ggdb
 
 # Linker flags
-LDFLAGS = -s -Map testkernel.map -entry _start --image-base 0xC0000000 \
-			--subsystem native --disable-auto-import --exclude-all-symbols \
-			-nostdlib -pie
+LDFLAGS = -s -Map testkernellib.map --out-implib testkernellib_imp.a \
+			-entry _DllEntry --disable-auto-import --exclude-all-symbols \
+			-nostdlib -shared --enable-auto-image-base
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)
 OBJECTS += $(GASOURCES:%.s=%.o)
-OBJECTS += $(CXXSOURCES:%.cpp=%.o)
 OBJECTS += $(CCSOURCES:%.c=%.o)
 
 # define output-directories
@@ -78,28 +70,18 @@ $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
 
 # Cleaning
 clean:
-	$(Q)$(RM) -f $(TARGET)
+	$(Q)$(RM) -f $(TARGET) testkernellib_imp.a
 	$(Q)$(RM) -f disasm
-	$(Q)$(RM) -f testkernel.map
+	$(Q)$(RM) -f testkernellib.map
 	$(Q)$(RM) -rf obj
 
 distclean: clean
 
 # Header dependency generation
-$(OBJDIR)/%.d: $(SRCDIR)/%.cpp
-	$(call cmd_msg,DEPENDS,$@)
-	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(CXX) $(CXXFLAGS) -MM -MG -MP -MT '$(@:%.d=%.o)' $< > $@
-
 $(OBJDIR)/%.d: $(SRCDIR)/%.c
 	$(call cmd_msg,DEPENDS,$@)
 	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(CC) $(CFLAGS) -MM -MG -MP -MT '$(@:%.d=%.o)' $< > $@
-
-# Compile cpp files
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	$(call cmd_msg,CXX,$<)
-	$(Q)$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Compile c files
 $(OBJDIR)/%.o: $(SRCDIR)/%.c

@@ -1,3 +1,5 @@
+#include <testkernellib/lib.h>
+
 int kmain(void);
 
 char bigArray[1024*1024];
@@ -14,7 +16,7 @@ int kmain()
 
     for(int i = 0; i < sizeof(bigArray); i++)
     {
-    	bigArray[i] = 0;
+    	bigArray[i] = libfunc(i);
     }
     
     return 0;

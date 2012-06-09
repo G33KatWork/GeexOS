@@ -136,7 +136,6 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	if(ntHeaders->OptionalHeader.ImageBase != virtualBase)
 		pe_relocateImage(loadedImageInfo, virtualBase - ntHeaders->OptionalHeader.ImageBase);
 
-	//TODO: relocation necessary? if yes, do it
 	//TODO: parse import- and export table
 	//TODO: runtime linking
 

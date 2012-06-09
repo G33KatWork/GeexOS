@@ -1,7 +1,7 @@
 SRC                 := ..
 include $(SRC)/build/base.mak
 
-SUBTARGETS = hello mbr stage1_fat16 stage2 testkernel
+SUBTARGETS = hello mbr stage1_fat16 stage2 testkernellib testkernel
 DIRS = $(SUBTARGETS:%=%.dir)
 
 # Main targets

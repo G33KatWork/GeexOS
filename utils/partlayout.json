@@ -17,6 +17,10 @@
                 {
                     "source": "bootloader/testkernel/testkernel.exe",
                     "destination": "system/gxoskrnl.exe"
+                },
+                {
+                    "source": "bootloader/testkernellib/testkernellib.dll",
+                    "destination": "system/testkernellib.dll"
                 }
             ]
         },
