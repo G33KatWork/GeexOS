@@ -128,3 +128,15 @@ void fs_getFirstElementFromPath(const char* path, char* buffer)
 
 	buffer[i] = 0;
 }
+
+const char* fs_getFilename(const char* path)
+{
+	const char *filename = strrchr(path, '/');
+    
+    if(filename == NULL)
+        filename = path;
+    else
+        filename++;
+
+    return filename;
+}

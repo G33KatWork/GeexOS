@@ -49,5 +49,6 @@ size_t read(FILE* f, void* buffer, size_t s);
 //path helper functions
 uint32_t fs_getNumPathParts(const char* path);
 void fs_getFirstElementFromPath(const char* path, char* buffer);
+const char* fs_getFilename(const char* path);
 
 #endif
