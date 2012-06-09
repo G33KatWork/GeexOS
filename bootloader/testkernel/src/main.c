@@ -1,5 +1,7 @@
 int kmain(void);
 
+char bigArray[1024*1024];
+
 int kmain()
 {
     unsigned char *videoram = (unsigned char *) 0xb8000;
@@ -9,6 +11,13 @@ int kmain()
 
     videoram[0] = 65;
     videoram[1] = 0x07;
+
+    for(int i = 0; i < sizeof(bigArray); i++)
+    {
+    	bigArray[i] = 0;
+    }
     
     return 0;
 }
+
+

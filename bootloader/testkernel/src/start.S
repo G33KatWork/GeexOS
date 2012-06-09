@@ -1,10 +1,10 @@
 [BITS 32]
-global start
+global _start
 extern _kmain
 
 section .text
 
-start:
+_start:
   cli
   call _kmain
 

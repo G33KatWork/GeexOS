@@ -45,7 +45,7 @@ CXXFLAGS += $(addprefix -I,$(INCLUDES))
 ASFLAGS = -f win32 -ggdb
 
 # Linker flags
-LDFLAGS = -Map testkernel.map --image-base 0xC0000000 --subsystem 1 -nostdlib
+LDFLAGS = -S -Map testkernel.map -entry _start --image-base 0xC0000000 --subsystem native --exclude-all-symbols -nostdlib -pie
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)
