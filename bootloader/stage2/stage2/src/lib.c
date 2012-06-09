@@ -58,6 +58,19 @@ char* strcpy(char *dest, const char *src)
 	return dest;
 }
 
+char* strncpy(char *s1, const char *s2, size_t n)
+{
+	char *dest = s1;
+	
+	for (; *s2 && n; n--)
+		*s1++ = *s2++;
+	
+	while (n--)
+		*s1++ = 0;
+	
+	return dest;
+}
+
 int strcmp(const char *s1, const char *s2)
 {
 	while (*s1 != 0 && *s1 == *s2)
@@ -90,6 +103,20 @@ char* strchr(const char *s, int c)
 			return 0;
 		s++;
 	}
+}
+
+char* strrchr(const char *s, int c)
+{
+	size_t i = 0;
+	while (s[i] != 0)
+		i++;
+
+	do
+		if (s[i] == c)
+			return (char *) s + i;
+	while (i-- != 0);
+
+	return 0;
 }
 
 void* memcpy(void *dest, const void* src, size_t count)

@@ -23,9 +23,11 @@ size_t strlen(const char *str);
 char tolower(char c);
 
 char* strcpy(char *dest, const char *src);
+char* strncpy(char *s1, const char *s2, size_t n);
 int strcmp(const char *s1, const char *s2);
 int stricmp(const char *s1, const char *s2);
 char* strchr(const char *s, int c);
+char* strrchr(const char *s, int c);
 void* memcpy(void *dest, const void* src, size_t count);
 void* memmove(void *dest, const void* src, size_t count);
 int memcmp(const void *s1, const void *s2, size_t len);
