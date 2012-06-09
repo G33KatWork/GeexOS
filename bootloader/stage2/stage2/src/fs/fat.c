@@ -337,17 +337,18 @@ bool fat_searchDirectoryForFile(FilesystemMount* mount, void* directoryContents,
 {
 	printf("FAT: searching directory for file %s on device %s\n", filename, mount->Device->name);
 
-	//TODO: handle long filenames
-	//char longNameBuffer[265];
+	char longNameBuffer[265];
 	char shortNameBuffer[20];
 	uint32_t currentEntry;
 
+	memset(longNameBuffer, 0, sizeof(longNameBuffer));
 	memset(shortNameBuffer, 0, sizeof(shortNameBuffer));
 
 	uint32_t entryCount = directorySize / sizeof(FatDirEntry);
 
 	for(currentEntry = 0; currentEntry < entryCount; directoryContents = (void*)(((FatDirEntry*)directoryContents) + 1))
 	{
+		FatLfnDirentry* curLfnEntry = (FatLfnDirentry*)directoryContents;
 		FatDirEntry* curEntry = (FatDirEntry*)directoryContents;
 		//FIXME: swap members... bla
 
@@ -358,27 +359,74 @@ bool fat_searchDirectoryForFile(FilesystemMount* mount, void* directoryContents,
 		//deleted file?
 		if(curEntry->Filename[0] == '\xE5')
 		{
+			memset(longNameBuffer, 0, sizeof(longNameBuffer));
 			memset(shortNameBuffer, 0, sizeof(shortNameBuffer));
 			continue;
 		}
 
-		//TODO: handle this
+		//handle long filenames
 		if(curEntry->Attributes == ATTR_LONG_NAME)
 		{
-			memset(shortNameBuffer, 0, sizeof(shortNameBuffer));
+			//entry marked as deleted?
+			if(curLfnEntry->SequenceNumber & 0x80)
+				continue;
+
+			curLfnEntry->SequenceNumber &= 0x3F;
+			curLfnEntry->SequenceNumber--;
+
+			if (curLfnEntry->Name0_4[0] != 0xFFFF)
+				longNameBuffer[0 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name0_4[0];
+			
+			if (curLfnEntry->Name0_4[1] != 0xFFFF)
+				longNameBuffer[1 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name0_4[1];
+			
+			if (curLfnEntry->Name0_4[2] != 0xFFFF)
+				longNameBuffer[2 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name0_4[2];
+			
+			if (curLfnEntry->Name0_4[3] != 0xFFFF)
+				longNameBuffer[3 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name0_4[3];
+			
+			if (curLfnEntry->Name0_4[4] != 0xFFFF)
+				longNameBuffer[4 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name0_4[4];
+			
+			if (curLfnEntry->Name5_10[0] != 0xFFFF)
+				longNameBuffer[5 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name5_10[0];
+			
+			if (curLfnEntry->Name5_10[1] != 0xFFFF)
+				longNameBuffer[6 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name5_10[1];
+			
+			if (curLfnEntry->Name5_10[2] != 0xFFFF)
+				longNameBuffer[7 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name5_10[2];
+			
+			if (curLfnEntry->Name5_10[3] != 0xFFFF)
+				longNameBuffer[8 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name5_10[3];
+			
+			if (curLfnEntry->Name5_10[4] != 0xFFFF)
+				longNameBuffer[9 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name5_10[4];
+			
+			if (curLfnEntry->Name5_10[5] != 0xFFFF)
+				longNameBuffer[10 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name5_10[5];
+			
+			if (curLfnEntry->Name11_12[0] != 0xFFFF)
+				longNameBuffer[11 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name11_12[0];
+
+			if (curLfnEntry->Name11_12[1] != 0xFFFF)
+				longNameBuffer[12 + (curLfnEntry->SequenceNumber * 13)] = (char)curLfnEntry->Name11_12[1];
+
 			continue;
 		}
 
 		//skip volume label
 		if(curEntry->Attributes & ATTR_VOLUMENAME)
 		{
+			memset(longNameBuffer, 0, sizeof(longNameBuffer));
 			memset(shortNameBuffer, 0, sizeof(shortNameBuffer));
 			continue;
 		}
 
 		fat_parseShortFilename(curEntry, shortNameBuffer);
 		//printf("FAT: Found file %s in a directory\n", shortNameBuffer);
-		if(stricmp(filename, shortNameBuffer) == 0)
+		if(stricmp(filename, shortNameBuffer) == 0 || stricmp(filename, longNameBuffer) == 0)
 		{
 			uint32_t startCluster = (curEntry->ClusterHigh << 16) | curEntry->ClusterLow;
 			printf("Found file %s with size 0x%x start cluster 0x%x\n", filename, curEntry->Size, startCluster);
@@ -390,6 +438,7 @@ bool fat_searchDirectoryForFile(FilesystemMount* mount, void* directoryContents,
 			return true;
 		}
 
+		memset(longNameBuffer, 0, sizeof(longNameBuffer));
 		memset(shortNameBuffer, 0, sizeof(shortNameBuffer));
 		continue;
 	}

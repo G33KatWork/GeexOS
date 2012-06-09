@@ -29,5 +29,6 @@ void loader_loadGeexOS()
 	//FIXME: this is only a hack for testing, get the entry point address from the list of loaded images later
 	typedef void (*entryPoint)(void);
 	entryPoint p = (entryPoint)kernelImageInfo->VirtualEntryPoint;
+	printf("Jumping into kernel\n");
 	p();
 }
