@@ -128,7 +128,7 @@ static inline void __format_add_dec(buffer_t *buf, size_t len, int64_t value)
 }
 
 static const char hexChars[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-static inline void __format_add_hex(buffer_t *buf, size_t len, int32_t value)
+static inline void __format_add_hex(buffer_t *buf, size_t len, uint64_t value)
 {
    char     rep[24];
    buffer_t dec;
@@ -194,7 +194,10 @@ size_t vsnprintf(char *buffer, size_t len, const char *format, va_list params)
 	 } else if(c == 'x'){
 	    uint64_t value = va_arg(params, uint32_t);
 	    __format_add_hex(&buf, len, value);
-	 } else {
+	 } else if(c == 'X'){
+       uint64_t value = va_arg(params, uint64_t);
+       __format_add_hex(&buf, len, value);
+    } else {
 	    __buf_add(&buf, len, c);
 	 }
 	 interp = false;
