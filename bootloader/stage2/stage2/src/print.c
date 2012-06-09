@@ -139,11 +139,11 @@ static inline void __format_add_hex(buffer_t *buf, size_t len, uint64_t value)
    dec.data.str = rep;
    dec.sz = 0;
 
-   if(value < 0)
+   /*if(value < 0)
    {
       __buf_add(buf, len, '-');
       value = -value;
-   }
+   }*/
 
    while(value)
    {
