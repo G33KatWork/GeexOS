@@ -119,6 +119,18 @@ char* strrchr(const char *s, int c)
 	return 0;
 }
 
+char* strcat(char *dst, const char *src)
+{
+    strcpy(strchr(dst, '\0'), src);
+    return dst;
+}
+
+char* strncat(char *dst, const char *src, size_t n)
+{
+    strncpy(strchr(dst, '\0'), src, n);
+    return dst;
+}
+
 void* memcpy(void *dest, const void* src, size_t count)
 {
 	char *d = (char *)dest;
