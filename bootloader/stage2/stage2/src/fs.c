@@ -140,3 +140,16 @@ const char* fs_getFilename(const char* path)
 
     return filename;
 }
+
+void fs_concatPath(char* first, const char* second, size_t buflen)
+{
+	if(!first || !second)
+		return;
+
+	char lastChar = first[strlen(first)-1];
+
+	if(lastChar != '/')
+		strncat(first, "/", buflen - strlen(first) - 1);
+
+	strncat(first, second, buflen - strlen(first) - 1);
+}

@@ -50,5 +50,6 @@ size_t read(FILE* f, void* buffer, size_t s);
 uint32_t fs_getNumPathParts(const char* path);
 void fs_getFirstElementFromPath(const char* path, char* buffer);
 const char* fs_getFilename(const char* path);
+void fs_concatPath(char* first, const char* second, size_t buflen);
 
 #endif
