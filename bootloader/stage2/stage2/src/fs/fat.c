@@ -310,7 +310,10 @@ bool fat_findFile(FilesystemMount* mount, const char* filename, FatFileInfo* fil
 			return false;
 
 		if(!fat_searchDirectoryForFile(mount, directoryBuffer, directorySize, pathPart, fileinfo))
+		{
+			free(directoryBuffer);
 			return false;
+		}
 
 		//Free the directory contents, fat_getDirectoryContents() allocated it
 		free(directoryBuffer);
