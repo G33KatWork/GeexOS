@@ -49,6 +49,7 @@ FILE* open(const char* path)
 		if(strcmp(devicename, mount->Device->name) == 0)
 		{
 			printf("FS on device %s already mounted\n", devicename);
+			free(devicename);
 			return mount->fsops->open(filename, mount);
 		}
 	}
