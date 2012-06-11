@@ -21,8 +21,12 @@ void paging_mapVirtualMemoryNonPAE(Address physical, Address virtual, bool userm
     //Allocate and assign new page table if necessary
     if(!((Address)(pageDirectory->page_tables[pdirIndex]) & 0x1))
     {
-        pageDirectory->page_tables[pdirIndex] = (page_table_t*)(((Address)(memory_allocate(sizeof(page_table_t), MemoryTypeGeexOSPageStructures))) | 3);
-        memset(pageDirectory->page_tables[pdirIndex], 0, sizeof(page_table_t));
+        printf("PAGING: Allocating new page table for index 0x%x\n", pdirIndex);
+        
+        void* newPageTbl = memory_allocate(sizeof(page_table_t), MemoryTypeGeexOSPageStructures);
+        memset(newPageTbl, 0, sizeof(page_table_t));
+
+        pageDirectory->page_tables[pdirIndex] = (page_table_t*)((Address)newPageTbl | 3);
     }
     
     //NOTE: This only works, because paging is still switched off
