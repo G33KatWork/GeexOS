@@ -94,15 +94,15 @@ bool biosdisk_i386_read_sectors(uint8_t driveNumber, uint64_t startSector, uint3
 
 	if((Address)buffer > 0x100000)
 	{
-		//FIXME: HACKHACK do this in a loop to read more than 64k
-		//read 64k into the bios buffer in low memory and then copy it over
+		//FIXME: HACKHACK do this in a loop to read more than 24k
+		//read 24k into the bios buffer in low memory and then copy it over
 
 		DiskGeometry geometry;
 		if(!biosdisk_i386_get_disk_geometry(driveNumber, &geometry))
 			return false;
 
 		if(sectorCount * geometry.BytesPerSector > BIOSCALLBUFFER_SIZE)
-			arch_panic("Can't perform a disk read into a buffer above 1M with more than 64K at once");
+			arch_panic("Can't perform a disk read into a buffer above 1M with more than 24K at once");
 
 		bool ret;
 		if(biosdisk_i386_extendedmode_supported(driveNumber))

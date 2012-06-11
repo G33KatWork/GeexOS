@@ -32,7 +32,7 @@ typedef struct
 #define GXLDR_RMODE_STACKSIZE   0x1000
 
 #define BIOSCALLBUFFER          0x1000
-#define BIOSCALLBUFFER_SIZE     0x10000
+#define BIOSCALLBUFFER_SIZE     6*0x1000
 #define BIOSCALLBUF_SEGMENT     0x100
 #define BIOSCALLBUF_OFFSET      0
 

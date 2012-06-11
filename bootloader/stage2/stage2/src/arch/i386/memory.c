@@ -8,8 +8,7 @@ extern int end; //defined in linker script
 
 FirmwareMemoryMapItem FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES] = {
     {MemoryTypeLoaderTemporary, 0x0,                                                            0x1},       //Realmode interrupt vectors
-    {MemoryTypeLoaderTemporary, BIOSCALLBUFFER/ARCH_PAGE_SIZE,                                  0x1},       //Real mode result buffer
-    {MemoryTypeFree,        0x2,                                                                0x5},       //Free memory
+    {MemoryTypeLoaderTemporary, BIOSCALLBUFFER/ARCH_PAGE_SIZE,                                  0x6},       //Real mode result buffer
     {MemoryTypeLoaderStack, (GXLDR_RMODE_STACKTOP-GXLDR_RMODE_STACKSIZE)/ARCH_PAGE_SIZE,        0x1},       //Real mode stack
     {MemoryTypeLoaderStack, (GXLDR_STACKTOP-GXLDR_STACKSIZE)/ARCH_PAGE_SIZE,                    0x1},       //Protected mode stack
 };
@@ -17,12 +16,12 @@ FirmwareMemoryMapItem FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES] = {
 void mem_i386_build_memory_map()
 {
     //Insert executable location
-    FirmwareMemoryMap[5].Type = MemoryTypeLoaderExecutable;
-    FirmwareMemoryMap[5].BasePage = GXLDR_EXEC_BASE/ARCH_PAGE_SIZE;
-    FirmwareMemoryMap[5].PageCount = ((size_t)&end)/ARCH_PAGE_SIZE;         //TODO: page align?
+    FirmwareMemoryMap[4].Type = MemoryTypeLoaderExecutable;
+    FirmwareMemoryMap[4].BasePage = GXLDR_EXEC_BASE/ARCH_PAGE_SIZE;
+    FirmwareMemoryMap[4].PageCount = ((size_t)&end)/ARCH_PAGE_SIZE;         //TODO: page align?
     
     //NULL out the rest
-    memset(&FirmwareMemoryMap[6], 0, (MAX_MEMORY_MAP_ENTRIES-6) * sizeof(FirmwareMemoryMapItem));
+    memset(&FirmwareMemoryMap[5], 0, (MAX_MEMORY_MAP_ENTRIES-5) * sizeof(FirmwareMemoryMapItem));
     
     //TODO: Fallback to other methods for obtaining bios memory map
     mem_i386_e820_detect();
