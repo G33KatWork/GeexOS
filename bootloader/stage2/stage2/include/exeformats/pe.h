@@ -3,6 +3,7 @@
 
 #include <types.h>
 
+#pragma pack(push,2)
 typedef struct _IMAGE_DOS_HEADER {  // DOS .EXE header
     uint16_t    Magic;             //'MZ'
     uint16_t    Cblp;
@@ -24,7 +25,9 @@ typedef struct _IMAGE_DOS_HEADER {  // DOS .EXE header
     uint16_t    Reserved2[10];
     uint32_t    PEHeader;
 } IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
+#pragma pack(pop)
 
+#pragma pack(push,4)
 typedef struct _IMAGE_FILE_HEADER {
     uint16_t    Machine;
     uint16_t    NumberOfSections;
@@ -282,6 +285,11 @@ typedef struct _IMAGE_THUNK_DATA32 {
     } u1;
 } IMAGE_THUNK_DATA32, *PIMAGE_THUNK_DATA32;
 
+#define IMAGE_GET_ORDINAL32(Ordinal) (Ordinal & 0xffff)
+#define IMAGE_ORDINAL_FLAG32 0x80000000
+#define IMAGE_THUNK_DATA_IS_ORDINAL32(Ordinal) ((Ordinal & IMAGE_ORDINAL_FLAG32) != 0)
+
+#pragma pack(push,8)
 typedef struct _IMAGE_THUNK_DATA64 {
     union {
         uint64_t ForwarderString;
@@ -289,7 +297,17 @@ typedef struct _IMAGE_THUNK_DATA64 {
         uint64_t Ordinal;
         uint64_t AddressOfData;
     } u1;
-} __attribute__((packed)) IMAGE_THUNK_DATA64, *PIMAGE_THUNK_DATA64;
+} IMAGE_THUNK_DATA64, *PIMAGE_THUNK_DATA64;
+#pragma pack(pop)
+
+#define IMAGE_GET_ORDINAL64(Ordinal) (Ordinal & 0xffff)
+#define IMAGE_ORDINAL_FLAG64 0x8000000000000000ULL
+#define IMAGE_SNAP_BY_ORDINAL64(Ordinal) ((Ordinal & IMAGE_ORDINAL_FLAG64) != 0)
+
+//TODO: define for 64 bit
+#define IMAGE_GET_ORDINAL IMAGE_GET_ORDINAL32
+#define PIMAGE_THUNK_DATA PIMAGE_THUNK_DATA32
+#define IMAGE_THUNK_DATA_IS_ORDINAL(Ordinal)  IMAGE_THUNK_DATA_IS_ORDINAL32(Ordinal)
 
 typedef struct _IMAGE_IMPORT_BY_NAME {
     uint16_t Hint;
@@ -391,5 +409,6 @@ typedef struct _IMAGE_TLS_DIRECTORY64 {
     uint32_t SizeOfZeroFill;
     uint32_t Characteristics;
 } IMAGE_TLS_DIRECTORY64, *PIMAGE_TLS_DIRECTORY64;
+#pragma pack(pop)
 
 #endif
