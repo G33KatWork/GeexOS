@@ -21,6 +21,9 @@ bool pe_resolveImports(LoadedImage* image);
 bool pe_relocateImage(LoadedImage* image, int64_t bias);
 void pe_printLoadedImages(void);
 
+bool pe_isImageLoaded(char* name, LoadedImage** imageInfo);
+void pe_setLibrarySearchPath(const char* path);
 PIMAGE_NT_HEADERS pe_getHeaders(void* base);
+void* pe_getDirectoryEntry(LoadedImage* image, uint16_t directoryIndex, size_t* directorySize);
 
 #endif

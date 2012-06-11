@@ -4,6 +4,8 @@
 
 LIST_HEAD(loadedImages);
 
+static const char* librarySearchPath;
+
 bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageInformation)
 {
 	IMAGE_DOS_HEADER dosHeaderTemp;
@@ -134,12 +136,14 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	list_add(&loadedImageInfo->Link, &loadedImages);
 
 	if(ntHeaders->OptionalHeader.ImageBase != virtualBase)
-		pe_relocateImage(loadedImageInfo, virtualBase - ntHeaders->OptionalHeader.ImageBase);
+		if(!pe_relocateImage(loadedImageInfo, virtualBase - ntHeaders->OptionalHeader.ImageBase))
+			return false;
 
 	//TODO: parse import- and export table
 	//TODO: runtime linking
 
-	pe_resolveImports(loadedImageInfo);
+	if(!pe_resolveImports(loadedImageInfo))
+		return false;
 
 	if(imageInformation)
 		*imageInformation = loadedImageInfo;
@@ -149,10 +153,94 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 
 bool pe_resolveImports(LoadedImage* image)
 {
-	PIMAGE_NT_HEADERS ntHeaders = pe_getHeaders((void*)image->PhysicalBase);
+	size_t importDirectorySize;
+	PIMAGE_IMPORT_DESCRIPTOR importDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)pe_getDirectoryEntry(image, IMAGE_DIRECTORY_ENTRY_IMPORT, &importDirectorySize);
 
-	IMAGE_DATA_DIRECTORY importDirectory = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
-	printf("PE: Import data directory is at 0x%x - Size: 0x%x\n", importDirectory.VirtualAddress, importDirectory.Size);
+	//loop through all imported images
+	for(;importDescriptor->Name != 0 && importDescriptor->FirstThunk != 0; importDescriptor++)
+	{
+		char* importName = (char*)(importDescriptor->Name + image->PhysicalBase);
+		printf("PE: handling import from %s\n", importName);
+
+		//if we are referencing to our own image, ignore it
+		if(stricmp(importName, image->Name) == 0)
+			continue;
+
+		//get or load referenced image
+		LoadedImage* importedImageInfo;
+		if(!pe_isImageLoaded(importName, &importedImageInfo))
+		{
+			printf("PE: imported library %s is not yet loaded, loading...\n", importName);
+
+			char fullPath[256] = {0};
+			strncpy(fullPath, librarySearchPath, 255);
+			fs_concatPath(fullPath, importName, 256);
+
+			if(!pe_loadFile(fullPath, MemoryTypeGeexOSKernelLibrary, &importedImageInfo))
+			{
+				printf("PE: Error loading imported library %s\n", importName);
+				return false;
+			}
+		}
+
+		//get export directory from imported dll
+		size_t exportDirectorySize;
+		PIMAGE_EXPORT_DIRECTORY exportDirectory = (PIMAGE_EXPORT_DIRECTORY)pe_getDirectoryEntry(importedImageInfo, IMAGE_DIRECTORY_ENTRY_EXPORT, &exportDirectorySize);
+		if(!exportDirectory)
+			return false;
+
+		printf("PE: export directory base: %x\n", exportDirectory->Base);
+
+		//loop through all import thunks inside this import descriptor
+		PIMAGE_THUNK_DATA importThunk = (PIMAGE_THUNK_DATA)(image->PhysicalBase + importDescriptor->FirstThunk);
+		while(importThunk->u1.AddressOfData != 0)
+		{
+			bool isOrdinalImport = IMAGE_THUNK_DATA_IS_ORDINAL(importThunk->u1.Ordinal);
+			printf("PE: handling import thunk 0x%x - import by ordinal: %s\n", importThunk->u1.Ordinal, isOrdinalImport?"true":"false");
+
+			uint32_t ordinal;
+
+			if(isOrdinalImport)
+				ordinal = IMAGE_GET_ORDINAL(importThunk->u1.Ordinal) - exportDirectory->Base;
+			else
+			{
+				PIMAGE_IMPORT_BY_NAME namedImport = (PIMAGE_IMPORT_BY_NAME)(importThunk->u1.AddressOfData + image->PhysicalBase);
+				printf("PE: named import: Hint: 0x%x - Name: %s\n", namedImport->Hint, namedImport->Name);
+
+				uint32_t* nameTable = (uint32_t*)(exportDirectory->AddressOfNames + importedImageInfo->PhysicalBase);
+				uint16_t* ordinalTable = (uint16_t*)(exportDirectory->AddressOfNameOrdinals + importedImageInfo->PhysicalBase);
+
+				uint16_t hint = namedImport->Hint;
+
+				char* exportName = (char*)(nameTable[hint] + importedImageInfo->PhysicalBase);
+				if(hint < exportDirectory->NumberOfNames && strcmp(exportName, namedImport->Name) == 0)
+					ordinal = ordinalTable[hint];
+				else
+				{
+					//FIXME: implement!
+					arch_panic("PE: Binary search for imports not implemented yet\n");
+					return false;
+				}
+			}
+
+			if(ordinal >= exportDirectory->NumberOfFunctions)
+			{
+				printf("PE: Determined imported ordinal 0x%x is invalid!\n", ordinal);
+				return false;
+			}
+
+			uint32_t* functionTable = (uint32_t*)(exportDirectory->AddressOfFunctions + importedImageInfo->PhysicalBase);
+			importThunk->u1.Function = (Address)(functionTable[ordinal] + importedImageInfo->VirtualBase);
+
+			printf("PE: determined function to be at 0x%x\n", (functionTable[ordinal] + importedImageInfo->VirtualBase));
+
+			//TODO: check forwarder
+
+			importThunk++;
+		}
+
+		printf("AddressOfFunctions: %x - AddressOfNames: %x - AddressOfNameOrdinals: %x\n", exportDirectory->AddressOfFunctions, exportDirectory->AddressOfNames, exportDirectory->AddressOfNameOrdinals);
+	}
 
 	return true;
 }
@@ -161,20 +249,13 @@ bool pe_relocateImage(LoadedImage* image, int64_t bias)
 {
 	printf("PE: Relocating image %s with bias 0x%X\n", image->Name, bias);
 	
-	PIMAGE_NT_HEADERS ntHeaders = pe_getHeaders((void*)image->PhysicalBase);
-	if(!ntHeaders)
-		return false;
+	size_t directorySize;
+	PIMAGE_BASE_RELOCATION RelocationDir = (PIMAGE_BASE_RELOCATION)pe_getDirectoryEntry(image, IMAGE_DIRECTORY_ENTRY_BASERELOC, &directorySize);
+	PIMAGE_BASE_RELOCATION RelocationEnd = (PIMAGE_BASE_RELOCATION)((Address)RelocationDir + directorySize);
 
-	if(ntHeaders->FileHeader.Characteristics & IMAGE_FILE_RELOCS_STRIPPED)
-		return false;
-
-	IMAGE_DATA_DIRECTORY relocationDirectory = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
-	
-	if(relocationDirectory.VirtualAddress == 0 || relocationDirectory.Size == 0)
+	//check if relocations are available
+	if(!RelocationDir)
 		return true;
-
-	PIMAGE_BASE_RELOCATION RelocationDir = (PIMAGE_BASE_RELOCATION)(image->PhysicalBase + relocationDirectory.VirtualAddress);
-	PIMAGE_BASE_RELOCATION RelocationEnd = (PIMAGE_BASE_RELOCATION)((Address)RelocationDir + relocationDirectory.Size);
 
 	//Process all blocks in the directory
 	while(RelocationDir < RelocationEnd && RelocationDir->SizeOfBlock > 0)
@@ -242,6 +323,28 @@ void pe_printLoadedImages()
 	}
 }
 
+bool pe_isImageLoaded(char* name, LoadedImage** imageInfo)
+{
+	LoadedImage* image;
+	list_for_each_entry(image, &loadedImages, Link) {
+		if(stricmp(name, image->Name) == 0)
+		{
+			if(imageInfo)
+				*imageInfo = image;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void pe_setLibrarySearchPath(const char* path)
+{
+	//TODO: allow more than one path
+	librarySearchPath = path;
+}
+
 PIMAGE_NT_HEADERS pe_getHeaders(void* base)
 {
 	if(!base)
@@ -258,4 +361,22 @@ PIMAGE_NT_HEADERS pe_getHeaders(void* base)
 		return NULL;
 
 	return ntHeaders;
+}
+
+void* pe_getDirectoryEntry(LoadedImage* image, uint16_t directoryIndex, size_t* directorySize)
+{
+	PIMAGE_NT_HEADERS ntHeaders = pe_getHeaders((void*)image->PhysicalBase);
+	if(!ntHeaders)
+		return NULL;
+
+	if(directoryIndex >= ntHeaders->OptionalHeader.NumberOfRvaAndSizes)
+		return NULL;
+
+	Address rva = ntHeaders->OptionalHeader.DataDirectory[directoryIndex].VirtualAddress;
+	if(rva == 0)
+		return NULL;
+
+	*directorySize = ntHeaders->OptionalHeader.DataDirectory[directoryIndex].Size;
+
+	return (void*)(image->PhysicalBase + rva);
 }

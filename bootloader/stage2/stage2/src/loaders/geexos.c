@@ -13,6 +13,8 @@ void loader_loadGeexOS()
 	
 	LoadedImage* kernelImageInfo;
 
+	pe_setLibrarySearchPath("hd(0,0)/system/");
+
 	//TODO: read kernel location from a config-file
 	if(!pe_loadFile("hd(0,0)/system/gxoskrnl.exe", MemoryTypeGeexOSKernelExecutable, &kernelImageInfo))
 		arch_panic("Error loading kernel pe file");
@@ -26,7 +28,6 @@ void loader_loadGeexOS()
 	//TODO: build loader block with memory map, loaded images, etc.
 
 	//TODO: setup a stack for the kernel
-	//FIXME: this is only a hack for testing, get the entry point address from the list of loaded images later
 	typedef void (*entryPoint)(void);
 	entryPoint p = (entryPoint)kernelImageInfo->VirtualEntryPoint;
 	printf("Jumping into kernel\n");

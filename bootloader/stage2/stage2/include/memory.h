@@ -21,7 +21,8 @@ typedef enum {
     MemoryTypeGeexOSPageStructures,
     MemoryTypeGeexOSKernelEnvironmentInformation,
     MemoryTypeGeexOSKernelExecutable,
-    MemoryTypeGeexOSKernelStack
+    MemoryTypeGeexOSKernelStack,
+    MemoryTypeGeexOSKernelLibrary
 } MemoryType;
 
 typedef struct {

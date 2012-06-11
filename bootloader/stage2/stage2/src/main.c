@@ -34,6 +34,8 @@ int kmain()
     fs_shutdown();
     disk_destroy();
 
+    heap_printFreelist(default_heap);
+
     return 0;
 }
 

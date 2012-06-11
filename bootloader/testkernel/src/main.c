@@ -14,9 +14,10 @@ int kmain()
     videoram[0] = 65;
     videoram[1] = 0x07;
 
-    for(int i = 0; i < sizeof(bigArray); i++)
+    for(unsigned int i = 0; i < sizeof(bigArray); i++)
     {
     	bigArray[i] = libfunc(i);
+        //bigArray[i] = 0;
     }
     
     return 0;

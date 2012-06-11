@@ -21,7 +21,8 @@ static const char* MemoryTypeNames[] = {
     "MemoryTypeGeexOSPageStructures",
     "MemoryTypeGeexOSKernelEnvironmentInformation",
     "MemoryTypeGeexOSKernelExecutable",
-    "MemoryTypeGeexOSKernelStack"
+    "MemoryTypeGeexOSKernelStack",
+    "MemoryTypeGeexOSKernelLibrary"
 };
 
 uint32_t memory_add_map_entry(FirmwareMemoryMapItem* map, uint32_t maxEntries, PageNumber base, PageNumber size, MemoryType type)
@@ -86,9 +87,9 @@ void memory_print_map(FirmwareMemoryMapItem* map)
 void memory_init()
 {
     PageNumber usablePages = memory_count_usable_pages(FirmwareMemoryMap);
-    //printf("MM: Having %d usable physical pages. highest: 0x%x, lowest: 0x%x\n", usablePages, highestPhysicalPage, lowestPhysicalPage);
+    printf("MM: Having %d usable physical pages. highest: 0x%x, lowest: 0x%x\n", usablePages, highestPhysicalPage, lowestPhysicalPage);
     void* tableLocation = memory_find_page_lookup_table_location(usablePages, FirmwareMemoryMap);
-    //printf("MM: Page lookup table location: 0x%x\n", tableLocation);
+    printf("MM: Page lookup table location: 0x%x\n", tableLocation);
     pageLookupTable = (PageLookupTableItem*)tableLocation;
     
     memory_mark_pages(lowestPhysicalPage, usablePages, MemoryTypeFirmware);
@@ -100,7 +101,7 @@ void memory_init()
     
     PageNumber lookupTableStartPage = PAGENUM(pageLookupTable);
     PageNumber lookupTablePageLen = PAGENUM((usablePages * sizeof(PageLookupTableItem)) + arch_get_page_size());
-    //printf("MM: startpage: 0x%x plen: 0x%x\n", lookupTableStartPage, lookupTablePageLen);
+    printf("MM: startpage: 0x%x plen: 0x%x\n", lookupTableStartPage, lookupTablePageLen);
     memory_mark_pages(lookupTableStartPage, lookupTablePageLen, MemoryTypePageLookupTable);
 }
 
@@ -253,6 +254,9 @@ void memory_print_alloc_map()
                 break;
             case MemoryTypeGeexOSKernelStack:
                 printf("C");
+                break;
+            case MemoryTypeGeexOSKernelLibrary:
+                printf("D");
                 break;
             default:
                 printf("?");
