@@ -217,9 +217,34 @@ bool pe_resolveImports(LoadedImage* image)
 					ordinal = ordinalTable[hint];
 				else
 				{
-					//FIXME: implement!
-					arch_panic("PE: Binary search for imports not implemented yet\n");
-					return false;
+					printf("PE: Hint didn't lead to anything, searching by name...\n");
+
+					uint32_t min = 0;
+					uint32_t max = exportDirectory->NumberOfNames-1;
+					uint32_t mid;
+
+					while(max >= min)
+					{
+						mid = (min + max)/2;
+						exportName = (char*)(nameTable[mid] + importedImageInfo->PhysicalBase);
+
+						int cmpresult = strcmp(exportName, namedImport->Name);
+
+						if(cmpresult > 0)
+							max = mid - 1;
+						else if(cmpresult < 0)
+							min = mid + 1;
+						else
+							break;
+					}
+
+					if(max < min)
+					{
+						printf("PE: Export %s not found\n", namedImport->Name);
+						return false;
+					}
+
+					ordinal = ordinalTable[mid];
 				}
 			}
 
