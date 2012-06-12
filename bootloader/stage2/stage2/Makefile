@@ -32,9 +32,10 @@ CCSOURCES += arch/i386/arch.c \
 CXXSOURCES = 
 
 # List Assembler to be assembled with NASM here
-ASOURCES = start.S
-
-ASOURCES += arch/i386/trap.S arch/i386/gdt_flush.S arch/i386/realmode.S
+ASOURCES = arch/i386/start.S \
+		   arch/i386/trap.S \
+		   arch/i386/gdt_flush.S \
+		   arch/i386/realmode.S
 
 # Additional include paths to consider
 INCLUDES =	include
