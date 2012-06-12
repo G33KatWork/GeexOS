@@ -23,4 +23,4 @@ doc/html
 .project
 .cproject
 oldcode
-
+*.sublime-*
