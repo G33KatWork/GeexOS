@@ -10,10 +10,13 @@
 #include <arch/i386/biosdisk.h>
 #include <arch/i386/paging.h>
 #include <arch/i386/cpuid.h>
+#include <arch/i386/gdbstub.h>
+
+static uint16_t serial_ports[] = {0, 0x3F8, 0x2F8, 0x3E8, 0x2E8};
 
 void arch_machine_setup()
 {
-    arch_i386_serial_setup();
+    gdbstub_i386_init();
     print_i386_clear();
     gdt_init();
     idt_init();
@@ -35,15 +38,33 @@ void arch_disksystem_setup(AddDiskDeviceCallback cb)
     biosdisk_i386_initialize(cb);
 }
 
-//TODO: make configurable which devices are used
-void arch_dbg_print(char* str)
+void arch_serial_setup(DBGPORT_RS232_PORTS port)
 {
-    while(*str)
-    {
-        print_i386_char(*str);
-        arch_i386_serial_print_char(*str);
-        str++;
-    }
+    if(port < 1 || port > 5)
+        return;
+
+    arch_i386_serial_setup(serial_ports[port]);
+}
+
+void arch_serial_putchar(DBGPORT_RS232_PORTS port, char c)
+{
+    if(port < 1 || port > 5)
+        return;
+    
+    arch_i386_serial_put_char(serial_ports[port], c);
+}
+
+char arch_serial_getchar(DBGPORT_RS232_PORTS port)
+{
+    if(port < 1 || port > 5)
+        return ' ';
+    
+    return arch_i386_serial_get_char(serial_ports[port]);
+}
+
+void arch_screen_putchar(char c)
+{
+    print_i386_char(c);
 }
 
 void arch_panic(const char* format, ...)

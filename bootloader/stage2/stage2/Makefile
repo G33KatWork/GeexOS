@@ -8,6 +8,7 @@ TARGET = stage2.exe
 CCSOURCES = main.c \
 			lib.c \
 			print.c \
+			debug.c \
 			memory.c \
 			heap.c \
 			disk.c \
@@ -26,7 +27,8 @@ CCSOURCES += arch/i386/arch.c \
 			 arch/i386/biosdisk.c \
 			 arch/i386/mbr_partmap.c \
 			 arch/i386/math_support.c \
-			 arch/i386/paging.c
+			 arch/i386/paging.c \
+			 arch/i386/gdbstub.c
 
 # List C++ source files here
 CXXSOURCES = 

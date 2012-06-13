@@ -74,7 +74,11 @@ size_t vprintf(const char *format, va_list params)
    size_t retval;
 
    retval = vsnprintf(vprint_buffer, sizeof(vprint_buffer), format, params);
-   arch_dbg_print(vprint_buffer);
+   
+   char* ptr = vprint_buffer;
+   while(*ptr++)
+      arch_screen_putchar(*ptr);
+   
    return retval;
 }
 
