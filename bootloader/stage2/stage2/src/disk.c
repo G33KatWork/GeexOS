@@ -31,8 +31,8 @@ void disk_printdevices()
 {
 	DiskDevice *dev;
 	list_for_each_entry(dev, &DeviceList, Link) {
-		printf("%s %D - %D    ", dev->name, dev->startLBA, dev->endLBA);
-		printf("\n");
+		debug_printf("%s %D - %D    ", dev->name, dev->startLBA, dev->endLBA);
+		debug_printf("\n");
 	}
 }
 

@@ -16,6 +16,7 @@ extern Heap* default_heap;
 int kmain()
 {
     debug_init();
+
     arch_machine_setup();
     printf("GXLDR Stage 2\r\n");
     

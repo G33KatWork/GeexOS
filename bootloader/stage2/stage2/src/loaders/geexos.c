@@ -9,7 +9,7 @@ void loader_loadGeexOS()
 
 	//build up paging infrastructure
 	arch_initialize_virtual_memory();
-	printf("GXLDR: Paging-related datastructures initialized\n");
+	debug_printf("GXLDR: Paging-related datastructures initialized\n");
 	
 	LoadedImage* kernelImageInfo;
 
@@ -31,5 +31,5 @@ void loader_loadGeexOS()
 	typedef void (*entryPoint)(void);
 	entryPoint p = (entryPoint)kernelImageInfo->VirtualEntryPoint;
 	printf("Jumping into kernel\n");
-	p();
+	//p();
 }

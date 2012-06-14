@@ -4,6 +4,7 @@
 
 #include <lib.h>
 #include <arch.h>
+#include <debug.h>
 #include <print.h>
 
 typedef bool (*detect_partitions)(DiskDevice*, AddDiskDeviceCallback);
@@ -28,7 +29,7 @@ void biosdisk_i386_initialize(AddDiskDeviceCallback cb)
 			dev->read_sectors = disk_interface_read_sectors;
 			dev->get_disk_geometry = disk_interface_get_disk_geometry;
 
-			printf("Detected floppy at drive num 0x%x with type %x\n", floppy, t);
+			debug_printf("Detected floppy at drive num 0x%x with type %x\n", floppy, t);
 			cb(dev);
 		}
 	}
@@ -52,7 +53,7 @@ void biosdisk_i386_initialize(AddDiskDeviceCallback cb)
 					break;
 			}
 
-			printf("Detected hdd at drive num 0x%x with type %x\n", hdd, t);
+			debug_printf("Detected hdd at drive num 0x%x with type %x\n", hdd, t);
 			cb(dev);
 		}
 	}
@@ -235,11 +236,11 @@ bool biosdisk_i386_read_lba(uint8_t driveNumber, uint64_t startSector, uint32_t 
 		if(!EFLAGS_IS_SET(regs.flags, EFLAGS_CARRY))
 			return true;
 
-		printf("WARN: LBA disk read failed. Retrying...\n");
+		debug_printf("WARN: LBA disk read failed. Retrying...\n");
 		biosdisk_i386_reset_controller(driveNumber);
 	}
 	
-	printf("ERR: LBA disk read failed.\n");
+	debug_printf("ERR: LBA disk read failed.\n");
 	return false;
 }
 
@@ -287,7 +288,7 @@ bool biosdisk_i386_read_chs(uint8_t driveNumber, uint64_t startSector, uint32_t 
    			physicalSector > g.SectorsPerTrack
    		)
    		{
-   			printf("ERR: CHS Disk read parameters exceed geometry limits\n");
+   			debug_printf("ERR: CHS Disk read parameters exceed geometry limits\n");
    			return false;
    		}
 
@@ -308,14 +309,14 @@ bool biosdisk_i386_read_chs(uint8_t driveNumber, uint64_t startSector, uint32_t 
 			if(!EFLAGS_IS_SET(regs.flags, EFLAGS_CARRY))
 				break;
 
-			printf("WARN: LBA disk read failed. Retrying...\n");
+			debug_printf("WARN: LBA disk read failed. Retrying...\n");
 			biosdisk_i386_reset_controller(driveNumber);
 			continue;
 		}
 
 		if(i >= 3)
 		{
-			printf("ERR: CHS disk read failed.\n");
+			debug_printf("ERR: CHS disk read failed.\n");
 			return false;
 		}
 

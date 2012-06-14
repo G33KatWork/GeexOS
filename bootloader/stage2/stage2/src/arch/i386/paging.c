@@ -10,7 +10,7 @@ void paging_allocateNonPAE()
     pageDirectory = (page_directory_t*)memory_allocate(sizeof(page_directory_t), MemoryTypeGeexOSPageStructures);
     memset(pageDirectory, 0, sizeof(page_directory_t));
 
-    printf("ARCH PAGING: PD is at %x\n", pageDirectory);
+    debug_printf("ARCH PAGING: PD is at %x\n", pageDirectory);
 }
 
 void paging_mapVirtualMemoryNonPAE(Address physical, Address virtual, bool usermode, bool writable)
@@ -21,7 +21,7 @@ void paging_mapVirtualMemoryNonPAE(Address physical, Address virtual, bool userm
     //Allocate and assign new page table if necessary
     if(!((Address)(pageDirectory->page_tables[pdirIndex]) & 0x1))
     {
-        printf("PAGING: Allocating new page table for index 0x%x\n", pdirIndex);
+        debug_printf("PAGING: Allocating new page table for index 0x%x\n", pdirIndex);
         
         void* newPageTbl = memory_allocate(sizeof(page_table_t), MemoryTypeGeexOSPageStructures);
         memset(newPageTbl, 0, sizeof(page_table_t));
@@ -45,7 +45,7 @@ void paging_mapRangeNonPAE(Address physical, Address virtual, size_t len, bool u
     virtual = PAGE_ALIGN_DOWN(virtual);
     len = IS_PAGE_ALIGNED(len) ? len : PAGE_ALIGN(len);
 
-    printf("PAGING: Mapping from physical 0x%x to virtual 0x%x with len 0x%x\n", physical, virtual, len);
+    debug_printf("PAGING: Mapping from physical 0x%x to virtual 0x%x with len 0x%x\n", physical, virtual, len);
 
     for(Address p = physical, v = virtual; p < physical + len; p += PAGE_SIZE, v += PAGE_SIZE)
         paging_mapVirtualMemoryNonPAE(p, v, usermode, writable);

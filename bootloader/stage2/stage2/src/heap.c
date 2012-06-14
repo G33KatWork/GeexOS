@@ -222,19 +222,19 @@ void heap_printFreelist(Heap* heap)
 	struct __freelist *fp1;
 	int i;
 
-	printf("Allocation count: %d, DeallocationCount: %d\n", heap->allocationCount, heap->deallocationCount);
+	debug_printf("Allocation count: %d, DeallocationCount: %d\n", heap->allocationCount, heap->deallocationCount);
 
 	if (!heap->Freelist) {
-		printf("no free list\n");
+		debug_printf("no free list\n");
 		return;
 	}
 
 	for (i = 0, fp1 = heap->Freelist; fp1; i++, fp1 = fp1->nx) {
-		printf("entry %d @ %x: size %x, next ",
+		debug_printf("entry %d @ %x: size %x, next ",
 		       i, (char *)fp1, fp1->sz);
 		if (fp1->nx)
-			printf("%x\n", (char *)fp1->nx);
+			debug_printf("%x\n", (char *)fp1->nx);
 		else
-			printf("NULL\n");
+			debug_printf("NULL\n");
 	}
 }

@@ -2,6 +2,7 @@
 #include <disk.h>
 #include <endianess.h>
 #include <print.h>
+#include <debug.h>
 
 static bool mbr_isValid(MBR* mbr, uint64_t totalSectors)
 {
@@ -34,7 +35,7 @@ static bool mbr_isValid(MBR* mbr, uint64_t totalSectors)
 		}
 	}
 
-	printf("Disk seems to have a valid mbr\n");
+	debug_printf("Disk seems to have a valid mbr\n");
 	return valid;
 }
 

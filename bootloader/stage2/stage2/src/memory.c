@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <lib.h>
 #include <print.h>
+#include <debug.h>
 
 #define min(a, b) \
     (a < b) ? (a) : (b)
@@ -29,7 +30,7 @@ uint32_t memory_add_map_entry(FirmwareMemoryMapItem* map, uint32_t maxEntries, P
 {
     uint32_t i, c;
     
-    //printf("Adding to map. Base: 0x%x Size: 0x%x Type: %s\r\n", base, size, MemoryTypeNames[type]);
+    //debug_printf("Adding to map. Base: 0x%x Size: 0x%x Type: %s\r\n", base, size, MemoryTypeNames[type]);
     
     //search for end of list and place to insert new entry
     //c will contain the amount of entries currently in the memory map
@@ -81,15 +82,15 @@ uint32_t memory_add_map_entry(FirmwareMemoryMapItem* map, uint32_t maxEntries, P
 void memory_print_map(FirmwareMemoryMapItem* map)
 {
     for(FirmwareMemoryMapItem* cur = map; cur->PageCount > 0; cur++)
-        printf("Start: 0x%x Size: 0x%x Type: %s\r\n", cur->BasePage, cur->PageCount, MemoryTypeNames[cur->Type]);
+        debug_printf("Start: 0x%x Size: 0x%x Type: %s\r\n", cur->BasePage, cur->PageCount, MemoryTypeNames[cur->Type]);
 }
 
 void memory_init()
 {
     PageNumber usablePages = memory_count_usable_pages(FirmwareMemoryMap);
-    printf("MM: Having %d usable physical pages. highest: 0x%x, lowest: 0x%x\n", usablePages, highestPhysicalPage, lowestPhysicalPage);
+    debug_printf("MM: Having %d usable physical pages. highest: 0x%x, lowest: 0x%x\n", usablePages, highestPhysicalPage, lowestPhysicalPage);
     void* tableLocation = memory_find_page_lookup_table_location(usablePages, FirmwareMemoryMap);
-    printf("MM: Page lookup table location: 0x%x\n", tableLocation);
+    debug_printf("MM: Page lookup table location: 0x%x\n", tableLocation);
     pageLookupTable = (PageLookupTableItem*)tableLocation;
     
     memory_mark_pages(lowestPhysicalPage, usablePages, MemoryTypeFirmware);
@@ -101,7 +102,7 @@ void memory_init()
     
     PageNumber lookupTableStartPage = PAGENUM(pageLookupTable);
     PageNumber lookupTablePageLen = PAGENUM((usablePages * sizeof(PageLookupTableItem)) + arch_get_page_size());
-    printf("MM: startpage: 0x%x plen: 0x%x\n", lookupTableStartPage, lookupTablePageLen);
+    debug_printf("MM: startpage: 0x%x plen: 0x%x\n", lookupTableStartPage, lookupTablePageLen);
     memory_mark_pages(lookupTableStartPage, lookupTablePageLen, MemoryTypePageLookupTable);
 }
 
@@ -205,65 +206,65 @@ void* memory_allocate(size_t s, MemoryType type)
 
 void memory_print_alloc_map()
 {
-    printf("Page lookup table at 0x%x\n", pageLookupTable);
+    debug_printf("Page lookup table at 0x%x\n", pageLookupTable);
     
     for(PageNumber i = 0; i < highestPhysicalPage - lowestPhysicalPage; i++)
     {
         if(i % 32 == 0)
-            printf("\n0x%x:\t", i * arch_get_page_size());
+            debug_printf("\n0x%x:\t", i * arch_get_page_size());
         else if(i % 4 == 0)
-            printf(" ");
+            debug_printf(" ");
         
         switch(pageLookupTable[i].type)
         {
             case MemoryTypeFree:
-                printf("*");
+                debug_printf("*");
                 break;
             case MemoryTypeBad:
-                printf("-");
+                debug_printf("-");
                 break;
             case MemoryTypeSpecial:
-                printf("+");
+                debug_printf("+");
                 break;
             case MemoryTypeLoaderExecutable:
-                printf("X");
+                debug_printf("X");
                 break;
             case MemoryTypeLoaderTemporary:
-                printf("T");
+                debug_printf("T");
                 break;
             case MemoryTypeLoaderStack:
-                printf("S");
+                debug_printf("S");
                 break;
             case MemoryTypeLoaderHeap:
-                printf("H");
+                debug_printf("H");
                 break;
             case MemoryTypeFirmware:
-                printf("F");
+                debug_printf("F");
                 break;
             case MemoryTypePageLookupTable:
-                printf("L");
+                debug_printf("L");
                 break;
             case MemoryTypeGeexOSPageStructures:
-                printf("P");
+                debug_printf("P");
                 break;
             case MemoryTypeGeexOSKernelEnvironmentInformation:
-                printf("A");
+                debug_printf("A");
                 break;
             case MemoryTypeGeexOSKernelExecutable:
-                printf("K");
+                debug_printf("K");
                 break;
             case MemoryTypeGeexOSKernelStack:
-                printf("C");
+                debug_printf("C");
                 break;
             case MemoryTypeGeexOSKernelLibrary:
-                printf("D");
+                debug_printf("D");
                 break;
             default:
-                printf("?");
+                debug_printf("?");
                 break;
         }
     }
-    printf("\n");
+    debug_printf("\n");
 }
 
 

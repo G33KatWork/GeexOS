@@ -1,6 +1,6 @@
 #include <fs.h>
 #include <lib.h>
-#include <print.h>
+#include <debug.h>
 #include <disk.h>
 #include <fs/fat.h>
 
@@ -26,7 +26,7 @@ void fs_shutdown()
 
 FILE* open(const char* path)
 {
-	printf("FS: opening %s\n", path);
+	debug_printf("FS: opening %s\n", path);
 
 	char* filename = strchr(path, ')');
 	if(!filename)
@@ -42,13 +42,13 @@ FILE* open(const char* path)
 	if(*filename == '\\' || *filename == '/')
 		filename++;
 
-	printf("Opening file %s disk device %s\n", filename, devicename);
+	debug_printf("Opening file %s disk device %s\n", filename, devicename);
 
 	FilesystemMount *mount;
 	list_for_each_entry(mount, &FsMountList, Link) {
 		if(strcmp(devicename, mount->Device->name) == 0)
 		{
-			printf("FS on device %s already mounted\n", devicename);
+			debug_printf("FS on device %s already mounted\n", devicename);
 			free(devicename);
 			return mount->fsops->open(filename, mount);
 		}
@@ -70,7 +70,7 @@ FILE* open(const char* path)
 
 	if(!fsmount)
 	{
-		printf("ERROR: disk device %s contains unknown filesystem\n", device->name);
+		debug_printf("ERROR: disk device %s contains unknown filesystem\n", device->name);
 		return 0;
 	}
 

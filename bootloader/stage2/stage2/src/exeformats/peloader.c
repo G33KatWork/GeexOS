@@ -20,25 +20,25 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	if(dosHeaderTemp.Magic != IMAGE_DOS_SIGNATURE)
 		return false;
 
-	printf("PE: Found DOS Header magic\n");
-	printf("PE: Seeking to NT Headers at 0x%x\n", dosHeaderTemp.PEHeader);
+	debug_printf("PE: Found DOS Header magic\n");
+	debug_printf("PE: Seeking to NT Headers at 0x%x\n", dosHeaderTemp.PEHeader);
 	seek(imageFile, dosHeaderTemp.PEHeader, SEEK_CUR);
 
 	IMAGE_NT_HEADERS ntHeadersTemp;
 	if(read(imageFile, &ntHeadersTemp, sizeof(IMAGE_NT_HEADERS)) != sizeof(IMAGE_NT_HEADERS))
 		return false;
 
-	printf("PE: NT Headers read\n");
+	debug_printf("PE: NT Headers read\n");
 
 	if(ntHeadersTemp.Signature != IMAGE_NT_SIGNATURE)
 		return false;
 
-	printf("PE: NT Headers look valid\n");
+	debug_printf("PE: NT Headers look valid\n");
 
 	//TODO: check characteristics
 
-	printf("PE: Size of image is: 0x%x\n", ntHeadersTemp.OptionalHeader.SizeOfImage);
-	printf("PE: Image base is 0x%x\n", ntHeadersTemp.OptionalHeader.ImageBase);
+	debug_printf("PE: Size of image is: 0x%x\n", ntHeadersTemp.OptionalHeader.SizeOfImage);
+	debug_printf("PE: Image base is 0x%x\n", ntHeadersTemp.OptionalHeader.ImageBase);
 
 	//Allocate memory for the pe image
 	void* physicalBase = memory_allocate(ntHeadersTemp.OptionalHeader.SizeOfImage, memType);
@@ -49,7 +49,7 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	seek(imageFile, 0, SEEK_SET);
 
 
-	printf("PE: Headers have size of 0x%x\n", ntHeadersTemp.OptionalHeader.SizeOfHeaders);
+	debug_printf("PE: Headers have size of 0x%x\n", ntHeadersTemp.OptionalHeader.SizeOfHeaders);
 
 	//re-read the headers into our new buffer
 	if(read(imageFile, physicalBase, ntHeadersTemp.OptionalHeader.SizeOfHeaders) != ntHeadersTemp.OptionalHeader.SizeOfHeaders)
@@ -75,12 +75,12 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	{
 		char secName[9] = {0};
 		memcpy(secName, section->Name, 8);
-		printf("Mapping section %s\n", secName);
+		debug_printf("Mapping section %s\n", secName);
 
 		uint32_t virtualSize = section->Misc.VirtualSize;
 		uint32_t sizeOfRawData = section->SizeOfRawData;
 
-		printf("VirtualSize: 0x%x - SizeOfRawData: 0x%x\n", virtualSize, sizeOfRawData);
+		debug_printf("VirtualSize: 0x%x - SizeOfRawData: 0x%x\n", virtualSize, sizeOfRawData);
 
 		if(virtualSize == 0)
 			virtualSize = sizeOfRawData;
@@ -97,7 +97,7 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 		//is there any data to read into memory?
 		if(sizeOfRawData != 0)
 		{
-			printf("PE: Reading data from file offset 0x%x to memory offset 0x%x\n", section->PointerToRawData, section->VirtualAddress);
+			debug_printf("PE: Reading data from file offset 0x%x to memory offset 0x%x\n", section->PointerToRawData, section->VirtualAddress);
 			//seek to file offset
 			seek(imageFile, section->PointerToRawData, SEEK_SET);
 
@@ -160,7 +160,7 @@ bool pe_resolveImports(LoadedImage* image)
 	for(;importDescriptor->Name != 0 && importDescriptor->FirstThunk != 0; importDescriptor++)
 	{
 		char* importName = (char*)(importDescriptor->Name + image->PhysicalBase);
-		printf("PE: handling import from %s\n", importName);
+		debug_printf("PE: handling import from %s\n", importName);
 
 		//if we are referencing to our own image, ignore it
 		if(stricmp(importName, image->Name) == 0)
@@ -170,7 +170,7 @@ bool pe_resolveImports(LoadedImage* image)
 		LoadedImage* importedImageInfo;
 		if(!pe_isImageLoaded(importName, &importedImageInfo))
 		{
-			printf("PE: imported library %s is not yet loaded, loading...\n", importName);
+			debug_printf("PE: imported library %s is not yet loaded, loading...\n", importName);
 
 			char fullPath[256] = {0};
 			strncpy(fullPath, librarySearchPath, 255);
@@ -178,7 +178,7 @@ bool pe_resolveImports(LoadedImage* image)
 
 			if(!pe_loadFile(fullPath, MemoryTypeGeexOSKernelLibrary, &importedImageInfo))
 			{
-				printf("PE: Error loading imported library %s\n", importName);
+				debug_printf("PE: Error loading imported library %s\n", importName);
 				return false;
 			}
 		}
@@ -189,14 +189,14 @@ bool pe_resolveImports(LoadedImage* image)
 		if(!exportDirectory)
 			return false;
 
-		printf("PE: export directory base: %x\n", exportDirectory->Base);
+		debug_printf("PE: export directory base: %x\n", exportDirectory->Base);
 
 		//loop through all import thunks inside this import descriptor
 		PIMAGE_THUNK_DATA importThunk = (PIMAGE_THUNK_DATA)(image->PhysicalBase + importDescriptor->FirstThunk);
 		while(importThunk->u1.AddressOfData != 0)
 		{
 			bool isOrdinalImport = IMAGE_THUNK_DATA_IS_ORDINAL(importThunk->u1.Ordinal);
-			printf("PE: handling import thunk 0x%x - import by ordinal: %s\n", importThunk->u1.Ordinal, isOrdinalImport?"true":"false");
+			debug_printf("PE: handling import thunk 0x%x - import by ordinal: %s\n", importThunk->u1.Ordinal, isOrdinalImport?"true":"false");
 
 			uint32_t ordinal;
 
@@ -205,7 +205,7 @@ bool pe_resolveImports(LoadedImage* image)
 			else
 			{
 				PIMAGE_IMPORT_BY_NAME namedImport = (PIMAGE_IMPORT_BY_NAME)(importThunk->u1.AddressOfData + image->PhysicalBase);
-				printf("PE: named import: Hint: 0x%x - Name: %s\n", namedImport->Hint, namedImport->Name);
+				debug_printf("PE: named import: Hint: 0x%x - Name: %s\n", namedImport->Hint, namedImport->Name);
 
 				uint32_t* nameTable = (uint32_t*)(exportDirectory->AddressOfNames + importedImageInfo->PhysicalBase);
 				uint16_t* ordinalTable = (uint16_t*)(exportDirectory->AddressOfNameOrdinals + importedImageInfo->PhysicalBase);
@@ -217,7 +217,7 @@ bool pe_resolveImports(LoadedImage* image)
 					ordinal = ordinalTable[hint];
 				else
 				{
-					printf("PE: Hint didn't lead to anything, searching by name...\n");
+					debug_printf("PE: Hint didn't lead to anything, searching by name...\n");
 
 					uint32_t min = 0;
 					uint32_t max = exportDirectory->NumberOfNames-1;
@@ -240,7 +240,7 @@ bool pe_resolveImports(LoadedImage* image)
 
 					if(max < min)
 					{
-						printf("PE: Export %s not found\n", namedImport->Name);
+						debug_printf("PE: Export %s not found\n", namedImport->Name);
 						return false;
 					}
 
@@ -250,21 +250,21 @@ bool pe_resolveImports(LoadedImage* image)
 
 			if(ordinal >= exportDirectory->NumberOfFunctions)
 			{
-				printf("PE: Determined imported ordinal 0x%x is invalid!\n", ordinal);
+				debug_printf("PE: Determined imported ordinal 0x%x is invalid!\n", ordinal);
 				return false;
 			}
 
 			uint32_t* functionTable = (uint32_t*)(exportDirectory->AddressOfFunctions + importedImageInfo->PhysicalBase);
 			importThunk->u1.Function = (Address)(functionTable[ordinal] + importedImageInfo->VirtualBase);
 
-			printf("PE: determined function to be at 0x%x\n", (functionTable[ordinal] + importedImageInfo->VirtualBase));
+			debug_printf("PE: determined function to be at 0x%x\n", (functionTable[ordinal] + importedImageInfo->VirtualBase));
 
 			//TODO: check forwarder
 
 			importThunk++;
 		}
 
-		printf("AddressOfFunctions: %x - AddressOfNames: %x - AddressOfNameOrdinals: %x\n", exportDirectory->AddressOfFunctions, exportDirectory->AddressOfNames, exportDirectory->AddressOfNameOrdinals);
+		debug_printf("AddressOfFunctions: %x - AddressOfNames: %x - AddressOfNameOrdinals: %x\n", exportDirectory->AddressOfFunctions, exportDirectory->AddressOfNames, exportDirectory->AddressOfNameOrdinals);
 	}
 
 	return true;
@@ -272,7 +272,7 @@ bool pe_resolveImports(LoadedImage* image)
 
 bool pe_relocateImage(LoadedImage* image, int64_t bias)
 {
-	printf("PE: Relocating image %s with bias 0x%X\n", image->Name, bias);
+	debug_printf("PE: Relocating image %s with bias 0x%X\n", image->Name, bias);
 	
 	size_t directorySize;
 	PIMAGE_BASE_RELOCATION RelocationDir = (PIMAGE_BASE_RELOCATION)pe_getDirectoryEntry(image, IMAGE_DIRECTORY_ENTRY_BASERELOC, &directorySize);
@@ -344,7 +344,7 @@ void pe_printLoadedImages()
 {
 	LoadedImage *img;
 	list_for_each_entry(img, &loadedImages, Link) {
-		printf("%s: Physical load address: 0x%x - Virtual base: 0x%x - Entrypoint: 0x%x - Imagesize: 0x%x\n", img->Name, img->PhysicalBase, img->VirtualBase, img->VirtualEntryPoint, img->SizeOfImage);
+		debug_printf("%s: Physical load address: 0x%x - Virtual base: 0x%x - Entrypoint: 0x%x - Imagesize: 0x%x\n", img->Name, img->PhysicalBase, img->VirtualBase, img->VirtualEntryPoint, img->SizeOfImage);
 	}
 }
 

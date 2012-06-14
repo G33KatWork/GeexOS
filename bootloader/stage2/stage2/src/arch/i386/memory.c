@@ -47,15 +47,15 @@ void mem_i386_e820_detect()
         callInt(0x15, &regs);
         
         if(regs.eax != 0x534D4150) {    //TODO: check carry flag for success
-            printf("Bios call 0x15 failed\r\n");
+            debug_printf("Bios call 0x15 failed\r\n");
             return;
         }
         
         memcpy(&map, (void*)BIOSCALLBUFFER, regs.ecx);
         
-        /*printf("Base address: 0x%x ", (uint32_t)map.BaseAddress);
-        printf("Length: 0x%x ", (uint32_t)map.Length);
-        printf("Type: 0x%x\r\n", map.Type);*/
+        /*debug_printf("Base address: 0x%x ", (uint32_t)map.BaseAddress);
+        debug_printf("Length: 0x%x ", (uint32_t)map.Length);
+        debug_printf("Type: 0x%x\r\n", map.Type);*/
         
         //convert bios entry to loader memory map entry
         if(map.Type == BiosMemoryUsable)

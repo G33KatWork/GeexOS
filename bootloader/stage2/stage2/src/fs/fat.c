@@ -21,7 +21,7 @@ const FilesystemOperations fat_ops = {
 
 FilesystemMount* fat_mount(DiskDevice* device)
 {
-	printf("Probing for FAT on device %s\n", device->name);
+	debug_printf("Probing for FAT on device %s\n", device->name);
 
 	//read the first sector for the BPB
 	DiskGeometry geometry;
@@ -39,13 +39,13 @@ FilesystemMount* fat_mount(DiskDevice* device)
 		memcmp(bpb->FAT.FAT32.FilesystemType, "FAT32   ", 8)
 	  ) return NULL;
 
-	printf("FS on %s seems to be some kind of FAT\n", device->name);
+	debug_printf("FS on %s seems to be some kind of FAT\n", device->name);
 
 	FatVolumeInformation* info = malloc(sizeof(FatVolumeInformation));
 	memset(info, 0, sizeof(FatVolumeInformation));
 
 	info->FatType = fat_determine_type(bpb);
-	printf("It is %s\n", fat_type_to_string(info->FatType));
+	debug_printf("It is %s\n", fat_type_to_string(info->FatType));
 
 	if(info->FatType == FAT32)
 	{
@@ -91,17 +91,17 @@ FilesystemMount* fat_mount(DiskDevice* device)
 
 	fat_set_device_context(fsmount, info);
 
-	printf("FatType: %s\n", fat_type_to_string(info->FatType));
-	printf("BytesPerSector: %d\n", info->BytesPerSector);
-	printf("SectorsPerCluster: %d\n", info->SectorsPerCluster);
-	printf("FatSectorStart: %d\n", info->FatSectorStart);
-	printf("ActiveFatSectorStart: %d\n", info->ActiveFatSectorStart);
-	printf("NumberOfFats: %d\n", info->NumberOfFats);
-	printf("SectorsPerFat: %d\n", info->SectorsPerFat);
-	printf("RootDirSectorStart: %d\n", info->RootDirSectorStart);
-	printf("RootDirSectors: %d\n", info->RootDirSectors);
-	printf("RootDirStartCluster: %d\n", info->RootDirStartCluster);
-	printf("DataSectorStart: %d\n", info->DataSectorStart);
+	debug_printf("FatType: %s\n", fat_type_to_string(info->FatType));
+	debug_printf("BytesPerSector: %d\n", info->BytesPerSector);
+	debug_printf("SectorsPerCluster: %d\n", info->SectorsPerCluster);
+	debug_printf("FatSectorStart: %d\n", info->FatSectorStart);
+	debug_printf("ActiveFatSectorStart: %d\n", info->ActiveFatSectorStart);
+	debug_printf("NumberOfFats: %d\n", info->NumberOfFats);
+	debug_printf("SectorsPerFat: %d\n", info->SectorsPerFat);
+	debug_printf("RootDirSectorStart: %d\n", info->RootDirSectorStart);
+	debug_printf("RootDirSectors: %d\n", info->RootDirSectors);
+	debug_printf("RootDirStartCluster: %d\n", info->RootDirStartCluster);
+	debug_printf("DataSectorStart: %d\n", info->DataSectorStart);
 
 	return fsmount;
 }
@@ -143,7 +143,7 @@ bool fat_close(FILE* f)
 
 FILE* fat_open(const char* path, FilesystemMount* mount)
 {
-	printf("FAT: Opening file %s on device %s\n", path, mount->Device->name);
+	debug_printf("FAT: Opening file %s on device %s\n", path, mount->Device->name);
 	FILE* file = malloc(sizeof(FILE));
 	file->mount = mount;
 	file->filePointer = 0;
@@ -284,12 +284,12 @@ void fat_seek(FILE* f, long offset, SeekMode mode)
 		}
 	}
 
-	printf("FAT Seeking.. Mode: %x - offset: %x - new fp: %x\n", mode, offset, f->filePointer);
+	debug_printf("FAT Seeking.. Mode: %x - offset: %x - new fp: %x\n", mode, offset, f->filePointer);
 }
 
 bool fat_findFile(FilesystemMount* mount, const char* filename, FatFileInfo* fileinfo)
 {
-	printf("FAT trying to locate file %s on %s\n", filename, mount->Device->name);
+	debug_printf("FAT trying to locate file %s on %s\n", filename, mount->Device->name);
 
 	char pathPart[261];	//One long vfat filename can have max 260 chars
 	void* directoryBuffer;
@@ -338,7 +338,7 @@ bool fat_findFile(FilesystemMount* mount, const char* filename, FatFileInfo* fil
 
 bool fat_searchDirectoryForFile(FilesystemMount* mount, void* directoryContents, size_t directorySize, const char* filename, FatFileInfo* fileinfo)
 {
-	printf("FAT: searching directory for file %s on device %s\n", filename, mount->Device->name);
+	debug_printf("FAT: searching directory for file %s on device %s\n", filename, mount->Device->name);
 
 	char longNameBuffer[265];
 	char shortNameBuffer[20];
@@ -432,7 +432,7 @@ bool fat_searchDirectoryForFile(FilesystemMount* mount, void* directoryContents,
 		if(stricmp(filename, shortNameBuffer) == 0 || stricmp(filename, longNameBuffer) == 0)
 		{
 			uint32_t startCluster = (curEntry->ClusterHigh << 16) | curEntry->ClusterLow;
-			printf("Found file %s with size 0x%x start cluster 0x%x\n", filename, curEntry->Size, startCluster);
+			debug_printf("Found file %s with size 0x%x start cluster 0x%x\n", filename, curEntry->Size, startCluster);
 
 			fileinfo->Attributes = curEntry->Attributes;
 			fileinfo->Filesize = curEntry->Size;
@@ -477,7 +477,7 @@ void fat_parseShortFilename(FatDirEntry* entry, char* buffer)
 
 void* fat_getDirectoryContents(FilesystemMount* mount, uint32_t startCluster, size_t* directorySize, bool rootDirectory)
 {
-	printf("FAT: getting directory contents: startCluster: %x, rootDir: %s, device: %s\n", startCluster, rootDirectory ? "true": "false", mount->Device->name);
+	debug_printf("FAT: getting directory contents: startCluster: %x, rootDir: %s, device: %s\n", startCluster, rootDirectory ? "true": "false", mount->Device->name);
 	FatVolumeInformation* volume = fat_get_device_context(mount);
 
 	//for FAT32 the root dir is just another subdir
@@ -492,7 +492,7 @@ void* fat_getDirectoryContents(FilesystemMount* mount, uint32_t startCluster, si
 	else
 		*directorySize = fat_countClustersInChain(mount, startCluster) * volume->SectorsPerCluster * volume->BytesPerSector;
 
-	printf("FAT: directory seems to have size 0x%x\n", *directorySize);
+	debug_printf("FAT: directory seems to have size 0x%x\n", *directorySize);
 
 	//this malloc is freed later in fat_findFile()
 	void* directoryContents = malloc(*directorySize);
@@ -501,7 +501,7 @@ void* fat_getDirectoryContents(FilesystemMount* mount, uint32_t startCluster, si
 
 	if(rootDirectory)
 	{
-		printf("FAT: we are reading a root dir with 0x%x sectors starting from sector 0x%x\n", volume->RootDirSectors, volume->RootDirSectorStart);
+		debug_printf("FAT: we are reading a root dir with 0x%x sectors starting from sector 0x%x\n", volume->RootDirSectors, volume->RootDirSectorStart);
 		if(!mount->Device->read_sectors(mount->Device, volume->RootDirSectorStart, volume->RootDirSectors, directoryContents))
 		{
 			free(directoryContents);
@@ -522,7 +522,7 @@ void* fat_getDirectoryContents(FilesystemMount* mount, uint32_t startCluster, si
 
 bool fat_readClusterChain(FilesystemMount* mount, uint32_t startCluster, uint32_t maxClusters, void* buffer)
 {
-	printf("FAT: Reading cluster chain starting from cluster 0x%x on %s\n", startCluster, mount->Device->name);
+	debug_printf("FAT: Reading cluster chain starting from cluster 0x%x on %s\n", startCluster, mount->Device->name);
 
 	FatVolumeInformation* volume = fat_get_device_context(mount);
 	void* tmpbuf[volume->SectorsPerCluster * volume->BytesPerSector];
@@ -644,7 +644,7 @@ bool fat_getFatEntry(FilesystemMount* mount, uint32_t cluster, uint32_t* result)
 
 uint32_t fat_countClustersInChain(FilesystemMount* mount, uint32_t startCluster)
 {
-	printf("FAT: counting clusters in chain. startCluster: %x\n", startCluster);
+	debug_printf("FAT: counting clusters in chain. startCluster: %x\n", startCluster);
 
 	FatVolumeInformation* volume = fat_get_device_context(mount);
 

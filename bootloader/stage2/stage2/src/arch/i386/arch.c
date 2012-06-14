@@ -1,5 +1,6 @@
 #include <arch.h>
 #include <lib.h>
+#include <debug.h>
 #include <print.h>
 #include <disk.h>
 #include <arch/i386/gdt.h>
@@ -16,14 +17,13 @@ static uint16_t serial_ports[] = {0, 0x3F8, 0x2F8, 0x3E8, 0x2E8};
 
 void arch_machine_setup()
 {
-    gdbstub_i386_init();
     print_i386_clear();
     gdt_init();
     idt_init();
     
     mem_i386_build_memory_map();
 
-    printf("GXLDR machine setup done.\n");
+    debug_printf("ARCH: GXLDR machine setup done.\n");
     char cpuvendor[17] = {0};
     char cpubrand[49] = {0};
 
@@ -91,7 +91,7 @@ void arch_initialize_virtual_memory()
 {
     if(cpuid_hasfeature(CPUID_FLAG_PAE, false))
     {
-        printf("CPU has PAE support\n");
+        debug_printf("ARCH: CPU has PAE support\n");
         //TODO: implement PAE paging
     }
 
