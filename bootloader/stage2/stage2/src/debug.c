@@ -30,13 +30,15 @@ void debug_init()
     debug_setGdbComPort(DBGPORT_RS232_COM2);
 }
 
+DBGPORT_RS232_PORTS debug_getGdbComPort() { return gdbComPort; }
+
 size_t debug_printf(const char* format, ...)
 {
     va_list params;
     size_t  retval;
 
     va_start(params, format);
-    vsnprintf(vprintf_buffer, sizeof(vprintf_buffer), format, params);
+    retval = vsnprintf(vprintf_buffer, sizeof(vprintf_buffer), format, params);
     va_end(params);
 
     char* ptr = vprintf_buffer;

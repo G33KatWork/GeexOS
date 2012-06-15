@@ -19,6 +19,7 @@ void debug_enableOutputPort(DBGPORT port);
 void debug_disableOutputPort(DBGPORT port);
 void debug_setMessageComPort(DBGPORT_RS232_PORTS port);
 void debug_setGdbComPort(DBGPORT_RS232_PORTS port);
+DBGPORT_RS232_PORTS debug_getGdbComPort(void);
 
 void debug_init(void);
 

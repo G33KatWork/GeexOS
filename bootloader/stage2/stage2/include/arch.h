@@ -5,6 +5,7 @@
 #include <disk.h>
 #include <debug.h>
 
+void arch_early_machine_setup(void);
 void arch_machine_setup(void);
 void arch_disksystem_setup(AddDiskDeviceCallback cb);
 
@@ -16,6 +17,8 @@ void arch_screen_putchar(char c);
 void arch_serial_setup(DBGPORT_RS232_PORTS port);
 void arch_serial_putchar(DBGPORT_RS232_PORTS port, char c);
 char arch_serial_getchar(DBGPORT_RS232_PORTS port);
+
+void arch_gdbstub_enable(void);
 
 void arch_initialize_virtual_memory(void);
 void arch_map_virtual_memory(Address physical, Address virtual, bool writable, bool executable);

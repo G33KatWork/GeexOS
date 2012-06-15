@@ -15,11 +15,15 @@
 
 static uint16_t serial_ports[] = {0, 0x3F8, 0x2F8, 0x3E8, 0x2E8};
 
+void arch_early_machine_setup()
+{
+    gdt_init();
+    idt_init();
+}
+
 void arch_machine_setup()
 {
     print_i386_clear();
-    gdt_init();
-    idt_init();
     
     mem_i386_build_memory_map();
 
@@ -60,6 +64,13 @@ char arch_serial_getchar(DBGPORT_RS232_PORTS port)
         return ' ';
     
     return arch_i386_serial_get_char(serial_ports[port]);
+}
+
+void arch_gdbstub_enable()
+{
+    gdbstub_i386_enable();
+    printf("GDB stub enabled, waiting for debugger to be attached...\n");
+    asm ("int $3");
 }
 
 void arch_screen_putchar(char c)

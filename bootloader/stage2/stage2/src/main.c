@@ -15,13 +15,18 @@ int kmain(void);
 extern Heap* default_heap;
 int kmain()
 {
+    arch_early_machine_setup();
     debug_init();
 
+    //Uncomment for gdb remote debugging over serial port
+    //arch_gdbstub_enable();
+
     arch_machine_setup();
+    
     printf("GXLDR Stage 2\r\n");
     
     memory_print_map(FirmwareMemoryMap);
-    
+
     memory_init();
     default_heap_init();
     disk_init();

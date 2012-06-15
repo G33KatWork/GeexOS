@@ -1,6 +1,7 @@
 #include <arch/i386/trapframe.h>
 #include <print.h>
 #include <arch/i386/print.h>
+#include <arch/i386/gdbstub.h>
 
 static const char *i386ExceptionDescriptionText[] =
 {
@@ -25,11 +26,17 @@ static const char *i386ExceptionDescriptionText[] =
 	"Exception 12: MACHINE CHECK"
 };
 
-void printException(struct trapframe ctx);
+void printException(trapframe ctx);
 
-void printException(struct trapframe ctx)
+void printException(trapframe ctx)
 {
-    print_i386_setBackgroundColor(Red);
+	if(gdbstub_enabled)
+		gdbstub_i386_handle_exception(&ctx);
+
+	if(ctx.ex_no == 3 || ctx.ex_no == 1)
+		return;
+
+	print_i386_setBackgroundColor(Red);
     print_i386_clear();
     
     printf("Exception occured in GXLDR:\r\n%s\r\n\r\n", i386ExceptionDescriptionText[ctx.ex_no]);
@@ -44,4 +51,7 @@ void printException(struct trapframe ctx)
     printf("ES:  0x%x\tEFLAGS:  0x%x\r\n", ctx.es, ctx.eflags);
     printf("FS:  0x%x\r\n", ctx.fs);
     printf("GS:  0x%x\r\n", ctx.gs);
+
+    while(1)
+    	asm volatile("hlt");
 }

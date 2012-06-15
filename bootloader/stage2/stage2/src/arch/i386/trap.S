@@ -4,7 +4,6 @@
 %macro TRAP_NOERRCODE 1
 	[GLOBAL _ex%1]
 	_ex%1:
-		cli
 		push byte 0
 		push byte %1
 		jmp trap_handler
@@ -13,7 +12,6 @@
 %macro TRAP_ERRCODE 1
 	[GLOBAL _ex%1]
 	_ex%1:
-		cli
 		push byte %1
 		jmp trap_handler
 %endmacro
@@ -43,7 +41,7 @@ TRAP_NOERRCODE 19
 ;Our C-Handler for fault interrupts
 [EXTERN _printException]
 trap_handler:
-    cli
+	cli
 	pusha           ; push all registers (see regs.h for corresponding struct)
 
 	mov ax, ds      ; save old data segment decriptor
@@ -62,4 +60,18 @@ trap_handler:
 	mov gs, ax
 
 	call _printException
-	hlt             ;cleanup? pff.. we are broken anyways...
+
+	pop eax
+	mov gs, ax
+	pop eax
+	mov fs, ax
+	pop eax
+	mov es, ax
+	pop eax
+	mov ds, ax
+
+	popa
+
+	add esp, 8		;remove interrupt number and errorcode from stack
+	sti
+	iret

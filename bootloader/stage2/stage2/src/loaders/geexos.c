@@ -31,5 +31,5 @@ void loader_loadGeexOS()
 	typedef void (*entryPoint)(void);
 	entryPoint p = (entryPoint)kernelImageInfo->VirtualEntryPoint;
 	printf("Jumping into kernel\n");
-	//p();
+	p();
 }

@@ -12,6 +12,13 @@
 # define UNUSED(x) x 
 #endif
 
+#if defined(__GNUC__)
+#define offsetof(type, member)	__builtin_offsetof(type, member)
+#else
+#define offsetof(st, m) \
+     ((size_t) ( (char *)&((st *)0)->m - (char *)0 ))
+#endif
+
 #ifdef ARCH_I386
 
 #include <arch/i386/types.h>
