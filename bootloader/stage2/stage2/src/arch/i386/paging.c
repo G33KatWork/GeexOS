@@ -50,3 +50,33 @@ void paging_mapRangeNonPAE(Address physical, Address virtual, size_t len, bool u
     for(Address p = physical, v = virtual; p < physical + len; p += PAGE_SIZE, v += PAGE_SIZE)
         paging_mapVirtualMemoryNonPAE(p, v, usermode, writable);
 }
+
+bool paging_isAddressPresentNonPAE(Address virtual)
+{
+    uint32_t pdirIndex = (virtual >> 22) & 0x3FF;
+    uint32_t ptblIndex = (virtual >> 12) & 0x3FF;
+    
+    if(!((Address)(pageDirectory->page_tables[pdirIndex]) & 0x1))
+        return false;
+
+    page_table_t* ptbl = (page_table_t*)((Address)pageDirectory->page_tables[pdirIndex] & 0xFFFFF000);
+
+    return ptbl->pages[ptblIndex].present == 1;
+}
+
+bool paging_isRangeFreeNonPAE(Address virtual, size_t len)
+{
+    virtual = PAGE_ALIGN_DOWN(virtual);
+    len = IS_PAGE_ALIGNED(len) ? len : PAGE_ALIGN(len);
+
+    debug_printf("PAGING: Checking if range from 0x%x with length 0x%x is in use\n", virtual, len);
+
+    for(Address v = virtual; v < virtual + len; v += PAGE_SIZE)
+        if(paging_isAddressPresentNonPAE(v))
+        {
+            debug_printf("PAGING: 0x%x is in use\n", v);
+            return false;
+        }
+
+    return true;
+}

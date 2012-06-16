@@ -65,6 +65,13 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	//HACK FOR RELOCATION TESTING!
 	//virtualBase = 0xE0000000;
 
+	//TODO: search alternative place if memory is in use
+	if(!arch_is_virtual_memory_range_free(virtualBase, ntHeadersTemp.OptionalHeader.SizeOfImage))
+	{
+		debug_printf("PE: virtual base address %x is already in use\n", virtualBase);
+		return false;
+	}
+
 	//Map headers
 	arch_map_virtual_memory_range((Address)physicalBase, virtualBase, ntHeadersTemp.OptionalHeader.SizeOfHeaders, false, false);
 

@@ -124,6 +124,11 @@ void arch_map_virtual_memory_range(Address physical, Address virtual, size_t len
     paging_mapRangeNonPAE(physical, virtual, len, false, writable);
 }
 
+bool arch_is_virtual_memory_range_free(Address virtual, size_t len)
+{
+    return paging_isRangeFreeNonPAE(virtual, len);
+}
+
 void arch_enable_paging()
 {
     paging_set_page_directory(pageDirectory);

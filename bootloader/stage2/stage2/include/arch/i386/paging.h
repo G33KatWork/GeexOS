@@ -38,6 +38,8 @@ typedef struct page_directory page_directory_t;
 void paging_allocateNonPAE(void);
 void paging_mapVirtualMemoryNonPAE(Address physical, Address virtual, bool usermode, bool writable);
 void paging_mapRangeNonPAE(Address physical, Address virtual, size_t len, bool usermode, bool writable);
+bool paging_isAddressPresentNonPAE(Address virtual);
+bool paging_isRangeFreeNonPAE(Address virtual, size_t len);
 
 extern page_directory_t* pageDirectory;
 

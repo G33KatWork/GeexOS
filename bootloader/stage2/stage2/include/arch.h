@@ -23,6 +23,7 @@ void arch_gdbstub_enable(void);
 void arch_initialize_virtual_memory(void);
 void arch_map_virtual_memory(Address physical, Address virtual, bool writable, bool executable);
 void arch_map_virtual_memory_range(Address physical, Address virtual, size_t len, bool writable, bool executable);
+bool arch_is_virtual_memory_range_free(Address virtual, size_t len);
 void arch_enable_paging(void);
 
 #endif
