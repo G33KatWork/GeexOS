@@ -11,6 +11,10 @@ void loader_loadGeexOS()
 	arch_initialize_virtual_memory();
 	debug_printf("GXLDR: Paging-related datastructures initialized\n");
 	
+	//allocate and map a kernel stack in virtual memory
+	void* kernelStack = memory_allocate(GEEXOS_KERNEL_STACK_SIZE, MemoryTypeGeexOSKernelStack);
+	arch_map_virtual_memory_range((Address)kernelStack, GEEXOS_KERNEL_STACK_ADDRESS, GEEXOS_KERNEL_STACK_SIZE, true, false);
+
 	LoadedImage* kernelImageInfo;
 
 	pe_setLibrarySearchPath("hd(0,0)/system/");
@@ -27,9 +31,6 @@ void loader_loadGeexOS()
 
 	//TODO: build loader block with memory map, loaded images, etc.
 
-	//TODO: setup a stack for the kernel
-	typedef void (*entryPoint)(void);
-	entryPoint p = (entryPoint)kernelImageInfo->VirtualEntryPoint;
-	printf("Jumping into kernel\n");
-	p();
+	printf("Jumping into GeexOS kernel\n");
+	arch_execute_at_address_with_stack(kernelImageInfo->VirtualEntryPoint, GEEXOS_KERNEL_STACK_ADDRESS + GEEXOS_KERNEL_STACK_SIZE);
 }

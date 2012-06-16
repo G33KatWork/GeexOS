@@ -26,4 +26,6 @@ void arch_map_virtual_memory_range(Address physical, Address virtual, size_t len
 bool arch_is_virtual_memory_range_free(Address virtual, size_t len);
 void arch_enable_paging(void);
 
+void arch_execute_at_address_with_stack(Address entrypoint, Address stackpointer);
+
 #endif

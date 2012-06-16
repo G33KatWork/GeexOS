@@ -37,7 +37,8 @@ CXXSOURCES =
 ASOURCES = arch/i386/start.S \
 		   arch/i386/trap.S \
 		   arch/i386/gdt_flush.S \
-		   arch/i386/realmode.S
+		   arch/i386/realmode.S \
+		   arch/i386/execute_at.S
 
 # Additional include paths to consider
 INCLUDES =	include
