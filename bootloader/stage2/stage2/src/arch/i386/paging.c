@@ -80,3 +80,21 @@ bool paging_isRangeFreeNonPAE(Address virtual, size_t len)
 
     return true;
 }
+
+Address paging_findFreeRangeNonPAE(Address base, size_t size)
+{
+    size_t continousFreeSpace = 0;
+
+    for(Address curAddr = base; curAddr != 0/*implicit overflow*/; curAddr += PAGE_SIZE)
+    {
+        if(continousFreeSpace >= size)
+            return curAddr-size;
+
+        if(!paging_isAddressPresentNonPAE(curAddr))
+            continousFreeSpace += PAGE_SIZE;
+        else
+            continousFreeSpace = 0;
+    }
+    
+    return 0;
+}

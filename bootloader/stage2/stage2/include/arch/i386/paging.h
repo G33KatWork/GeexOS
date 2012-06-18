@@ -40,6 +40,7 @@ void paging_mapVirtualMemoryNonPAE(Address physical, Address virtual, bool userm
 void paging_mapRangeNonPAE(Address physical, Address virtual, size_t len, bool usermode, bool writable);
 bool paging_isAddressPresentNonPAE(Address virtual);
 bool paging_isRangeFreeNonPAE(Address virtual, size_t len);
+Address paging_findFreeRangeNonPAE(Address base, size_t size);
 
 extern page_directory_t* pageDirectory;
 

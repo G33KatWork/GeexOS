@@ -40,7 +40,7 @@ ASFLAGS = -f win32 -ggdb
 # Linker flags
 LDFLAGS = -s -Map testkernellib.map --out-implib testkernellib_imp.a \
 			-entry _DllEntry --disable-auto-import --exclude-all-symbols \
-			-nostdlib -shared --enable-auto-image-base
+			-nostdlib -shared --image-base 0xC0000000
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)
