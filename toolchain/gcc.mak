@@ -6,7 +6,7 @@ GCC_PATCHES    :=
 # Hack to build on OS X.
 ifeq ($(shell uname),Darwin)
 # fix compilation issue with llvm/clang (internal compiler error at runtime)
-GCC_CONFENV = CC=/usr/bin/gcc-4.2 CPP=/usr/bin/cpp-4.2 CXX=/usr/bin/g++-4.2 LD=/usr/bin/gcc-4.2
+GCC_CONFENV = CC=/usr/bin/gcc CPP=/usr/bin/cpp CXX=/usr/bin/g++ LD=/usr/bin/gcc
 endif
 
 PATH += :$(TOOLCHAIN_ROOTDIR)/bin

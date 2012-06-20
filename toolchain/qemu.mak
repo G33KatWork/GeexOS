@@ -4,9 +4,11 @@ QEMU_DOWNLOAD	    := http://wiki.qemu.org/download/qemu-$(QEMU_VERSION).tar.gz
 QEMU_PATCHES	    := #$(TOOLCHAIN_PATCHDIR)/qemu-1.0-macos-uint16-hack.patch
 
 # Hack to build on OS X.
+# If you don't have an Apple GCC, install it with
+# brew install https://raw.github.com/Homebrew/homebrew-dupes/master/apple-gcc42.rb
 ifeq ($(shell uname),Darwin)
 # fix compilation issue with llvm/clang (segfault at runtime)
-QEMU_CONFENV = CC=/usr/bin/gcc-4.2 CPP=/usr/bin/cpp-4.2 CXX=/usr/bin/g++-4.2 LD=/usr/bin/gcc-4.2
+QEMU_CONFENV = CC=/usr/local/bin/gcc-4.2 CPP=/usr/local/bin/cpp-4.2 CXX=/usr/local/bin/g++-4.2 LD=/usr/local/bin/gcc-4.2
 endif
 
 # Download
