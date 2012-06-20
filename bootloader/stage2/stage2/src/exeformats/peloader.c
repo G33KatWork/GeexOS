@@ -2,7 +2,7 @@
 #include <fs.h>
 #include <print.h>
 
-LIST_HEAD(loadedImages);
+LIST_HEAD(pe_loadedImages);
 
 static const char* librarySearchPath;
 
@@ -144,15 +144,14 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	loadedImageInfo->VirtualEntryPoint = virtualBase + ntHeaders->OptionalHeader.AddressOfEntryPoint;
 	loadedImageInfo->SizeOfImage = ntHeaders->OptionalHeader.SizeOfImage;
 
-	list_add(&loadedImageInfo->Link, &loadedImages);
+	list_add(&loadedImageInfo->Link, &pe_loadedImages);
 
+	//relocate the image if necessary
 	if(ntHeaders->OptionalHeader.ImageBase != virtualBase)
 		if(!pe_relocateImage(loadedImageInfo, virtualBase - ntHeaders->OptionalHeader.ImageBase))
 			return false;
 
-	//TODO: parse import- and export table
-	//TODO: runtime linking
-
+	//resolve imports recursively
 	if(!pe_resolveImports(loadedImageInfo))
 		return false;
 
@@ -354,15 +353,27 @@ bool pe_relocateImage(LoadedImage* image, int64_t bias)
 void pe_printLoadedImages()
 {
 	LoadedImage *img;
-	list_for_each_entry(img, &loadedImages, Link) {
+	list_for_each_entry(img, &pe_loadedImages, Link) {
 		debug_printf("%s: Physical load address: 0x%x - Virtual base: 0x%x - Entrypoint: 0x%x - Imagesize: 0x%x\n", img->Name, img->PhysicalBase, img->VirtualBase, img->VirtualEntryPoint, img->SizeOfImage);
 	}
+}
+
+int pe_getLoadedImageCount()
+{
+	//Yeah! O(n) -_-
+	int i = 0;
+	LoadedImage *img;
+	list_for_each_entry(img, &pe_loadedImages, Link) {
+		i++;
+	}
+
+	return i;
 }
 
 bool pe_isImageLoaded(char* name, LoadedImage** imageInfo)
 {
 	LoadedImage* image;
-	list_for_each_entry(image, &loadedImages, Link) {
+	list_for_each_entry(image, &pe_loadedImages, Link) {
 		if(stricmp(name, image->Name) == 0)
 		{
 			if(imageInfo)

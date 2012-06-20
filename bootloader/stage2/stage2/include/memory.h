@@ -36,12 +36,15 @@ typedef struct {
     PageNumber length;          //Continous length of allocated pages
 } PageLookupTableItem;
 
+//Firmware memory map items
 #define MAX_MEMORY_MAP_ENTRIES 32
 extern FirmwareMemoryMapItem FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES];
 
+//Firmware memory map handling
 uint32_t memory_add_map_entry(FirmwareMemoryMapItem* map, uint32_t maxEntries, PageNumber base, PageNumber size, MemoryType type);
 void memory_print_map(FirmwareMemoryMapItem* map);
 
+//Loader memory map handling
 void memory_init(void);
 PageNumber memory_count_usable_pages(FirmwareMemoryMapItem* map);
 void* memory_find_page_lookup_table_location(PageNumber TotalPageCount, FirmwareMemoryMapItem* map);
@@ -49,7 +52,9 @@ void memory_mark_pages(PageNumber start, PageNumber count, MemoryType type);
 PageNumber memory_find_available_pages(PageNumber count);
 void* memory_allocate(size_t s, MemoryType type);
 
-void memory_print_alloc_map(void);
+PageLookupTableItem* memory_getMemoryMap(size_t* noEntries);
 
+void memory_print_alloc_map(void);
+const char* memory_getTypeName(MemoryType t);
 
 #endif

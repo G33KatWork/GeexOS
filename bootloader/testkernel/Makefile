@@ -45,7 +45,7 @@ CXXFLAGS += $(addprefix -I,$(INCLUDES))
 ASFLAGS = -f win32 -ggdb
 
 # Linker flags
-LDFLAGS = -s -Map testkernel.map -entry _start --image-base 0xC0000000 \
+LDFLAGS = -Map testkernel.map -entry _start --image-base 0xC0000000 \
 			--subsystem native --disable-auto-import --exclude-all-symbols \
 			-nostdlib -pie
 

@@ -5,6 +5,7 @@ extern _kmain
 section .text
 
 _start:
+  ;loader already pushed pointer to loader block onto stack
   cli
   call _kmain
 

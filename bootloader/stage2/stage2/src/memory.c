@@ -204,6 +204,14 @@ void* memory_allocate(size_t s, MemoryType type)
     return (void*)(firstFreePage * arch_get_page_size());
 }
 
+PageLookupTableItem* memory_getMemoryMap(size_t* noEntries)
+{
+    if(noEntries)
+        *noEntries = highestPhysicalPage - lowestPhysicalPage;
+
+    return pageLookupTable;
+}
+
 void memory_print_alloc_map()
 {
     debug_printf("Page lookup table at 0x%x\n", pageLookupTable);
@@ -267,5 +275,12 @@ void memory_print_alloc_map()
     debug_printf("\n");
 }
 
+const char* memory_getTypeName(MemoryType t)
+{
+    if(t >= sizeof(MemoryTypeNames) / sizeof(const char*))
+        return "<<Index out of bounds>>";
+
+    return MemoryTypeNames[t];
+}
 
 
