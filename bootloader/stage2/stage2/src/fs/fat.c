@@ -21,7 +21,7 @@ const FilesystemOperations fat_ops = {
 
 FilesystemMount* fat_mount(DiskDevice* device)
 {
-	debug_printf("Probing for FAT on device %s\n", device->name);
+	debug_printf("FAT: Probing for FAT on device %s\n", device->name);
 
 	//read the first sector for the BPB
 	DiskGeometry geometry;
@@ -39,13 +39,13 @@ FilesystemMount* fat_mount(DiskDevice* device)
 		memcmp(bpb->FAT.FAT32.FilesystemType, "FAT32   ", 8)
 	  ) return NULL;
 
-	debug_printf("FS on %s seems to be some kind of FAT\n", device->name);
+	debug_printf("FAT: FS on %s seems to be some kind of FAT\n", device->name);
 
 	FatVolumeInformation* info = malloc(sizeof(FatVolumeInformation));
 	memset(info, 0, sizeof(FatVolumeInformation));
 
 	info->FatType = fat_determine_type(bpb);
-	debug_printf("It is %s\n", fat_type_to_string(info->FatType));
+	debug_printf("FAT: It is %s\n", fat_type_to_string(info->FatType));
 
 	if(info->FatType == FAT32)
 	{
@@ -91,17 +91,17 @@ FilesystemMount* fat_mount(DiskDevice* device)
 
 	fat_set_device_context(fsmount, info);
 
-	debug_printf("FatType: %s\n", fat_type_to_string(info->FatType));
-	debug_printf("BytesPerSector: %d\n", info->BytesPerSector);
-	debug_printf("SectorsPerCluster: %d\n", info->SectorsPerCluster);
-	debug_printf("FatSectorStart: %d\n", info->FatSectorStart);
-	debug_printf("ActiveFatSectorStart: %d\n", info->ActiveFatSectorStart);
-	debug_printf("NumberOfFats: %d\n", info->NumberOfFats);
-	debug_printf("SectorsPerFat: %d\n", info->SectorsPerFat);
-	debug_printf("RootDirSectorStart: %d\n", info->RootDirSectorStart);
-	debug_printf("RootDirSectors: %d\n", info->RootDirSectors);
-	debug_printf("RootDirStartCluster: %d\n", info->RootDirStartCluster);
-	debug_printf("DataSectorStart: %d\n", info->DataSectorStart);
+	debug_printf("FAT: FatType: %s\n", fat_type_to_string(info->FatType));
+	debug_printf("FAT: BytesPerSector: %d\n", info->BytesPerSector);
+	debug_printf("FAT: SectorsPerCluster: %d\n", info->SectorsPerCluster);
+	debug_printf("FAT: FatSectorStart: %d\n", info->FatSectorStart);
+	debug_printf("FAT: ActiveFatSectorStart: %d\n", info->ActiveFatSectorStart);
+	debug_printf("FAT: NumberOfFats: %d\n", info->NumberOfFats);
+	debug_printf("FAT: SectorsPerFat: %d\n", info->SectorsPerFat);
+	debug_printf("FAT: RootDirSectorStart: %d\n", info->RootDirSectorStart);
+	debug_printf("FAT: RootDirSectors: %d\n", info->RootDirSectors);
+	debug_printf("FAT: RootDirStartCluster: %d\n", info->RootDirStartCluster);
+	debug_printf("FAT: DataSectorStart: %d\n", info->DataSectorStart);
 
 	return fsmount;
 }
@@ -284,12 +284,12 @@ void fat_seek(FILE* f, long offset, SeekMode mode)
 		}
 	}
 
-	debug_printf("FAT Seeking.. Mode: %x - offset: %x - new fp: %x\n", mode, offset, f->filePointer);
+	debug_printf("FAT: Seeking.. Mode: %x - offset: %x - new fp: %x\n", mode, offset, f->filePointer);
 }
 
 bool fat_findFile(FilesystemMount* mount, const char* filename, FatFileInfo* fileinfo)
 {
-	debug_printf("FAT trying to locate file %s on %s\n", filename, mount->Device->name);
+	debug_printf("FAT: trying to locate file %s on %s\n", filename, mount->Device->name);
 
 	char pathPart[261];	//One long vfat filename can have max 260 chars
 	void* directoryBuffer;
@@ -432,7 +432,7 @@ bool fat_searchDirectoryForFile(FilesystemMount* mount, void* directoryContents,
 		if(stricmp(filename, shortNameBuffer) == 0 || stricmp(filename, longNameBuffer) == 0)
 		{
 			uint32_t startCluster = (curEntry->ClusterHigh << 16) | curEntry->ClusterLow;
-			debug_printf("Found file %s with size 0x%x start cluster 0x%x\n", filename, curEntry->Size, startCluster);
+			debug_printf("FAT: Found file %s with size 0x%x start cluster 0x%x\n", filename, curEntry->Size, startCluster);
 
 			fileinfo->Attributes = curEntry->Attributes;
 			fileinfo->Filesize = curEntry->Size;
