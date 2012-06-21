@@ -18,6 +18,12 @@ int kmain()
     arch_early_machine_setup();
     debug_init();
 
+    //change the ports if necessary
+    //debug_enableOutputPort(DBGPORT_SCREEN);
+    //debug_disableOutputPort(DBGPORT_RS232);
+    //debug_setMessageComPort(DBGPORT_RS232_COM2);
+    //debug_setGdbComPort(DBGPORT_RS232_COM1);
+
     //Uncomment for gdb remote debugging over serial port
     //arch_gdbstub_enable();
 
