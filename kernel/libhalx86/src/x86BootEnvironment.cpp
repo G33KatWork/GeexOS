@@ -10,7 +10,7 @@ using namespace Arch;
 x86BootEnvironment::x86BootEnvironment(KernelInformation* i)
 {
     //Copy cmdline
-    cmdLine = (char*)kmalloc(strlen(i->cmdLine) + 1);
+    /*cmdLine = (char*)kmalloc(strlen(i->cmdLine) + 1);
     memcpy(cmdLine, i->cmdLine, strlen(i->cmdLine) + 1);
     
     //Memory
@@ -44,5 +44,5 @@ x86BootEnvironment::x86BootEnvironment(KernelInformation* i)
     strtab = (uint8_t*)kmalloc(strtabSize);
     
     memcpy(symtab, (void*)i->symtabAddr, symtabSize);
-    memcpy(strtab, (void*)i->strtabAddr, strtabSize);
+    memcpy(strtab, (void*)i->strtabAddr, strtabSize);*/
 }

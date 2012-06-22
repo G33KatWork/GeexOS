@@ -2,7 +2,7 @@ SRC                 := ../..
 include $(SRC)/build/base.mak
 
 # Target file name.
-TARGET = kernel.elf
+TARGET = kernel.exe
 
 # List C source files here.
 CCSOURCES = 
@@ -34,7 +34,7 @@ ASOURCES =
 INCLUDES =	include ../libkcpp/include ../libhalx86/include ../libhalinterface/include
 
 # Additional static libs to link agains
-STATICLIBS = ../libkcpp/libkcpp.a ../libhalinterface/libhalinterface.a ../libhalx86/libhalx86.a
+STATICLIBS = ../libkcpp/libkcpp.lib ../libhalinterface/libhalinterface.lib ../libhalx86/libhalx86.lib
 
 # Folder for object files
 OBJDIR = obj
@@ -59,10 +59,12 @@ CXXFLAGS += -DARCH_X86 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
 # NASM flags
-ASFLAGS = -f elf -ggdb
+ASFLAGS = -f win32
 
 # Linker flags
-LDFLAGS = -T linker.ld -Map kernel.map -E
+LDFLAGS = -T linker.ld -Map kernel.map -entry _start --image-base 0xC0000000 \
+			--subsystem native --disable-auto-import --exclude-all-symbols \
+			-nostdlib -pie
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)
@@ -90,8 +92,6 @@ $(TARGET): $(addprefix $(OBJDIR)/, $(OBJECTS)) $(STATICLIBS)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(STATICLIBS)
 	$(call cmd_msg,DISASM,$(@) -> disasm)
 	$(Q)$(OBJDUMP) -d $(TARGET) > disasm
-	$(call cmd_msg,MKSYMS,$(@) -> bochs.sym)
-	$(Q)$(NM) $@ | awk '{print $1 " " $3}' > bochs.sym
 
 # Cleaning
 clean:
@@ -99,7 +99,6 @@ clean:
 	$(Q)$(RM) -f disasm
 	$(Q)$(RM) -f kernel.map
 	$(Q)$(RM) -rf obj
-	$(Q)$(RM) -rf bochs.sym
 
 distclean: clean
 

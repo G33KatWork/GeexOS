@@ -3,8 +3,51 @@
 
 #include <types.h>
 
+//These structs are passed by the loader to the kernel.
+//If you change them here, be sure to change them in the loader, too.
+
+typedef enum {
+    MemoryTypeFree,
+    MemoryTypeBad,
+    MemoryTypeSpecial,
+    MemoryTypeLoaderExecutable,
+    MemoryTypeLoaderTemporary,
+    MemoryTypeLoaderStack,
+    MemoryTypeLoaderHeap,
+    MemoryTypeFirmware,
+    MemoryTypePageLookupTable,
+    MemoryTypeGeexOSPageStructures,
+    MemoryTypeGeexOSKernelEnvironmentInformation,
+    MemoryTypeGeexOSKernelExecutable,
+    MemoryTypeGeexOSKernelStack,
+    MemoryTypeGeexOSKernelLibrary
+} MemoryType;
+
+typedef struct _MEMORY_DESCRIPTOR
+{
+    Address start;
+    Address length;
+    MemoryType type;
+} MEMORY_DESCRIPTOR, *PMEMORY_DESCRIPTOR;
+
+typedef struct _LDRBLK_LOADED_IMAGE {
+    char    Name[32];
+    Address PhysicalBase;
+    Address VirtualBase;
+    Address VirtualEntryPoint;
+    size_t  SizeOfImage;
+} LOADED_IMAGE, *PLOADED_IMAGE;
+
+typedef struct _LOADER_BLOCK
+{
+    LOADED_IMAGE LoadedImages[32];
+    MEMORY_DESCRIPTOR MemoryDescriptors[32];
+    Address ACPIRDSPDescriptor;
+    //TODO: more?
+} KernelInformation;
+
 // format of a memory region
-struct kerninfo_memory_region {
+/*struct kerninfo_memory_region {
 	uint32_t    	size;
 	uint64_t    	addr;
 	uint64_t    	len;
@@ -18,7 +61,7 @@ struct kerninfo_program_region {
     uint64_t        len;
     uint32_t        flags;  //see elf flags of program headers
 } __attribute__((packed));
-typedef struct kerninfo_program_region KernelInformationProgramRegion;
+typedef struct kerninfo_program_region KernelInformationProgramRegion;*/
 
 /**
  * This structure is passed to the kernel by the loader stub
@@ -26,7 +69,7 @@ typedef struct kerninfo_program_region KernelInformationProgramRegion;
  * current virtual memory map, reserved physical memory by the
  * BIOS, the kernel commandline and the location of the modules
 **/
-struct kernel_information {
+/*struct kernel_information {
 	uint32_t	                memoryLo;
 	uint32_t    	            memoryHi;
     char*                       cmdLine;
@@ -42,6 +85,6 @@ struct kernel_information {
     uint32_t                    strtabSize;
 }  __attribute__((packed));
 
-typedef struct kernel_information KernelInformation;
+typedef struct kernel_information KernelInformation;*/
 
 #endif

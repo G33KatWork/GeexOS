@@ -12,8 +12,21 @@ namespace Arch
     {
     public:
         x86BootEnvironment(KernelInformation* i);
-    
-        virtual size_t GetInstalledMemory() { return memory; }
+
+        //FIXME: make this actually do something...
+        virtual size_t GetInstalledMemory() { return 128*1024; }
+        virtual const char* GetKernelCommandline() { return ""; }
+        
+        virtual KernelBootModuleRepository* GetBootModuleRepository() { return NULL; }
+        virtual size_t GetBootModuleRepositorySize() { return 0; }
+        
+        virtual size_t GetProgramRegionCount() { return 0; }
+        virtual KernelProgramRegion* GetProgramRegion(size_t idx)
+        {
+            return NULL;
+        }
+
+        /*virtual size_t GetInstalledMemory() { return memory; }
         virtual const char* GetKernelCommandline() { return cmdLine; }
         
         virtual KernelBootModuleRepository* GetBootModuleRepository() { return (KernelBootModuleRepository*)moduleLocation; }
@@ -31,10 +44,10 @@ namespace Arch
         {
             ASSERT(idx < programRegionCount, "Index out of bounds");
             return programRegions + idx;
-        }
+        }*/
     
     private:
-        char* cmdLine;
+        /*char* cmdLine;
         size_t memory;
         
         Address moduleLocation;
@@ -50,7 +63,7 @@ namespace Arch
         uint8_t* strtab;
         
         size_t symtabSize;
-        size_t strtabSize;
+        size_t strtabSize;*/
     };
 }
 

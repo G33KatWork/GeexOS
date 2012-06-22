@@ -15,12 +15,8 @@
                     "destination": "GXLDR"
                 },
                 {
-                    "source": "bootloader/testkernel/testkernel.exe",
+                    "source": "kernel/kernel/kernel.exe",
                     "destination": "system/gxoskrnl.exe"
-                },
-                {
-                    "source": "bootloader/testkernellib/testkernellib.dll",
-                    "destination": "system/testkernellib.dll"
                 }
             ]
         },

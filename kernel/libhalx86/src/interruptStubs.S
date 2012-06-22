@@ -1,8 +1,9 @@
+[SECTION .text]
 [BITS 32]
 
 %macro ISR_NOERRCODE 1
-	[GLOBAL exception%1]
-	exception%1:
+	[GLOBAL _exception%1]
+	_exception%1:
 		cli
 		push dword 0
 		push dword %1
@@ -10,16 +11,16 @@
 %endmacro
 
 %macro ISR_ERRCODE 1
-	[GLOBAL exception%1]
-	exception%1:
+	[GLOBAL _exception%1]
+	_exception%1:
 		cli
 		push dword %1
 		jmp exception_common_stub
 %endmacro
 
 %macro IRQ 1
-	[GLOBAL irq%1]
-	irq%1:
+	[GLOBAL _irq%1]
+	_irq%1:
 		cli
 		push dword 0
 		push dword %1
@@ -293,7 +294,7 @@ IRQ 254     ;smp error
 IRQ 255     ;spurious interrupt handler
 
 ;Our C-Handler for fault interrupts
-[EXTERN fault_handler]
+[EXTERN _fault_handler]
 exception_common_stub:
 	pusha					; push all registers (see regs.h for corresponding struct)
 
@@ -310,7 +311,7 @@ exception_common_stub:
 	mov fs, ax
 	mov gs, ax
 
-	call fault_handler
+	call _fault_handler
 
     pop gs
     pop fs
@@ -328,7 +329,7 @@ exception_common_stub:
 	iret
 
 ;Our C-Handler for common interrupts
-[EXTERN interrupt_handler]
+[EXTERN _interrupt_handler]
 irq_common_stub:
 	pusha					; push all registers (see regs.h for corresponding struct)
 
@@ -345,7 +346,7 @@ irq_common_stub:
 	mov fs, ax
 	mov gs, ax
 
-	call interrupt_handler
+	call _interrupt_handler
 	
 	pop gs
     pop fs

@@ -22,6 +22,8 @@ using namespace Memory::Slab;
 using namespace Modules;
 using namespace ELF;
 
+extern "C" void kmain();
+
 #include <kernel/Objects/GXObject.h>
 
 class TestObject : public GXObject
@@ -44,7 +46,7 @@ size_t HashKey(const char* s)
 }
 };
 
-int main()
+void kmain()
 {
     #ifdef SERIAL_DEBUG
         CurrentHAL->SetCurrentDebugOutputDeviceType(Debug::Serial);
@@ -97,7 +99,7 @@ int main()
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
 
     //Create module repository memory region for boot-critical modules
-    MAIN_DEBUG_MSG("Module BLOB is at " << hex << (Address)CurrentHAL->GetBootEnvironment()->GetBootModuleRepository() << " with size " << CurrentHAL->GetBootEnvironment()->GetBootModuleRepositorySize());
+    /*MAIN_DEBUG_MSG("Module BLOB is at " << hex << (Address)CurrentHAL->GetBootEnvironment()->GetBootModuleRepository() << " with size " << CurrentHAL->GetBootEnvironment()->GetBootModuleRepositorySize());
     
     KernelBootModuleRepository* bootModules = CurrentHAL->GetBootEnvironment()->GetBootModuleRepository();
     ASSERT(bootModules->Magic == BOOTMODULES_MAGIC, "Magic value for boot module repository is wrong");
@@ -111,7 +113,7 @@ int main()
     }
 
         MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
-        slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+        slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());*/
 
     /*DataStructures::Dictionary<const char*, Address, struct Hasher>* symTbl = new DataStructures::Dictionary<const char*, Address, struct Hasher>();
     symTbl->Insert("foobar", 1234);

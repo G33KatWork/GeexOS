@@ -51,6 +51,7 @@ void x86HAL::Initialize()
     if(kernelInformation == NULL)
         PANIC("The multiboot structure pointer is NULL. Not good!");
     
+    HAL_DEBUG_MSG("Parsing boot environment structure...");
     bootenv = new x86BootEnvironment(kernelInformation);
     HAL_DEBUG_MSG("Boot environment information successfully parsed...");
     
@@ -74,7 +75,7 @@ void x86HAL::Initialize()
 
 void x86HAL::reserveBIOSMemregions()
 {
-    HAL_DEBUG_MSG("The following " << dec << ((x86BootEnvironment*)bootenv)->GetBIOSMemregionCount() << " memory regions were given from the bootloader:");
+    /*HAL_DEBUG_MSG("The following " << dec << ((x86BootEnvironment*)bootenv)->GetBIOSMemregionCount() << " memory regions were given from the bootloader:");
     HAL_DEBUG_MSG("Address\t\tLength\t\tType");
     for(unsigned int i = 0; i < ((x86BootEnvironment*)bootenv)->GetBIOSMemregionCount(); i++)
     {
@@ -101,7 +102,7 @@ void x86HAL::reserveBIOSMemregions()
             IOMemoryRegion* iomemregion = VirtualMemoryManager::GetInstance()->IOMemory()->MapPhysical(region->addr & PAGEALIGN_MASK, length, "BIOS Reserved");
             HAL_DEBUG_MSG("Reserved region mapped to virtual " << hex << iomemregion->StartAddress());
         }
-    }
+    }*/
 }
 
 void x86HAL::InitializationDone()

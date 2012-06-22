@@ -2,7 +2,7 @@ SRC                 := ../..
 include $(SRC)/build/base.mak
 
 # Target file name.
-TARGET = libhalx86.a
+TARGET = libhalx86.lib
 
 # List C source files here.
 CCSOURCES = 
@@ -50,7 +50,7 @@ CXXFLAGS += -DARCH_X86 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
 # NASM flags
-ASFLAGS = -f elf -ggdb
+ASFLAGS = -f win32
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)

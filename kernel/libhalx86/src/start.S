@@ -1,57 +1,57 @@
+[SECTION .text]
 [BITS 32]
-global start
-extern main
-
-extern start_ctors
-extern end_ctors
-extern __cxa_finalize
+global _start
+extern _kmain
+extern __CTOR_LIST__
 
 STACKSIZE          equ        0x10000 ; 64k stack for the main kernel thread
 
 section .text
 align 4
-start:
-    mov ebx, [esp+4]            ; Get pointer to kernel information (pushed by loader stub before call) into ebx
-    
-	mov esp, bootStack			; Setup stack
-	mov ebp, esp
-	push ebp
+_start:
+    pop ebx								; Get pointer to kernel information (pushed by loader) into ebx
+    mov [_kernelInformation], ebx       ; Store pointer to boot environment information for the HAL
 
-    call static_ctors_loop
-    
-    mov [kernelInformation], ebx                    ; Push pointer to multiboot information as first argument
-	call main					; Jump to C++-Code
+    call callCtors                      ; Call ctors
+	call _kmain							; Jump to C++-Code
 	cli
 	
-	push 0
-	call __cxa_finalize			; Call destructors with arg 0 (destroy all)
+	;TODO: call dtors! they are registered with atexit
 
-cpuhalt:
+.cpuhalt:
     hlt
-    jmp cpuhalt
-	
-	
-static_ctors_loop:				; Call constructors
+    jmp .cpuhalt
+
+callCtors:
     push ebx
-    
-	mov ebx, start_ctors
-    jmp .test
+    push eax
+
+    mov ebx, __CTOR_LIST__
+    add ebx, 4              ;skip first 0xFFFFFFFF
+
+    mov eax, [ebx]          ;get first entry
+
 .body:
-    call [ebx]
-    add ebx,4
+    call eax                ;call ctor
+
+    add ebx, 4              ;advance pointer to next entry
+    mov eax, [ebx]          ;get next entry
+
 .test:
-    cmp ebx, end_ctors
-    jb .body
-    
+    test eax, eax           ;end of list?
+    jnz .body
+
+    pop eax
     pop ebx
     ret
+
 
 ;---------------------------------------------------------------------------------------------
 
 section .data
 ;a comfy place for the multiboot struct location for the x86 HAL
-global kernelInformation
-kernelInformation:	dw 0
+global _kernelInformation
+_kernelInformation:	dd 0
 
 ;---------------------------------------------------------------------------------------------
 

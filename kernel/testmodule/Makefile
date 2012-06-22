@@ -2,7 +2,7 @@ SRC                 := ../..
 include $(SRC)/build/base.mak
 
 # Target file name.
-TARGET = module.o
+TARGET = module.dll
 
 # List C source files here.
 CCSOURCES = 
@@ -42,10 +42,12 @@ CXXFLAGS += -DARCH_X86 -DDEBUG
 CXXFLAGS += $(addprefix -I,$(INCLUDES))
 
 # NASM flags
-ASFLAGS = -f elf -ggdb
+ASFLAGS = -f win32
 
 # Linker flags
-LDFLAGS = -r -T linker.ld
+LDFLAGS = -T linker.ld -Map kernel.map -entry _ModuleEntryPoint --image-base 0xC0000000 \
+			--subsystem native --disable-auto-import --exclude-all-symbols \
+			-nostdlib -pie
 
 # Determinte objects to be created
 OBJECTS += $(ASOURCES:%.S=%.o)

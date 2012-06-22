@@ -14,8 +14,8 @@ bootloader: toolchain
 	$(call call_submake,bootloader,all)
 
 kernel: toolchain
-#	$(call cmd_msg,SUBDIR,kernel)
-#	$(call call_submake,kernel,all)
+	$(call cmd_msg,SUBDIR,kernel)
+	$(call call_submake,kernel,all)
 
 servers: toolchain
 	$(call cmd_msg,SUBDIR,servers)

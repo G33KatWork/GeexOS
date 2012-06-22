@@ -2,11 +2,7 @@ SRC                 := ..
 include $(SRC)/build/base.mak
 
 # Main targets
-all: loaderstub kernel testmodule
-
-loaderstub:
-	$(call cmd_msg,SUBDIR,loaderstub)
-	$(call call_submake,loaderstub,all)
+all: kernel
 
 libkcpp:
 	$(call cmd_msg,SUBDIR,libkcpp)
@@ -34,8 +30,7 @@ clean:
 	$(call call_submake,libhalinterface,clean)
 	$(call call_submake,libhalx86,clean)
 	$(call call_submake,kernel,clean)
-	$(call call_submake,loaderstub,clean)
-	$(call call_submake,testmodule,clean)
+#	$(call call_submake,testmodule,clean)
 	$(Q)$(RM) -f floppy.img
 
 distclean: clean
@@ -43,7 +38,6 @@ distclean: clean
 	$(call call_submake,libhalinterface,distclean)
 	$(call call_submake,libhalx86,distclean)
 	$(call call_submake,kernel,distclean)
-	$(call call_submake,loaderstub,distclean)
-	$(call call_submake,testmodule,distclean)
+#	$(call call_submake,testmodule,distclean)
 
-.PHONY: testmodule loaderstub libhalinterface libhalx86 libkcpp kernel clean distclean floppy.img qemu qemudebug
+.PHONY: testmodule libhalinterface libhalx86 libkcpp kernel clean distclean floppy.img qemu qemudebug

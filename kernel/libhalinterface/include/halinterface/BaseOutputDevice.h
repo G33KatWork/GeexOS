@@ -81,7 +81,6 @@ namespace Debug
         BaseOutputDevice &operator<<(const char *c);
         BaseOutputDevice &operator<<(unsigned int i);
         BaseOutputDevice &operator<<(int i);
-        BaseOutputDevice &operator<<(size_t s);
         BaseOutputDevice &operator<<(Special s);
         
 		virtual void Clear() = 0;
