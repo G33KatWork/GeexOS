@@ -3,6 +3,10 @@
 #include <print.h>
 #include <debug.h>
 
+//FIXME: the whole memory management is designed for continous memory -> NUMA is not possible
+//FIXME: memory manager runs into an endless loop if mmio space collides with memory map
+//FIXME: handle more than 4GB of memory
+
 #define min(a, b) \
     (a < b) ? (a) : (b)
 
@@ -20,6 +24,7 @@ static const char* MemoryTypeNames[] = {
     "MemoryTypeFirmware",
     "MemoryTypePageLookupTable",
     "MemoryTypeGeexOSPageStructures",
+    "MemoryTypeGeexOSPageDirectory",
     "MemoryTypeGeexOSKernelEnvironmentInformation",
     "MemoryTypeGeexOSKernelExecutable",
     "MemoryTypeGeexOSKernelStack",
@@ -116,7 +121,7 @@ PageNumber memory_count_usable_pages(FirmwareMemoryMapItem* map)
     {
         if(cur->BasePage + cur->PageCount > highestPhysicalPage)
             if(cur->Type == MemoryTypeFree)
-                highestPhysicalPage = cur->BasePage + cur->PageCount;
+                highestPhysicalPage = cur->BasePage + cur->PageCount - 1;
         
         if(cur->BasePage < lowestPhysicalPage)
             lowestPhysicalPage = cur->BasePage;
@@ -152,7 +157,7 @@ void* memory_find_page_lookup_table_location(PageNumber totalPageCount, Firmware
 
 void memory_mark_pages(PageNumber start, PageNumber count, MemoryType type)
 {
-    if(start < lowestPhysicalPage || start + count > highestPhysicalPage)
+    if(start < lowestPhysicalPage || start + count - 1 > highestPhysicalPage)
         arch_panic(
             "MM: memory_mark_pages() start or count out of bounds:\n"
             "start: 0x%x, count: 0x%x, type: %s\n"
@@ -202,6 +207,11 @@ void* memory_allocate(size_t s, MemoryType type)
     memory_mark_pages(firstFreePage, pagesNeeded, type);
 
     return (void*)(firstFreePage * arch_get_page_size());
+}
+
+Address memory_getHighestPhysicalPage()
+{
+    return highestPhysicalPage;
 }
 
 PageLookupTableItem* memory_getMemoryMap(size_t* noEntries)
@@ -255,6 +265,9 @@ void memory_print_alloc_map()
             case MemoryTypeGeexOSPageStructures:
                 debug_printf("P");
                 break;
+            case MemoryTypeGeexOSPageDirectory:
+                debug_printf("Y");
+                break;
             case MemoryTypeGeexOSKernelEnvironmentInformation:
                 debug_printf("A");
                 break;
@@ -282,5 +295,3 @@ const char* memory_getTypeName(MemoryType t)
 
     return MemoryTypeNames[t];
 }
-
-

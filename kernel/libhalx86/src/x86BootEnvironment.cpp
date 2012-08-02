@@ -1,14 +1,59 @@
 #include <arch/x86BootEnvironment.h>
 #include <string.h>
 #include <kernel/global.h>
+#include <kernel/debug.h>
 
 using namespace Arch;
+using namespace Debug;
 
-#define     ELF_SECTION_HEADER_FLAG_WRITE           (1 << 0)
-#define     ELF_SECTION_HEADER_FLAG_EXEC            (1 << 2)
+static const char* MemoryTypeNames[] = {
+    "MemoryTypeFree",
+    "MemoryTypeBad",
+    "MemoryTypeSpecial",
+    "MemoryTypeLoaderExecutable",
+    "MemoryTypeLoaderTemporary",
+    "MemoryTypeLoaderStack",
+    "MemoryTypeLoaderHeap",
+    "MemoryTypeFirmware",
+    "MemoryTypePageLookupTable",
+    "MemoryTypeGeexOSPageStructures",
+    "MemoryTypeGeexOSPageDirectory",
+    "MemoryTypeGeexOSKernelEnvironmentInformation",
+    "MemoryTypeGeexOSKernelExecutable",
+    "MemoryTypeGeexOSKernelStack",
+    "MemoryTypeGeexOSKernelLibrary"
+};
 
-x86BootEnvironment::x86BootEnvironment(KernelInformation* i)
+x86BootEnvironment::x86BootEnvironment(KernelInformation* info)
 {
+    HAL_DEBUG_MSG("Got " << dec << info->MemoryDescriptorCount << " memory descriptors from bootloader");
+    for(uint16_t i = 0; i < info->MemoryDescriptorCount; i++)
+    {
+        MEMORY_DESCRIPTOR desc = info->MemoryDescriptors[i];
+        HAL_DEBUG_MSG("Descriptor " << dec << i <<
+                      ": Start: " << hex << desc.Start <<
+                      " - Length: " << desc.Length <<
+                      " - Type: " << MemoryTypeNames[desc.Type]
+        );
+    }
+
+    HAL_DEBUG_MSG("Got " << dec << info->LoadedImageCount << " loaded images from bootloader");
+    for(uint16_t i = 0; i < info->LoadedImageCount; i++)
+    {
+        LOADED_IMAGE img = info->LoadedImages[i];
+        HAL_DEBUG_MSG("Image " << dec << i <<
+                      ": Name: " << img.Name <<
+                      " - PhysicalBase: " << hex << img.PhysicalBase <<
+                      " - VirtualBase: " << img.VirtualBase <<
+                      " - VirtualEntryPoint: " << img.VirtualEntryPoint <<
+                      " - SizeOfImage: " << img.SizeOfImage <<
+                      " - IsKernelImage: " << img.IsKernelImage
+        );
+    }
+
+    HAL_DEBUG_MSG("Upper memory boundary is at " << hex << info->UpperMemoryBoundary);
+    memory = info->UpperMemoryBoundary;
+
     //Copy cmdline
     /*cmdLine = (char*)kmalloc(strlen(i->cmdLine) + 1);
     memcpy(cmdLine, i->cmdLine, strlen(i->cmdLine) + 1);

@@ -14,7 +14,7 @@ namespace Arch
         x86BootEnvironment(KernelInformation* i);
 
         //FIXME: make this actually do something...
-        virtual size_t GetInstalledMemory() { return 128*1024; }
+        virtual uint64_t GetInstalledMemory() { return memory; }
         virtual const char* GetKernelCommandline() { return ""; }
         
         virtual KernelBootModuleRepository* GetBootModuleRepository() { return NULL; }
@@ -47,6 +47,8 @@ namespace Arch
         }*/
     
     private:
+        uint64_t memory;
+
         /*char* cmdLine;
         size_t memory;
         

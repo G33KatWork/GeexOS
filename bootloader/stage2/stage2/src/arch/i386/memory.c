@@ -63,7 +63,7 @@ void mem_i386_e820_detect()
             MemoryType t = MemoryTypeFree;
             PageNumber basePage = map.BaseAddress & ~(ARCH_PAGE_SIZE - 1ULL);
             PageNumber size = map.BaseAddress + map.Length - basePage;
-            size = (size + ARCH_PAGE_SIZE - 1) & ~(ARCH_PAGE_SIZE - 1ULL);
+            size &= ~(ARCH_PAGE_SIZE - 1ULL);
             
             memory_add_map_entry(FirmwareMemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage / ARCH_PAGE_SIZE, size / ARCH_PAGE_SIZE, t);
         }
@@ -75,7 +75,7 @@ void mem_i386_e820_detect()
             
             PageNumber basePage = map.BaseAddress & ~(ARCH_PAGE_SIZE - 1ULL);
             PageNumber size = map.BaseAddress + map.Length - basePage;
-            size = (size + ARCH_PAGE_SIZE - 1) & ~(ARCH_PAGE_SIZE - 1ULL);
+            size &= ~(ARCH_PAGE_SIZE - 1ULL);
             
             memory_add_map_entry(FirmwareMemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage / ARCH_PAGE_SIZE, size / ARCH_PAGE_SIZE, t);
         }

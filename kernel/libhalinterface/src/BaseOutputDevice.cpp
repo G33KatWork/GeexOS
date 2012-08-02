@@ -13,7 +13,7 @@ void BaseOutputDevice::PrintString(char *c)
     }
 }
 
-void BaseOutputDevice::PrintHex(unsigned int n)
+void BaseOutputDevice::PrintHex(uint64_t n)
 {
     char hexChars[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     
@@ -27,14 +27,14 @@ void BaseOutputDevice::PrintHex(unsigned int n)
         n /= 16;
         
         i++;
-    } while(i < sizeof(unsigned int)*2);
+    } while(n != 0);
     
     reverseArray(num);
     PrintString("0x");
     PrintString(num);
 }
 
-void BaseOutputDevice::PrintDec(unsigned int n)
+void BaseOutputDevice::PrintDec(uint64_t n)
 {
     char num[20];
     memset(num, 0, 20);
@@ -52,7 +52,7 @@ void BaseOutputDevice::PrintDec(unsigned int n)
     PrintString(num);
 }
 
-void BaseOutputDevice::PrintDec(int n)
+void BaseOutputDevice::PrintDec(int64_t n)
 {
     int sign;
     char num[20];
@@ -80,7 +80,7 @@ void BaseOutputDevice::PrintData(char* start, size_t len)
 {
     for(unsigned int i = 0; i < (len / 0x10)+1; i++)
     {
-        PrintHex((unsigned)start);
+        PrintHex((uint64_t)start);
         PrintString(": ");
         
         char* ptr = (char*)start;
@@ -121,14 +121,14 @@ BaseOutputDevice &BaseOutputDevice::operator<<(const char *c)
 BaseOutputDevice &BaseOutputDevice::operator<<(unsigned int i)
 {
     if (printMode == dec)
-        PrintDec(i);
+        PrintDec((uint64_t)i);
     else
         PrintHex(i);
     
     return *this;
 }
 
-BaseOutputDevice &BaseOutputDevice::operator<<(int i)
+/*BaseOutputDevice &BaseOutputDevice::operator<<(int i)
 {
     if (printMode == dec)
         PrintDec(i);
@@ -136,7 +136,7 @@ BaseOutputDevice &BaseOutputDevice::operator<<(int i)
         PrintHex(i);
     
     return *this;
-}
+}*/
 
 BaseOutputDevice &BaseOutputDevice::operator<<(Special s)
 {

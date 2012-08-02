@@ -50,7 +50,7 @@ namespace Arch
     
     public:
         /// Returns the amount of installed memory of the system
-        virtual size_t GetInstalledMemory() = 0;
+        virtual uint64_t GetInstalledMemory() = 0;
         
         /// Returns the kernel command line passed by the bootloader
         virtual const char* GetKernelCommandline() = 0;

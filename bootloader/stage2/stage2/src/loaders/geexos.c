@@ -3,8 +3,6 @@
 #include <arch.h>
 #include <exeformats/peloader.h>
 
-static int memoryDescriptorCount = 0;
-
 void loader_loadGeexOS()
 {
 	printf("GXLDR: Loading GeexOS...\n");
@@ -31,11 +29,11 @@ void loader_loadGeexOS()
 	arch_map_virtual_memory_range(0x0, 0x0, 4*1024*1024, true, true);
 
 	//TODO: build loader block with memory map, loaded images, etc.
-	PLOADER_BLOCK loaderBlock = loader_allocateAndPopulateLoaderBlock();
+	/*PLOADER_BLOCK loaderBlock = */loader_allocateAndPopulateLoaderBlock();
 
 	arch_enable_paging();
 	printf("Jumping into GeexOS kernel\n");
-	arch_execute_at_address_with_stack(kernelImageInfo->VirtualEntryPoint, GEEXOS_KERNEL_STACK_ADDRESS + GEEXOS_KERNEL_STACK_SIZE, GEEXOS_ENV_INFO_ADDRESS);
+	arch_execute_at_address_with_stack(kernelImageInfo->VirtualEntryPoint, GEEXOS_KERNEL_STACK_ADDRESS + GEEXOS_KERNEL_STACK_SIZE, (void*)GEEXOS_ENV_INFO_ADDRESS);
 }
 
 void loader_buildPhysicalMemoryMap(PLOADER_BLOCK loaderBlock)
@@ -76,8 +74,10 @@ void loader_addPhysicalMemoryBlock(PLOADER_BLOCK loaderBlock, PageNumber start, 
 	if(start + len > 0xFFFFF)
 		len = 0xFFFFF - start;
 
-	if(memoryDescriptorCount >= GEEXOS_MAX_MEMORY_DESCRIPTORS)
+	if(loaderBlock->MemoryDescriptorCount >= GEEXOS_MAX_MEMORY_DESCRIPTORS)
 		arch_panic("GXLDR: No more space left for memory descriptors");
+
+	uint16_t curMemDescIndex = loaderBlock->MemoryDescriptorCount;
 
 	switch(type)
 	{
@@ -86,21 +86,22 @@ void loader_addPhysicalMemoryBlock(PLOADER_BLOCK loaderBlock, PageNumber start, 
 		case MemoryTypeLoaderTemporary:
 		case MemoryTypeLoaderStack:
 		case MemoryTypeLoaderHeap:
+		case MemoryTypePageLookupTable:
 			break;
 
 		case MemoryTypeBad:
 		case MemoryTypeSpecial:
 		case MemoryTypeFirmware:
-		case MemoryTypePageLookupTable:
 		case MemoryTypeGeexOSPageStructures:
+		case MemoryTypeGeexOSPageDirectory:
 		case MemoryTypeGeexOSKernelEnvironmentInformation:
 		case MemoryTypeGeexOSKernelExecutable:
 		case MemoryTypeGeexOSKernelStack:
 		case MemoryTypeGeexOSKernelLibrary:
-			loaderBlock->MemoryDescriptors[memoryDescriptorCount].start = start;
-			loaderBlock->MemoryDescriptors[memoryDescriptorCount].length = len;
-			loaderBlock->MemoryDescriptors[memoryDescriptorCount].type = type;
-			memoryDescriptorCount++;
+			loaderBlock->MemoryDescriptors[curMemDescIndex].start = start;
+			loaderBlock->MemoryDescriptors[curMemDescIndex].length = len;
+			loaderBlock->MemoryDescriptors[curMemDescIndex].type = type;
+			loaderBlock->MemoryDescriptorCount++;
 
 			break;
 	}
@@ -111,6 +112,7 @@ PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 	int totalSize = sizeof(LOADER_BLOCK) + (pe_getLoadedImageCount() * sizeof(LoadedImage));
 	debug_printf("GXLDR: Total loader block size is 0x%x\n", totalSize);
 	PLOADER_BLOCK loaderBlock = memory_allocate(totalSize, MemoryTypeGeexOSKernelEnvironmentInformation);
+	memset(loaderBlock, 0, totalSize);
 	arch_map_virtual_memory((Address)loaderBlock, GEEXOS_ENV_INFO_ADDRESS, false, false);
 
 	int i = 0;
@@ -124,6 +126,8 @@ PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 		loaderBlock->LoadedImages[i].VirtualBase = img->VirtualBase;
 		loaderBlock->LoadedImages[i].VirtualEntryPoint = img->VirtualEntryPoint;
 		loaderBlock->LoadedImages[i].SizeOfImage = img->SizeOfImage;
+		loaderBlock->LoadedImages[i].IsKernelImage = i==0 ? true : false;
+		loaderBlock->LoadedImageCount++;
 		
 		i++;
 	}
@@ -134,6 +138,10 @@ PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 	//build physical memory map
 	loader_buildPhysicalMemoryMap(loaderBlock);
 	
+	//We want the memory amount, so add one to the highest usable page
+	//FIXME: this is crap, get it directly from the bios memory map!
+	loaderBlock->UpperMemoryBoundary = (memory_getHighestPhysicalPage()+1) * arch_get_page_size();
+
 	//TODO: virtual memory map?
 
 	return loaderBlock;

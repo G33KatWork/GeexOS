@@ -17,6 +17,7 @@ typedef enum {
     MemoryTypeFirmware,
     MemoryTypePageLookupTable,
     MemoryTypeGeexOSPageStructures,
+    MemoryTypeGeexOSPageDirectory,
     MemoryTypeGeexOSKernelEnvironmentInformation,
     MemoryTypeGeexOSKernelExecutable,
     MemoryTypeGeexOSKernelStack,
@@ -25,9 +26,9 @@ typedef enum {
 
 typedef struct _MEMORY_DESCRIPTOR
 {
-    Address start;
-    Address length;
-    MemoryType type;
+    Address Start;
+    Address Length;
+    MemoryType Type;
 } MEMORY_DESCRIPTOR, *PMEMORY_DESCRIPTOR;
 
 typedef struct _LDRBLK_LOADED_IMAGE {
@@ -36,13 +37,17 @@ typedef struct _LDRBLK_LOADED_IMAGE {
     Address VirtualBase;
     Address VirtualEntryPoint;
     size_t  SizeOfImage;
+    int     IsKernelImage;
 } LOADED_IMAGE, *PLOADED_IMAGE;
 
 typedef struct _LOADER_BLOCK
 {
+    uint16_t LoadedImageCount;
     LOADED_IMAGE LoadedImages[32];
+    uint16_t MemoryDescriptorCount;
     MEMORY_DESCRIPTOR MemoryDescriptors[32];
     Address ACPIRDSPDescriptor;
+    Address UpperMemoryBoundary;
     //TODO: more?
 } KernelInformation;
 

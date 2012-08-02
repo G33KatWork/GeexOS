@@ -7,6 +7,7 @@ using namespace Debug;
 
 void x86Paging::Init()
 {
+    //FIXME: use new loader information to setup paging
     ARCH_PAGING_DEBUG_MSG("Initializing Paging...");
     
     kernel_directory = new(true) x86PageDirectory();

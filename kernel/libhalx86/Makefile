@@ -5,7 +5,7 @@ include $(SRC)/build/base.mak
 TARGET = libhalx86.lib
 
 # List C source files here.
-CCSOURCES = 
+CCSOURCES = math_support.c
 
 # List C++ source files here
 CXXSOURCES = HAL.cpp \

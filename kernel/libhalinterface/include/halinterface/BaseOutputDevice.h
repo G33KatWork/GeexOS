@@ -72,15 +72,15 @@ namespace Debug
         
         void PrintString(char *c);
         void PrintString(const char *c) { PrintString((char*)c); }
-		void PrintHex(unsigned int n);
-        void PrintDec(unsigned int n);
-        void PrintDec(int n);
+		void PrintHex(uint64_t n);
+        void PrintDec(uint64_t n);
+        void PrintDec(int64_t n);
         void PrintData(char* start, size_t len);
         
         BaseOutputDevice &operator<<(char *c);
         BaseOutputDevice &operator<<(const char *c);
         BaseOutputDevice &operator<<(unsigned int i);
-        BaseOutputDevice &operator<<(int i);
+        //BaseOutputDevice &operator<<(int i);
         BaseOutputDevice &operator<<(Special s);
         
 		virtual void Clear() = 0;

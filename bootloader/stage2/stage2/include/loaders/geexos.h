@@ -24,13 +24,17 @@ typedef struct _LDRBLK_LOADED_IMAGE {
 	Address VirtualBase;
 	Address VirtualEntryPoint;
 	size_t 	SizeOfImage;
+    int     IsKernelImage;
 } LOADED_IMAGE, *PLOADED_IMAGE;
 
 typedef struct _LOADER_BLOCK
 {
+	uint16_t LoadedImageCount;
 	LOADED_IMAGE LoadedImages[GEEXOS_MAX_IMAGE_DESCRIPTORS];
+	uint16_t MemoryDescriptorCount;
 	MEMORY_DESCRIPTOR MemoryDescriptors[GEEXOS_MAX_MEMORY_DESCRIPTORS];
 	Address ACPIRDSPDescriptor;
+	Address UpperMemoryBoundary;
 	//TODO: more?
 } LOADER_BLOCK, *PLOADER_BLOCK;
 

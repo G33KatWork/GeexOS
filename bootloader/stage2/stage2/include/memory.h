@@ -19,6 +19,7 @@ typedef enum {
     MemoryTypeFirmware,
     MemoryTypePageLookupTable,
     MemoryTypeGeexOSPageStructures,
+    MemoryTypeGeexOSPageDirectory,
     MemoryTypeGeexOSKernelEnvironmentInformation,
     MemoryTypeGeexOSKernelExecutable,
     MemoryTypeGeexOSKernelStack,
@@ -51,6 +52,7 @@ void* memory_find_page_lookup_table_location(PageNumber TotalPageCount, Firmware
 void memory_mark_pages(PageNumber start, PageNumber count, MemoryType type);
 PageNumber memory_find_available_pages(PageNumber count);
 void* memory_allocate(size_t s, MemoryType type);
+Address memory_getHighestPhysicalPage(void);
 
 PageLookupTableItem* memory_getMemoryMap(size_t* noEntries);
 

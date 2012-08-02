@@ -3,7 +3,8 @@
 
 typedef     __SIZE_TYPE__   size_t;      /**< Type to represent the size of an object. */
 
-typedef     __UINT8_TYPE__  uint8_t;
+//Clang doesn't like this
+/*typedef     __UINT8_TYPE__  uint8_t;
 typedef     __INT8_TYPE__   int8_t;
 
 typedef     __UINT16_TYPE__ uint16_t;
@@ -16,7 +17,22 @@ typedef     __UINT64_TYPE__ uint64_t;
 typedef     __INT64_TYPE__  int64_t;
 
 typedef     __UINTPTR_TYPE__ uintptr_t;
-typedef     __INTPTR_TYPE__ intptr_t;
+typedef     __INTPTR_TYPE__ intptr_t;*/
+
+typedef     unsigned char   uint8_t;
+typedef     char            int8_t;
+
+typedef     unsigned short  uint16_t;
+typedef     short           int16_t;
+
+typedef     unsigned int    uint32_t;
+typedef     int             int32_t;
+
+typedef     unsigned long long uint64_t;
+typedef     long long       int64_t;
+
+typedef     unsigned long   uintptr_t;
+typedef     long            intptr_t;
 
 typedef     uintptr_t       Address;
 

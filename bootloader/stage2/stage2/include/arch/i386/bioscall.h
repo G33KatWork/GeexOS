@@ -28,7 +28,7 @@ typedef struct
 #define EFLAGS_IS_SET(flags, flag) ((flags & flag) != 0)
 
 //Also defined in realmode.S!
-#define GXLDR_RMODE_STACKTOP    0x7000
+#define GXLDR_RMODE_STACKTOP    0x8000
 #define GXLDR_RMODE_STACKSIZE   0x1000
 
 #define BIOSCALLBUFFER          0x1000

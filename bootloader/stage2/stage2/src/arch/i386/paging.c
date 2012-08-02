@@ -7,7 +7,7 @@ page_directory_t* pageDirectory;
 
 void paging_allocateNonPAE()
 {
-    pageDirectory = (page_directory_t*)memory_allocate(sizeof(page_directory_t), MemoryTypeGeexOSPageStructures);
+    pageDirectory = (page_directory_t*)memory_allocate(sizeof(page_directory_t), MemoryTypeGeexOSPageDirectory);
     memset(pageDirectory, 0, sizeof(page_directory_t));
 
     debug_printf("ARCH PAGING: PD is at %x\n", pageDirectory);
