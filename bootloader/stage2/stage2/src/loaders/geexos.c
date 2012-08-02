@@ -45,7 +45,7 @@ void loader_buildPhysicalMemoryMap(PLOADER_BLOCK loaderBlock)
 		arch_panic("GXLDR: Unable to retrieve memory map\n");
 
 	//try to make regions out of the allocation blocks
-	PageNumber pagesCount = 1;
+	PageNumber pagesCount = 0;
 	PageNumber lastPageIndex = 0;
 	MemoryType lastPageType = mmap[0].type;
 	for(size_t i = 0; i < mmap_elementCount; i++)
