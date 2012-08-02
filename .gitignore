@@ -13,6 +13,7 @@ toolchain/source
 *.dll
 *.map
 *.a
+*.lib
 *.sym
 *.o
 *.bin
