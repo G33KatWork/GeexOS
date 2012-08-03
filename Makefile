@@ -30,7 +30,7 @@ applications: toolchain
 	$(call call_submake,applications,all)
 
 # Toolchain
-toolchain: $(CC) $(LD) $(NASM) $(QEMU) $(BOCHS) $(GDB)
+toolchain: $(CC) $(LD) $(NASM) $(QEMU) $(GDB)
 
 $(CC):
 	$(call cmd_msg,SUBDIR,toolchain)
