@@ -71,60 +71,19 @@ void kmain()
     //Tell HAL that we have a virtual memory manager
     CurrentHAL->InitializationDone();
     
-    //Reserve ELF program regions of kernel in virtual memory management
-    MAIN_DEBUG_MSG("Telling memory manager about kernel program regions...");
-    size_t progRegionCount = CurrentHAL->GetBootEnvironment()->GetProgramRegionCount();
-    for(size_t i = 0; i < progRegionCount; i++)
-    {
-        KernelProgramRegion* regionInfo = CurrentHAL->GetBootEnvironment()->GetProgramRegion(i);
-        KernelProgramMemoryRegion* progRegion = new KernelProgramMemoryRegion(
-                                                        regionInfo->VirtualStart,
-                                                        regionInfo->Length,
-                                                        "Kernel Program",
-                                                        (regionInfo->Writable ? ALLOCFLAG_WRITABLE : 0) | (regionInfo->Executable ? ALLOCFLAG_EXECUTABLE : 0)
-                                                    );
-        VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(progRegion);
-    }
-    
     //Initialize dynamic memory with the slab allocator
     SlabAllocator* slabAlloc = new SlabAllocator(KERNEL_SLAB_ALLOCATOR_START, KERNEL_SLAB_ALLOCATOR_SIZE);
     VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(slabAlloc);
     InitializeSizeCaches(slabAlloc);
     VirtualMemoryManager::GetInstance()->SlabAllocator(slabAlloc);
     
+    //TODO: get bootloader-loaded images and create objects for the memory space
+
     //Yeeha! At this point all platform related memory stuff should be set up and safe.
     
     //TODO: Implement normal (non-debug) output-macro that prints text to graphical screen via HAL
     //which gets initialized after the HAL INIT is finished
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
-
-    //Create module repository memory region for boot-critical modules
-    /*MAIN_DEBUG_MSG("Module BLOB is at " << hex << (Address)CurrentHAL->GetBootEnvironment()->GetBootModuleRepository() << " with size " << CurrentHAL->GetBootEnvironment()->GetBootModuleRepositorySize());
-    
-    KernelBootModuleRepository* bootModules = CurrentHAL->GetBootEnvironment()->GetBootModuleRepository();
-    ASSERT(bootModules->Magic == BOOTMODULES_MAGIC, "Magic value for boot module repository is wrong");
-    for(uint32_t i = 0; i < bootModules->ModuleCount; i++)
-    {
-        MAIN_DEBUG_MSG("magic: " << hex << bootModules->Magic);
-        MAIN_DEBUG_MSG("count: " << dec << bootModules->ModuleCount);
-        MAIN_DEBUG_MSG("Offset: " << dec << bootModules->Offsets[i]);
-        ELFFile* elf = new ELFFile(((Address)bootModules) + bootModules->Offsets[i]);
-        MAIN_DEBUG_MSG("elf has " << dec << elf->GetSectionHeaderCount() << " section headers");
-    }
-
-        MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
-        slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());*/
-
-    /*DataStructures::Dictionary<const char*, Address, struct Hasher>* symTbl = new DataStructures::Dictionary<const char*, Address, struct Hasher>();
-    symTbl->Insert("foobar", 1234);
-    MAIN_DEBUG_MSG("sym: " << dec << symTbl->Lookup("foobar"));
-    symTbl->Remove("foobar");
-    if(symTbl->Lookup("foobar") == NULL)
-        MAIN_DEBUG_MSG("yip")
-    
-    symTbl->Clear();
-
-    delete symTbl;*/
 
     MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
     slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());

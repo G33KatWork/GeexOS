@@ -54,18 +54,6 @@ namespace Arch
         
         /// Returns the kernel command line passed by the bootloader
         virtual const char* GetKernelCommandline() = 0;
-        
-        /// Returns the start address of the boot module repository
-        virtual KernelBootModuleRepository* GetBootModuleRepository() = 0;
-        
-        /// Returns the length of the boot module repository
-        virtual size_t GetBootModuleRepositorySize() = 0;
-        
-        /// Returns the amount of mapped program sections
-        virtual size_t GetProgramRegionCount() = 0;
-        
-        /// Returns the i-th program section
-        virtual KernelProgramRegion* GetProgramRegion(size_t idx) = 0;
     };
 }
 

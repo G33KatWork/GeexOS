@@ -29,6 +29,7 @@ x86BootEnvironment::x86BootEnvironment(KernelInformation* info)
     kernelInformation = (KernelInformation*)kmalloc(info->LoaderBlockSize);
     memcpy(kernelInformation, info, info->LoaderBlockSize);
 
+#ifdef EN_HAL_DEBUG_MSG
     HAL_DEBUG_MSG("Got " << dec << kernelInformation->MemoryDescriptorCount << " memory descriptors from bootloader");
     for(uint16_t i = 0; i < kernelInformation->MemoryDescriptorCount; i++)
     {
@@ -55,6 +56,8 @@ x86BootEnvironment::x86BootEnvironment(KernelInformation* info)
     }
 
     HAL_DEBUG_MSG("Upper memory boundary is at " << hex << kernelInformation->UpperMemoryBoundary);
+#endif
+    
     memory = kernelInformation->UpperMemoryBoundary;
 }
 
