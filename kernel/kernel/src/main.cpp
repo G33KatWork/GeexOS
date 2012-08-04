@@ -8,38 +8,15 @@
 #include <kernel/Memory/Virtual/Regions/KernelProgramMemoryRegion.h>
 #include <kernel/Memory/Slab/SlabAllocator.h>
 
-#include <string.h>
-
-#include <kernel/DataStructures/Dictionary.h>
+#include <kernel/Objects/GXDirectoryObject.h>
 
 using namespace Arch;
 using namespace Debug;
 using namespace Memory;
 using namespace Memory::Slab;
+using namespace Objects;
 
 extern "C" void kmain();
-
-#include <kernel/Objects/GXObject.h>
-
-class TestObject : public GXObject
-{
-    GXDeclareDefaultMetadata(TestObject)
-    
-public:
-    void doSomething()
-    {
-        MAIN_DEBUG_MSG("TestObject did something");
-    }
-};
-
-GXImplementMetaClassAndDefaultStructors(TestObject, GXObject)
-
-struct Hasher {
-size_t HashKey(const char* s)
-{
-    return (size_t)s;
-}
-};
 
 void kmain()
 {
@@ -80,6 +57,14 @@ void kmain()
     //which gets initialized after the HAL INIT is finished
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
 
+
+    GXObjectType<GXDirectoryObject>* dirType = new GXObjectType<GXDirectoryObject>("ObjectDirectory");
+    GXDirectoryObject* rootDir = dirType->InstantiateObject(NULL, "/");
+    MAIN_DEBUG_MSG("Created dir: " << rootDir->GetName());
+    rootDir->foo();
+    //dirType->DestroyObject(rootDir);
+    delete rootDir;
+
     MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
     slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());
 
@@ -101,16 +86,6 @@ void kmain()
     slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());
 #endif
 #endif
-
-#if 0
-    KernelModule* obj = GXAllocateFromType(KernelModule);
-    obj->Plug();
-    GXSafeReleaseNULL(obj);
     
-    TestObject* object = GXAllocateFromType(TestObject);
-    object->doSomething();
-    object->Release();
-#endif
-
     while(1);
 }
