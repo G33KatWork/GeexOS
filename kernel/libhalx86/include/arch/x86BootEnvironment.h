@@ -28,7 +28,7 @@ namespace Arch
 
         //HAL-internal functions
         virtual PMEMORY_DESCRIPTOR GetMemoryRegions(size_t* totalCount);
-        virtual PMEMORY_DESCRIPTOR GetMemoryFirstRegionByType(MemoryType type);
+        virtual PMEMORY_DESCRIPTOR GetMemoryRegionByType(PMEMORY_DESCRIPTOR start, MemoryType type);
     
     private:
         KernelInformation* kernelInformation;

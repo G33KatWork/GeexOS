@@ -66,13 +66,38 @@ PMEMORY_DESCRIPTOR x86BootEnvironment::GetMemoryRegions(size_t* totalCount)
     return kernelInformation->MemoryDescriptors;
 }
 
-PMEMORY_DESCRIPTOR x86BootEnvironment::GetMemoryFirstRegionByType(MemoryType type)
+PMEMORY_DESCRIPTOR x86BootEnvironment::GetMemoryRegionByType(PMEMORY_DESCRIPTOR start, MemoryType type)
 {
-    for(uint16_t i = 0; i < kernelInformation->MemoryDescriptorCount; i++)
+    ASSERT(
+        start == NULL ||
+        (
+            (((Address)start) > ((Address)kernelInformation->MemoryDescriptors))
+            && 
+            (((Address)start) < (((Address)kernelInformation->MemoryDescriptors) + kernelInformation->MemoryDescriptorCount*sizeof(MEMORY_DESCRIPTOR)))
+        ),
+        "start parameter out of bounds"
+    );
+
+    uint16_t i;
+
+    if(!start)
     {
-        PMEMORY_DESCRIPTOR desc = &kernelInformation->MemoryDescriptors[i];
-        if(desc->Type == type)
-            return desc;
+        start = kernelInformation->MemoryDescriptors;
+        i = 0;
+    }
+    else
+    {
+        start++;
+        i = (((Address)start) - ((Address)kernelInformation->MemoryDescriptors)) / sizeof(MEMORY_DESCRIPTOR);
+    }
+
+    while(i < kernelInformation->MemoryDescriptorCount)
+    {
+        if(start->Type == type)
+            return start;
+
+        start++;
+        i++;
     }
 
     return NULL;
