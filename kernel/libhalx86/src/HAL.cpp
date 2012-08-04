@@ -67,8 +67,6 @@ void x86HAL::Initialize()
             case MemoryTypeBad:
             case MemoryTypeSpecial:
             case MemoryTypeFirmware:
-            case MemoryTypeGeexOSPageStructures:
-            case MemoryTypeGeexOSPageDirectory:
             case MemoryTypeGeexOSKernelEnvironmentInformation:
             case MemoryTypeGeexOSKernelExecutable:
             case MemoryTypeGeexOSKernelStack:
@@ -76,6 +74,9 @@ void x86HAL::Initialize()
                 for(Address a = descriptor[i].Start; a < descriptor[i].Start + descriptor[i].Length; a++)
                     physicalAllocator->MarkAsUsed(a * PAGE_SIZE);
 
+            //Don't mark these regions as allocated as the paging code will reallocate them anyways in x86Paging::Init()
+            case MemoryTypeGeexOSPageStructures:
+            case MemoryTypeGeexOSPageDirectory:
             default:
                 break;
         }

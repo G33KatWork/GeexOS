@@ -50,16 +50,14 @@ void x86Paging::Init()
     
     ARCH_PAGING_DEBUG_MSG("Switching to PageDirectory with physical address " << hex << (unsigned)kernelPagedirPtr << "...");
     SwitchPageDirectory(kernelPagedirPtr);
+
+    //Invalidate the TLB of the lowermost 4MB
+    for(Address i = 0; i < 4*1024*1024; i+=PAGE_SIZE)
+        asm volatile("invlpg %0"::"m" (*(char *)i));
 }
 
 void x86Paging::InitDone()
 {
-    /*ARCH_PAGING_DEBUG_MSG("HAL Initialization done, removing lowermost mapping");
-    kernel_directory->SetTable(0, NULL, NULL);
-    
-    for(Address i = 0; i < 4*1024*1024; i+=PAGE_SIZE)
-        asm volatile("invlpg %0"::"m" (*(char *)i));*/
-        
     //Allocate remaining page tables in kernel land, for easy cloning of address spaces for userspace later
     //TODO: Find a better way to do this. This are 2MB of RAM! :-/
     ARCH_PAGING_DEBUG_MSG("Creating pagetables of uppermost gigabyte for kernel");
