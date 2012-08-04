@@ -8,9 +8,6 @@
 #include <kernel/Memory/Virtual/Regions/KernelProgramMemoryRegion.h>
 #include <kernel/Memory/Slab/SlabAllocator.h>
 
-#include <kernel/Modules/KernelModule.h>
-#include <kernel/ELF/ELFFile.h>
-
 #include <string.h>
 
 #include <kernel/DataStructures/Dictionary.h>
@@ -19,8 +16,6 @@ using namespace Arch;
 using namespace Debug;
 using namespace Memory;
 using namespace Memory::Slab;
-using namespace Modules;
-using namespace ELF;
 
 extern "C" void kmain();
 

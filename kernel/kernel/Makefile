@@ -24,7 +24,6 @@ CXXSOURCES = main.cpp \
 			 Memory/IO/IOMemoryManager.cpp \
 			 Objects/GXMetaClass.cpp \
 			 Objects/GXObject.cpp \
-			 ELF/ELFFile.cpp \
 			 Utils/CRC32.cpp
 
 # List Assembler to be assembled with NASM here
