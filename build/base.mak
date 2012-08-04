@@ -6,7 +6,11 @@ BASE_INCLUDED := 1
 SRC := $(shell cd $(SRC); pwd)
 
 # Fancy colorful output
-BUILD_COLOUR ?= 1
+ifndef BUILD_COLOUR
+ifdef TERM
+BUILD_COLOUR := $(shell [ `tput colors` -gt 2 ] && echo 1)
+endif
+endif
 export BUILD_COLOUR V
 
 # Be verbose while building only if V is set to 1 in the environment.
