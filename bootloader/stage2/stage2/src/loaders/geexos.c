@@ -114,6 +114,7 @@ PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 	PLOADER_BLOCK loaderBlock = memory_allocate(totalSize, MemoryTypeGeexOSKernelEnvironmentInformation);
 	memset(loaderBlock, 0, totalSize);
 	arch_map_virtual_memory((Address)loaderBlock, GEEXOS_ENV_INFO_ADDRESS, false, false);
+	loaderBlock->LoaderBlockSize = totalSize;
 
 	int i = 0;
 	LoadedImage *img;

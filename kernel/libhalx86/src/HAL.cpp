@@ -56,6 +56,30 @@ void x86HAL::Initialize()
     HAL_DEBUG_MSG("Boot environment information successfully parsed...");
     
     physicalAllocator = new BitfieldPhysicalMemoryAllocator(bootenv->GetInstalledMemory());
+
+    //Mark all memory regions allocated by the bootloader of importance for us as allocated in the physical allocator
+    size_t descriptorCount;
+    PMEMORY_DESCRIPTOR descriptor = ((x86BootEnvironment*)bootenv)->GetMemoryRegions(&descriptorCount);
+    for(size_t i = 0; i < descriptorCount; i++)
+    {
+        switch(descriptor[i].Type)
+        {
+            case MemoryTypeBad:
+            case MemoryTypeSpecial:
+            case MemoryTypeFirmware:
+            case MemoryTypeGeexOSPageStructures:
+            case MemoryTypeGeexOSPageDirectory:
+            case MemoryTypeGeexOSKernelEnvironmentInformation:
+            case MemoryTypeGeexOSKernelExecutable:
+            case MemoryTypeGeexOSKernelStack:
+            case MemoryTypeGeexOSKernelLibrary:
+                for(Address a = descriptor[i].Start; a < descriptor[i].Start + descriptor[i].Length; a++)
+                    physicalAllocator->MarkAsUsed(a * PAGE_SIZE);
+
+            default:
+                break;
+        }
+    }
     
     interruptDispatcher = new x86InterruptDispatcher();
     pageFaultHandler = new x86PageFaultHandler();

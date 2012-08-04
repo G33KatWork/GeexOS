@@ -29,6 +29,7 @@ typedef struct _LDRBLK_LOADED_IMAGE {
 
 typedef struct _LOADER_BLOCK
 {
+	size_t LoaderBlockSize;
 	uint16_t LoadedImageCount;
 	LOADED_IMAGE LoadedImages[GEEXOS_MAX_IMAGE_DESCRIPTORS];
 	uint16_t MemoryDescriptorCount;

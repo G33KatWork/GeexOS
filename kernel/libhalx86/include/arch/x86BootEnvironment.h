@@ -26,46 +26,14 @@ namespace Arch
             return NULL;
         }
 
-        /*virtual size_t GetInstalledMemory() { return memory; }
-        virtual const char* GetKernelCommandline() { return cmdLine; }
-        
-        virtual KernelBootModuleRepository* GetBootModuleRepository() { return (KernelBootModuleRepository*)moduleLocation; }
-        virtual size_t GetBootModuleRepositorySize() { return moduleSize; }
-    
-        uint32_t GetBIOSMemregionCount() { return biosMemregionCount; }
-        KernelInformationMemoryRegion* GetBIOSMemregion(uint32_t idx)
-        {
-            ASSERT(idx < biosMemregionCount, "Index out of bounds");
-            return biosMemregions + idx;
-        }
-        
-        virtual size_t GetProgramRegionCount() { return programRegionCount; }
-        virtual KernelProgramRegion* GetProgramRegion(size_t idx)
-        {
-            ASSERT(idx < programRegionCount, "Index out of bounds");
-            return programRegions + idx;
-        }*/
+        //HAL-internal functions
+        virtual PMEMORY_DESCRIPTOR GetMemoryRegions(size_t* totalCount);
+        virtual PMEMORY_DESCRIPTOR GetMemoryFirstRegionByType(MemoryType type);
     
     private:
-        uint64_t memory;
+        KernelInformation* kernelInformation;
 
-        /*char* cmdLine;
-        size_t memory;
-        
-        Address moduleLocation;
-        size_t moduleSize;
-        
-        uint32_t biosMemregionCount;
-        KernelInformationMemoryRegion* biosMemregions;
-        
-        size_t programRegionCount;
-        KernelProgramRegion* programRegions;
-        
-        uint8_t* symtab;
-        uint8_t* strtab;
-        
-        size_t symtabSize;
-        size_t strtabSize;*/
+        uint64_t memory;
     };
 }
 

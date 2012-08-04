@@ -31,6 +31,7 @@ int kmain()
     
     printf("GXLDR Stage 2\r\n");
     
+    debug_printf("Firmware memory map:\r\n");
     memory_print_map(FirmwareMemoryMap);
 
     memory_init();
