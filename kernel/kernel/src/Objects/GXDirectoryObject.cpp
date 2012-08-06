@@ -2,7 +2,8 @@
 
 using namespace Objects;
 
-void GXDirectoryObject::foo()
+void GXDirectoryObject::AddSubdirectory(GXDirectoryObject* dir)
 {
-	DEBUG_MSG("Foo!");
+	ASSERT(dir != NULL, "Directory to add may not be NULL");
+	subdirectories.Append(dir);
 }

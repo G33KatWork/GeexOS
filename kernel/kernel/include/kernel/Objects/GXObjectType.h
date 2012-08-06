@@ -3,6 +3,7 @@
 
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/Memory/Slab/SlabAllocator.h>
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Objects
 {
@@ -11,34 +12,60 @@ namespace Objects
 	template<typename T>
 	class GXObjectType;
 
+
+
+	class GXBaseObject : public DataStructures::DoublyLinkedListLinkImpl<GXBaseObject>
+	{
+	protected:
+		GXDirectoryObject* parent;
+		const char* name;
+
+		GXBaseObject(GXDirectoryObject* Parent, const char* Name)
+		{		
+			this->parent = Parent;
+			this->name = Name;
+		}
+
+		virtual ~GXBaseObject()
+		{
+			//TODO: deregister from parent
+		}
+
+	public:
+		virtual const char* GetName() { return this->name; }
+		virtual GXDirectoryObject* GetParent() { return this->parent; }
+		virtual const char* GetTypeName() { return "<untyped>"; }
+	};
+
+
+
 	template<typename T>
-	class GXBaseObject
+	class GXTypedObject : public GXBaseObject
 	{
 	friend class GXObjectType<T>;
 
 	protected:
 		GXObjectType<T>* type;
-		GXDirectoryObject* parent;
-		const char* name;
 
-		GXBaseObject(GXObjectType<T>* Type, GXDirectoryObject* Parent, const char* Name);
-		virtual ~GXBaseObject() { }
+		GXTypedObject(GXObjectType<T>* Type, GXDirectoryObject* Parent, const char* Name);
+		virtual ~GXTypedObject() { }
 
 	public:
-		const char* GetName() { return this->name; }
-		GXDirectoryObject* GetParent() { return this->parent; }
-
 		void* operator new(size_t, void* buf) { return buf; }
         void operator delete(void* object) { ((T*)object)->type->DestroyObject((T*)object); }
+
+        virtual const char* GetTypeName() { return this->type->GetTypeName(); }
 	};
 
 	template<typename T>
-	GXBaseObject<T>::GXBaseObject(GXObjectType<T>* Type, GXDirectoryObject* Parent, const char* Name)
+	GXTypedObject<T>::GXTypedObject(GXObjectType<T>* Type, GXDirectoryObject* Parent, const char* Name)
+		: GXBaseObject(Parent, Name)
 	{
 		this->type = Type;
-		this->parent = Parent;
-		this->name = Name;
 	}
+
+
+
 
 	template<typename T>
 	class GXObjectType
@@ -58,6 +85,8 @@ namespace Objects
 		{
 			Memory::VirtualMemoryManager::GetInstance()->SlabAllocator()->DestroyCache(this->slabCache);
 		}
+
+		const char* GetTypeName() { return this->typeName; }
 
 		T* InstantiateObject(GXDirectoryObject* Parent, const char* Name)
 		{

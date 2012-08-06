@@ -8,7 +8,7 @@
 #include <kernel/Memory/Virtual/Regions/KernelProgramMemoryRegion.h>
 #include <kernel/Memory/Slab/SlabAllocator.h>
 
-#include <kernel/Objects/GXDirectoryObject.h>
+#include <kernel/Objects/ObjectManager.h>
 
 using namespace Arch;
 using namespace Debug;
@@ -57,13 +57,8 @@ void kmain()
     //which gets initialized after the HAL INIT is finished
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
 
-
-    GXObjectType<GXDirectoryObject>* dirType = new GXObjectType<GXDirectoryObject>("ObjectDirectory");
-    GXDirectoryObject* rootDir = dirType->InstantiateObject(NULL, "/");
-    MAIN_DEBUG_MSG("Created dir: " << rootDir->GetName());
-    rootDir->foo();
-    //dirType->DestroyObject(rootDir);
-    delete rootDir;
+    ObjectManager* obj = new ObjectManager();
+    
 
     MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
     slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());

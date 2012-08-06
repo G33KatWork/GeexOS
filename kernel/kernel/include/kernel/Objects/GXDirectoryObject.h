@@ -2,18 +2,21 @@
 #define _GEEXOS_OBJECT_DIRECTORY_H_
 
 #include <kernel/Objects/GXObjectType.h>
+#include <kernel/DataStructures/DoublyLinkedList.h>
 
 namespace Objects
 {
-	class GXDirectoryObject : public GXBaseObject<GXDirectoryObject>
+	class GXDirectoryObject : public GXTypedObject<GXDirectoryObject>
 	{
+	private:
+		DataStructures::DoublyLinkedList<GXBaseObject> subdirectories;
+
 	public:
 		GXDirectoryObject(GXObjectType<GXDirectoryObject>* Type, GXDirectoryObject* Parent, const char* Name)
-			: Objects::GXBaseObject<Objects::GXDirectoryObject>::GXBaseObject(Type, Parent, Name){}
-
+			: Objects::GXTypedObject<Objects::GXDirectoryObject>::GXTypedObject(Type, Parent, Name) {}
 		virtual ~GXDirectoryObject() {}
 
-		void foo();
+		void AddSubdirectory(GXDirectoryObject* dir);
 	};
 }
 

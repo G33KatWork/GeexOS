@@ -23,6 +23,7 @@ CXXSOURCES = main.cpp \
 			 Memory/Slab/SmallCache.cpp \
 			 Memory/IO/IOMemoryManager.cpp \
 			 Objects/GXDirectoryObject.cpp \
+			 Objects/ObjectManager.cpp \
 			 Utils/CRC32.cpp
 
 # List Assembler to be assembled with NASM here
