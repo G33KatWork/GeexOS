@@ -1,9 +1,8 @@
 #include <kernel/global.h>
-#include <arch/hal.h>
+#include <arch/HAL.h>
 #include <kernel/Memory/PlacementAllocator.h>
 #include <kernel/Memory/Virtual/VirtualMemoryManager.h>
 #include <kernel/debug.h>
-#include <arch/hal.h>
 #include <string.h>
 
 using namespace Debug;

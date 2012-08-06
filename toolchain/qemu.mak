@@ -51,9 +51,7 @@ ifeq ($(shell uname),Darwin)
 else
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/qemu-$(QEMU_VERSION); \
 		$(QEMU_CONFENV) ./configure \
-		--disable-cocoa \
 		--enable-sdl \
-		--disable-kqemu \
 		--disable-kvm \
 		--enable-system \
 		--disable-linux-user \
