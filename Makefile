@@ -36,11 +36,16 @@ $(CC):
 	$(call cmd_msg,SUBDIR,toolchain)
 	$(call call_submake,toolchain,all)
 
-# Disk for bootloader testing... incorporate into complete bootprocess later
 # TODO: build script for automatic disk-image dependency rule creation
-#bootloader/mbr/mbr.bin bootloader/stage1_fat16/stage1.bin bootloader/stage2/stage2.bin: bootloader
 testhdd.img: all bootloader/mbr/mbr.bin bootloader/stage1_fat16/stage1.bin bootloader/stage2/stage2.bin
+#create the target file by touching it. This has the nice effect that it belongs to the current user
+#so, even if we need root rights to actually create the diskimage afterwards, it still belongs to the user and not root
+	touch $@
+ifeq ($(shell uname),Linux)
+	sudo utils/buildhddimage.py utils/partlayout.json $@
+else
 	utils/buildhddimage.py utils/partlayout.json $@
+endif
 
 # Start bochs
 bochs: testhdd.img

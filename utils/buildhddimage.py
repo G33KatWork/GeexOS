@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+#This script is rather hacky. Especially for platforms like linux.
+#For example mkdosfs can't read the geometry from the loopback devices
+#under linux. This leads to a wrong amount of hidden sectors for the
+#filesystem start on FAT12/16/32 filesystems. Also I needed to put in
+#a few delays for the devices to "settle" after using them. Otherwise
+#destroying or unmounting them was not possible.
+#Also it must be run as root :-/
+
 # sample json syntax:
 #
 # {
@@ -32,6 +40,7 @@ import re
 import os
 import tempfile
 import shutil
+import time
 
 SECTORSIZE = 512
 
@@ -80,7 +89,7 @@ def main(argv):
       else:
         partitionBootRecord = None
 
-      fs.createFilesystem(i, partition["fstype"], partitionBootRecord)
+      fs.createFilesystem(i, partition["fstype"], partition["startSector"], partition["size"], partitionBootRecord)
     i += 1
   
   #HACK HACK
@@ -95,17 +104,20 @@ def main(argv):
       target = fs.mountFilesystem(i)
       
       for fileToCopy in partition["filesToCopy"]:
-        #TODO: create subdirectories on partition
         print "-> Copying from %s to %s" % (fileToCopy["source"], fileToCopy["destination"])
         if not os.path.exists(os.path.dirname(os.path.join(target, fileToCopy["destination"]))):
           os.makedirs(os.path.dirname(os.path.join(target, fileToCopy["destination"])))
         shutil.copyfile(fileToCopy["source"], os.path.join(target, fileToCopy["destination"]))
+
+      fs.unmountFilesystem(i)
     i += 1
 
 
 def getFilesystemCreator(imagefile):
   if sys.platform == 'darwin':
     return MacOSFilesystemCreator(imagefile)
+  elif sys.platform == 'linux2':
+    return LinuxFilesystemCreator(imagefile)
   else:
     raise Exception("Unsupported platform")
 
@@ -179,7 +191,7 @@ class MacOSFilesystemCreator:
       self.__loopbackDevice = None
   
   
-  def createFilesystem(self, partitionIndex, filesystemType, bootcodeFile):
+  def createFilesystem(self, partitionIndex, filesystemType, partitionStart, partitionSize, bootcodeFile):
     if self.__loopbackDevice == None:
       self.__createLoopbackDevice()
   
@@ -229,10 +241,134 @@ class MacOSFilesystemCreator:
       raise Exception("Mounting filesystem on {0} failed".format(partdevice))
     
     return mountDest
+
+  def unmountFilesystem(self, partitionIndex):
+    pass
   
   
   def __getPartdeviceFromIndex(self, partitionIndex):
     return self.__loopbackDevice + "s" + str(partitionIndex+1)
+
+
+
+class LinuxFilesystemCreator:
+  def __init__(self, imagefile):
+    self.__imagefile = imagefile
+    self.__loopbackName = None
+  
+  
+  def __del__(self):
+    self.__destroyLoopbackDevice()
+  
+  
+  def __createLoopbackDevice(self):
+    print "-> Creating loopback device for %s" % self.__imagefile
+    if not os.geteuid()==0:
+      raise Exception("This script needs to be run as root to perform all fhe filesystem actions under linux.");
+    
+    loopbackDevice = subprocess.check_output(['losetup', '-f']).strip()
+    match = re.search("^/dev/(loop[0-9]+)*", loopbackDevice)
+    if not match:
+      raise Exception("Loopback device string returned looks malformed")
+
+    self.__loopbackName = match.group(1)
+
+    try:
+      subprocess.check_call(['losetup', '/dev/'+self.__loopbackName, self.__imagefile])
+    except subprocess.CalledProcessError:
+      raise Exception("Cannot create loopback device");
+
+    try:
+      subprocess.check_call(['kpartx', '-a', '/dev/'+self.__loopbackName, self.__imagefile])
+    except subprocess.CalledProcessError:
+      raise Exception("Cannot create loopback device partition mappings");
+  
+  
+  def __destroyLoopbackDevice(self):
+    print "-> Destroying loopback device %s" % self.__loopbackName
+    if self.__loopbackName != None:
+      time.sleep(1)
+      try:
+        subprocess.check_call(['kpartx', '-d', '/dev/'+self.__loopbackName])
+      except subprocess.CalledProcessError:
+        raise Exception("Destroying of loopback device partition mappings didn't succeed")
+
+      try:
+        subprocess.check_call(['losetup', '-d', '/dev/'+self.__loopbackName])
+      except subprocess.CalledProcessError:
+        raise Exception("Destroying of loopback device didn't succeed")
+    
+      self.__loopbackName = None
+  
+  
+  def createFilesystem(self, partitionIndex, filesystemType, partitionStart, partitionSize, bootcodeFile):
+    if self.__loopbackName == None:
+      self.__createLoopbackDevice()
+    
+    partdevice = self.__getPartdeviceFromIndex(partitionIndex)
+    print "-> Creating filesystem %s on partition %s" % (filesystemType, partdevice)
+
+    if filesystemType == "ext2":
+      try:
+        subprocess.check_call(['mkfs.ext2', partdevice])
+      except subprocess.CalledProcessError:
+        raise Exception("Creating ext2 filesystem on {0} failed".format(partdevice))
+    elif filesystemType == "fat12":
+      try:
+        subprocess.check_call(['mkdosfs', "-F", "12", "-S", "512", "-h", str(partitionStart), partdevice])
+      except subprocess.CalledProcessError:
+        raise Exception("Creating FAT12 filesystem on {0} failed".format(partdevice))
+    elif filesystemType == "fat16":
+      try:
+        subprocess.check_call(['mkdosfs', "-F", "16", "-S", "512", "-h", str(partitionStart), partdevice])
+      except subprocess.CalledProcessError:
+        raise Exception("Creating FAT16 filesystem on {0} failed".format(partdevice))
+    elif filesystemType == "fat32":
+      try:
+        subprocess.check_call(['mkdosfs', "-F", "32", "-S", "512", "-h", str(partitionStart), partdevice])
+      except subprocess.CalledProcessError:
+        raise Exception("Creating FAT32 filesystem on {0} failed".format(partdevice))
+    else:
+      raise Exception("Unknown filesystem type supplied")
+  
+    if bootcodeFile != None:
+      bc = BootCodeInstaller()
+      bc.install(partdevice, filesystemType, bootcodeFile)
+  
+  
+  def mountFilesystem(self, partitionIndex):
+    if self.__loopbackName == None:
+      self.__createLoopbackDevice()
+    
+    partdevice = self.__getPartdeviceFromIndex(partitionIndex)
+    print "-> Mounting filesystem on partition %s" % (partdevice)
+    
+    mountDest = tempfile.mkdtemp()
+    
+    try:
+      subprocess.check_call(['mount', partdevice, mountDest])
+    except CalledProcessError:
+      raise Exception("Mounting filesystem on {0} failed".format(partdevice))
+    
+    return mountDest
+  
+  
+  def unmountFilesystem(self, partitionIndex):
+    if self.__loopbackName == None:
+      return
+
+    partdevice = self.__getPartdeviceFromIndex(partitionIndex)
+    print "-> Unmounting filesystem on partition %s" % (partdevice)
+
+    time.sleep(1)
+    try:
+      subprocess.check_call(['umount', partdevice])
+    except subprocess.CalledProcessError:
+      raise Exception("Unmounting filesystem on {0} failed".format(partdevice))
+  
+  
+  def __getPartdeviceFromIndex(self, partitionIndex):
+    return '/dev/mapper/' + self.__loopbackName + 'p' + str(partitionIndex+1)
 
 
 
