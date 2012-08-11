@@ -347,7 +347,7 @@ class LinuxFilesystemCreator:
     
     try:
       subprocess.check_call(['mount', partdevice, mountDest])
-    except CalledProcessError:
+    except subprocess.CalledProcessError:
       raise Exception("Mounting filesystem on {0} failed".format(partdevice))
     
     return mountDest
