@@ -42,7 +42,7 @@ testhdd.img: all bootloader/mbr/mbr.bin bootloader/stage1_fat16/stage1.bin bootl
 #so, even if we need root rights to actually create the diskimage afterwards, it still belongs to the user and not root
 	touch $@
 ifeq ($(shell uname),Linux)
-	sudo utils/buildhddimage.py utils/partlayout.json $@
+	$(SUDO) utils/buildhddimage.py utils/partlayout.json $@
 else
 	utils/buildhddimage.py utils/partlayout.json $@
 endif

@@ -1,0 +1,50 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+            "folder_exclude_patterns": ["obj"],
+            "file_exclude_patterns": ["*.d", "*.o", "*.exe", "*.dll", "*.lib", "*.img"]
+		}
+	],
+	"settings":
+    {
+        "sublimeclang_options":
+        [
+        	"-I${folder:${project_path:GeexOS.sublime-project}}/kernel/**",
+        	"-I${folder:${project_path:GeexOS.sublime-project}}/bootloader/**",
+        	"-fno-exceptions"
+        ]
+    },
+    "build_systems":
+    [
+        {
+            "name": "GeexOS make",
+            "cmd": ["make", "all"],
+            "file_regex": "^(..[^:]*):([0-9]+):?([0-9]+)?:? (.*)$",
+            "working_dir": "${project_path:${folder:${file_path}}}",
+            "selector": "source.makefile",
+            "env":
+            {
+                "BUILD_COLOUR": "0",
+                "V": "0",
+                "SUDO_ASKPASS": "/usr/bin/ssh-askpass"
+            },
+            "variants":
+            [
+                {
+                    "name": "GeexOS Clean",
+                    "cmd": ["make", "clean"]
+                },
+                {
+                    "name": "GeexOS qemu",
+                    "cmd": ["make", "qemu"]
+                },
+                {
+                    "name": "GeexOS HDD Image",
+                    "cmd": ["make", "testhdd.img"]
+                }
+            ]
+        }
+    ]
+}

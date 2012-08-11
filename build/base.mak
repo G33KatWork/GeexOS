@@ -23,8 +23,7 @@ endif
 ############################
 # General utilities	       #
 ############################
-ifeq ($(shell uname),Darwin)
-	export SUDO_ASKPASS:= $(SRC)/build/macos-askpass
+ifdef SUDO_ASKPASS
 SUDO		:= sudo -A
 else
 SUDO		:= sudo
