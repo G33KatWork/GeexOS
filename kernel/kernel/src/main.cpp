@@ -59,9 +59,10 @@ void kmain()
 
     ObjectManager* obj = new ObjectManager();
     
+    obj->DumpTree(CurrentHAL->GetCurrentDebugOutputDevice());
 
-    MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
-    slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());
+    //MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
+    //slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());
 
 #if 0
 #ifdef EN_DEBUG_MSG_MAIN

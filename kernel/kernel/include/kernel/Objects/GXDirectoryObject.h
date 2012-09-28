@@ -9,14 +9,17 @@ namespace Objects
 	class GXDirectoryObject : public GXTypedObject<GXDirectoryObject>
 	{
 	private:
-		DataStructures::DoublyLinkedList<GXBaseObject> subdirectories;
+		DataStructures::DoublyLinkedList<GXBaseObject> subobjects;
 
 	public:
-		GXDirectoryObject(GXObjectType<GXDirectoryObject>* Type, GXDirectoryObject* Parent, const char* Name)
-			: Objects::GXTypedObject<Objects::GXDirectoryObject>::GXTypedObject(Type, Parent, Name) {}
+		GXDirectoryObject(GXObjectType<GXDirectoryObject>* Type, const char* Name)
+			: Objects::GXTypedObject<Objects::GXDirectoryObject>::GXTypedObject(Type, Name) {}
 		virtual ~GXDirectoryObject() {}
 
 		void AddSubdirectory(GXDirectoryObject* dir);
+		void AddObject(GXBaseObject* obj);
+
+		const DataStructures::DoublyLinkedList<GXBaseObject>* GetSubObjects() const { return &this->subobjects; }
 	};
 }
 

@@ -9,9 +9,9 @@ using namespace Debug;
 
 void VirtualMemoryRegion::MapFreshPages(Address start, size_t length)
 {
-    VIRTUAL_MEMORY_REGION_DEBUG_MSG("Mapping pages into virtual memory region " << name << endl
-                                    << "Start: " << start << endl
-                                    << "Size: " << (unsigned)length
+    VIRTUAL_MEMORY_REGION_DEBUG_MSG("Mapping pages into virtual memory region " << name
+                                    << " Start: " << start
+                                    << " Size: " << (unsigned)length << endl
                                     );
     
     ASSERT(IS_PAGE_ALIGNED(start) && IS_PAGE_ALIGNED(length), "Start address and length of region to be equipped with fresh pages must be page aligned");
@@ -30,9 +30,9 @@ void VirtualMemoryRegion::MapFreshPages(Address start, size_t length)
 
 void VirtualMemoryRegion::UnmapPages(Address start, size_t length)
 {
-    VIRTUAL_MEMORY_REGION_DEBUG_MSG("Unmapping pages from virtual memory region " << name << endl
-                                    << "Start: " << start << endl
-                                    << "Size: " << (unsigned)length << endl
+    VIRTUAL_MEMORY_REGION_DEBUG_MSG("Unmapping pages from virtual memory region " << name
+                                    << " Start: " << start
+                                    << " Size: " << (unsigned)length << endl
                                     );
     
     ASSERT(IS_PAGE_ALIGNED(start) && IS_PAGE_ALIGNED(length), "Start address and length of region to be equipped with fresh pages must be page aligned");

@@ -13,5 +13,10 @@ namespace Objects
 
 		GXBaseObject* InstantiateObjectByType(const char* Typename, const char* Name);
 		GXBaseObject* FindObjectByName(const char* Name);
+
+		void DumpTree(Debug::BaseOutputDevice* c);
+
+	private:
+		void PrintLevel(Debug::BaseOutputDevice* c, GXDirectoryObject* dir, int level);
 	};
 }

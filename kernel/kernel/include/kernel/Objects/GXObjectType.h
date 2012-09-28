@@ -17,12 +17,10 @@ namespace Objects
 	class GXBaseObject : public DataStructures::DoublyLinkedListLinkImpl<GXBaseObject>
 	{
 	protected:
-		GXDirectoryObject* parent;
 		const char* name;
 
-		GXBaseObject(GXDirectoryObject* Parent, const char* Name)
-		{		
-			this->parent = Parent;
+		GXBaseObject(const char* Name)
+		{
 			this->name = Name;
 		}
 
@@ -33,7 +31,6 @@ namespace Objects
 
 	public:
 		virtual const char* GetName() { return this->name; }
-		virtual GXDirectoryObject* GetParent() { return this->parent; }
 		virtual const char* GetTypeName() { return "<untyped>"; }
 	};
 
@@ -47,19 +44,19 @@ namespace Objects
 	protected:
 		GXObjectType<T>* type;
 
-		GXTypedObject(GXObjectType<T>* Type, GXDirectoryObject* Parent, const char* Name);
+		GXTypedObject(GXObjectType<T>* Type, const char* Name);
 		virtual ~GXTypedObject() { }
 
 	public:
 		void* operator new(size_t, void* buf) { return buf; }
         void operator delete(void* object) { ((T*)object)->type->DestroyObject((T*)object); }
 
-        virtual const char* GetTypeName() { return this->type->GetTypeName(); }
+        virtual const char* GetTypeName() { return this->type->GetName(); }
 	};
 
 	template<typename T>
-	GXTypedObject<T>::GXTypedObject(GXObjectType<T>* Type, GXDirectoryObject* Parent, const char* Name)
-		: GXBaseObject(Parent, Name)
+	GXTypedObject<T>::GXTypedObject(GXObjectType<T>* Type, const char* Name)
+		: GXBaseObject(Name)
 	{
 		this->type = Type;
 	}
@@ -68,16 +65,15 @@ namespace Objects
 
 
 	template<typename T>
-	class GXObjectType
+	class GXObjectType : public GXBaseObject
 	{
 	private:
-		const char* typeName;
 		Memory::Slab::SlabCache* slabCache;
 
 	public:
 		GXObjectType(const char* TypeName, size_t Alignment = 0)
+			: GXBaseObject(TypeName)
 		{
-			this->typeName = TypeName;
 			this->slabCache = Memory::VirtualMemoryManager::GetInstance()->SlabAllocator()->CreateCache(TypeName, sizeof(T), Alignment);
 		}
 
@@ -86,24 +82,28 @@ namespace Objects
 			Memory::VirtualMemoryManager::GetInstance()->SlabAllocator()->DestroyCache(this->slabCache);
 		}
 
-		const char* GetTypeName() { return this->typeName; }
+		virtual const char* GetTypeName() { return "GXObjectType"; }
 
-		T* InstantiateObject(GXDirectoryObject* Parent, const char* Name)
+		T* InstantiateObject(const char* Name)
 		{
+			OBJ_SYS_DEBUG_MSG("Instantiating new object with name " << Name << " via type " << this->GetName());
+
 			void* buf = this->slabCache->AllocateObject();
-			T* newObject = new(buf) T(this, Parent, Name);
+			T* newObject = new(buf) T(this, Name);
 
 			return newObject;
 		}
 
 		void DestroyObject(T* Object)
 		{
+			OBJ_SYS_DEBUG_MSG("Destroying object " << Object->GetName() << " of type " << Object->GetTypeName() << " via type " << this->GetName());
+			
 			if(Object->type == this)
 				this->slabCache->FreeObject(Object);
 			else
 				PANIC("Attempt to free object " << Object->GetName() <<
-					" of type " << Object->type->typeName <<
-					" via Type " << this->typeName
+					" of type " << Object->GetTypeName() <<
+					" via Type " << this->GetName()
 				);
 		}
 	};

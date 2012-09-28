@@ -344,6 +344,7 @@ class LinuxFilesystemCreator:
     print "-> Mounting filesystem on partition %s" % (partdevice)
     
     mountDest = tempfile.mkdtemp()
+    time.sleep(1)
     
     try:
       subprocess.check_call(['mount', partdevice, mountDest])
