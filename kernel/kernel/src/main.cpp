@@ -49,17 +49,19 @@ void kmain()
     InitializeSizeCaches(slabAlloc);
     VirtualMemoryManager::GetInstance()->SlabAllocator(slabAlloc);
     
-    //TODO: get bootloader-loaded images and create objects for the memory space
-
     //Yeeha! At this point all platform related memory stuff should be set up and safe.
     
-    //TODO: Implement normal (non-debug) output-macro that prints text to graphical screen via HAL
-    //which gets initialized after the HAL INIT is finished
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
 
     ObjectManager* obj = new ObjectManager();
-    
     obj->DumpTree(CurrentHAL->GetCurrentDebugOutputDevice());
+
+    //TODO: get bootloader-loaded images and create objects for the memory space
+    //TODO: Create Memory Space object for Kernel in object manager, MemoryManager-Class will then be obsolete
+    //TODO: Add SLAB-Allocator and SLABS into object manager
+
+    //TODO: Implement normal (non-debug) output-macro that prints text to graphical screen via HAL
+    //which gets initialized after the HAL INIT is finished
 
     //MAIN_DEBUG_MSG("Existing SLABs in SLAB Allocator:");
     //slabAlloc->DumpCacheInfo(CurrentHAL->GetCurrentDebugOutputDevice());
