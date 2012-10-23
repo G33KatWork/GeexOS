@@ -5,7 +5,7 @@ LOADADDRESS     EQU     0x8000
 
 [BITS 16]
 [ORG 0x0]
-[MAP ALL stage15.map]
+;[MAP ALL stage15.map]
 
 start:
     ;we are loaded at 0x800:0 and upwards by first stage
@@ -30,7 +30,6 @@ start:
     cmp     ax, 0
     je      .a20error
 
-.foo:
     call    loadGDT
     cli
     mov     eax, cr0
@@ -170,13 +169,14 @@ pmodeEntry:
     ;go to next section
     add     eax, peSectionHeader_size
     loop    .nextSection
-    
+
+.jumpEntrypoint:
     ;jump to entrypoint
     pop     eax                                         ;restore pointer to pe optional header
     mov     ebx, DWORD [eax + peOptHeader.imageBase]
     add     ebx, DWORD [eax + peOptHeader.entrypoint]
     jmp     ebx
-    
+
     ;never reached
     jmp     .hang
 
@@ -214,5 +214,5 @@ peNoDataTypeFlagsFailMsg:
 ;PE file for stage2 comes here through incbin
 align 512
 stage2PEFile:
-    incbin "../stage2/stage2.exe"
+    incbin "../stage2/obj/stage2.exe"
 stage2PEEnd:

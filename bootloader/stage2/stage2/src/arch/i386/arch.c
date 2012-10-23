@@ -24,7 +24,7 @@ void arch_early_machine_setup()
 void arch_machine_setup()
 {
     print_i386_clear();
-    
+
     mem_i386_build_memory_map();
 
     debug_printf("ARCH: GXLDR machine setup done.\n");

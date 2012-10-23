@@ -1,13 +1,12 @@
-BOCHS_VERSION		:= 2.5
+BOCHS_VERSION		:= 2.6
 BOCHS_SOURCE	    := $(TOOLCHAIN_SRCDIR)/bochs-$(BOCHS_VERSION).tar.gz
 BOCHS_DOWNLOAD	    := http://downloads.sourceforge.net/project/bochs/bochs/$(BOCHS_VERSION)/bochs-$(BOCHS_VERSION).tar.gz
 BOCHS_PATCHES	    := 
 
-
 # Download
 $(BOCHS_SOURCE):
 	$(call target_mkdir)
-	$(call cmd_msg,WGET,$(subst $(SRC)/,,$(@)))
+	$(call cmd_msg,WGET,$(subst $(ROOT)/,,$(@)))
 	$(Q)wget -c -O $(@).part $(BOCHS_DOWNLOAD)
 	$(Q)mv $(@).part $(@)
 
@@ -15,9 +14,9 @@ $(BOCHS_SOURCE):
 # Extract
 $(TOOLCHAIN_ROOTDIR)/.bochs-extract: $(BOCHS_SOURCE)
 	$(Q)mkdir -p $(TOOLCHAIN_BUILDDIR)
-	$(call cmd_msg,EXTRACT,$(subst $(SRC)/$(SRCSUBDIR)/,,$(BOCHS_SOURCE)))
+	$(call cmd_msg,EXTRACT,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(BOCHS_SOURCE)))
 	$(Q)tar -C $(TOOLCHAIN_BUILDDIR) -xzf $(BOCHS_SOURCE)
-	$(call cmd_msg,PATCH,$(subst $(SRC)/$(SRCSUBDIR)/,,$(BOCHS_PATCHES)))
+	$(call cmd_msg,PATCH,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(BOCHS_PATCHES)))
 	$(Q)$(foreach patch,$(BOCHS_PATCHES), \
 		cd $(TOOLCHAIN_BUILDDIR)/bochs-$(BOCHS_VERSION); \
 		patch -Np1 -i $(patch) $(QOUTPUT); \
@@ -59,7 +58,6 @@ $(TOOLCHAIN_ROOTDIR)/.bochs-install: $(TOOLCHAIN_ROOTDIR)/.bochs-compile
 	$(call cmd_msg,INSTALL,$(TOOLCHAIN_TARGET)/bochs-$(BOCHS_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/bochs-$(BOCHS_VERSION); $(MAKE) install $(QOUTPUT)
 	$(Q)touch $(@)
-
 
 
 # Download, build and install bochs to run on the host system.

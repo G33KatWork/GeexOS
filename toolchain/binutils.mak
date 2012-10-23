@@ -1,4 +1,4 @@
-BINUTILS_VERSION    := 2.22
+BINUTILS_VERSION    := 2.23
 BINUTILS_SOURCE     := $(TOOLCHAIN_SRCDIR)/binutils-$(BINUTILS_VERSION).tar.bz2
 BINUTILS_DOWNLOAD   := http://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
 BINUTILS_PATCHES    := 
@@ -6,7 +6,7 @@ BINUTILS_PATCHES    :=
 # Download
 $(BINUTILS_SOURCE):
 	$(call target_mkdir)
-	$(call cmd_msg,WGET,$(subst $(SRC)/,,$(@)))
+	$(call cmd_msg,WGET,$(subst $(ROOT)/,,$(@)))
 	$(Q)wget -c -O $(@).part $(BINUTILS_DOWNLOAD)
 	$(Q)mv $(@).part $(@)
 
@@ -14,9 +14,9 @@ $(BINUTILS_SOURCE):
 # Extract
 $(TOOLCHAIN_ROOTDIR)/.binutils-extract: $(BINUTILS_SOURCE)
 	$(Q)mkdir -p $(TOOLCHAIN_BUILDDIR)
-	$(call cmd_msg,EXTRACT,$(subst $(SRC)/$(SRCSUBDIR)/,,$(BINUTILS_SOURCE)))
+	$(call cmd_msg,EXTRACT,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(BINUTILS_SOURCE)))
 	$(Q)tar -C $(TOOLCHAIN_BUILDDIR) -xjf $(BINUTILS_SOURCE)
-	$(call cmd_msg,PATCH,$(subst $(SRC)/$(SRCSUBDIR)/,,$(BINUTILS_PATCHES)))
+	$(call cmd_msg,PATCH,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(BINUTILS_PATCHES)))
 	$(Q)$(foreach patch,$(BINUTILS_PATCHES), \
 		cd $(TOOLCHAIN_BUILDDIR)/binutils-$(BINUTILS_VERSION); \
 		patch -Np1 -i $(patch) $(QOUTPUT); \
@@ -52,7 +52,6 @@ $(TOOLCHAIN_ROOTDIR)/.binutils-install: $(TOOLCHAIN_ROOTDIR)/.binutils-compile
 	$(call cmd_msg,INSTALL,$(TOOLCHAIN_TARGET)/binutils-$(BINUTILS_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/binutils-build; $(MAKE) install $(QOUTPUT)
 	$(Q)touch $(@)
-
 
 
 # Download, build and install binutils to run on the host system.

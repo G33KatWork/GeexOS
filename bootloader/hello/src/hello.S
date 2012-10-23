@@ -1,4 +1,5 @@
-[ORG 0x7c00]                        ;our location will be 0:0x7c00 - the bios will copy us to this location
+[BITS 16]
+[ORG 0x7C00]                        ;our location will be 0:0x7c00 - the bios will copy us to this location
 	xor     ax, ax                  ;clear ax
 	mov     ds, ax                  ;set ds - means we set the data segment to segment 0
 	

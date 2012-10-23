@@ -1,3 +1,5 @@
+OUTDATED!
+
 Kernel:
 
 4 GiB +-------------------------+ KERNEL_IO_MEMORY_END = 0xFFFFFFFF

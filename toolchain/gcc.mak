@@ -1,25 +1,14 @@
-GCC_VERSION    := 4.6.2
+GCC_VERSION    := 4.7.2
 GCC_SOURCE     := $(TOOLCHAIN_SRCDIR)/gcc-$(GCC_VERSION).tar.bz2
 GCC_DOWNLOAD   := http://ftp.gnu.org/gnu/gcc/gcc-$(GCC_VERSION)/gcc-$(GCC_VERSION).tar.bz2
 GCC_PATCHES    := 
 
-# Hack to build on OS X.
-ifeq ($(shell uname),Darwin)
-# fix compilation issue with llvm/clang (internal compiler error at runtime)
-GCC_CONFENV = CC=/usr/bin/gcc CPP=/usr/bin/cpp CXX=/usr/bin/g++ LD=/usr/bin/gcc
-endif
-
 PATH += :$(TOOLCHAIN_ROOTDIR)/bin
-
-# Hack to build on OS X.
-ifeq ($(shell uname),Darwin)
-  GCC_CONFOPTS := --with-gmp=/usr/local --with-mpfr=/usr/local --with-mpc=/usr/local
-endif
 
 # Download
 $(GCC_SOURCE):
 	$(call target_mkdir)
-	$(call cmd_msg,WGET,$(subst $(SRC)/,,$(@)))
+	$(call cmd_msg,WGET,$(subst $(ROOT)/,,$(@)))
 	$(Q)wget -c -O $(@).part $(GCC_DOWNLOAD)
 	$(Q)mv $(@).part $(@)
 
@@ -27,9 +16,9 @@ $(GCC_SOURCE):
 # Extract
 $(TOOLCHAIN_ROOTDIR)/.gcc-extract: $(GCC_SOURCE)
 	$(Q)mkdir -p $(TOOLCHAIN_BUILDDIR)
-	$(call cmd_msg,EXTRACT,$(subst $(SRC)/$(SRCSUBDIR)/,,$(GCC_SOURCE)))
+	$(call cmd_msg,EXTRACT,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(GCC_SOURCE)))
 	$(Q)tar -C $(TOOLCHAIN_BUILDDIR) -xjf $(GCC_SOURCE)
-	$(call cmd_msg,PATCH,$(subst $(SRC)/$(SRCSUBDIR)/,,$(GCC_PATCHES)))
+	$(call cmd_msg,PATCH,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(GCC_PATCHES)))
 	$(Q)$(foreach patch,$(GCC_PATCHES), \
 		cd $(TOOLCHAIN_BUILDDIR)/gcc-$(GCC_VERSION); \
 		patch -Np1 -i $(patch) $(QOUTPUT); \
@@ -68,7 +57,6 @@ $(TOOLCHAIN_ROOTDIR)/.gcc-install: $(TOOLCHAIN_ROOTDIR)/.gcc-compile
 	$(call cmd_msg,INSTALL,$(TOOLCHAIN_TARGET)/gcc-$(GCC_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/gcc-build; $(MAKE) install-gcc $(QOUTPUT)
 	$(Q)touch $(@)
-
 
 
 # Download, build and install binutils to run on the host system.

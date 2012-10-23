@@ -1,20 +1,12 @@
-QEMU_VERSION		:= 0.15.1
-QEMU_SOURCE	     	:= $(TOOLCHAIN_SRCDIR)/qemu-$(QEMU_VERSION).tar.gz
-QEMU_DOWNLOAD	    := http://wiki.qemu.org/download/qemu-$(QEMU_VERSION).tar.gz
-QEMU_PATCHES	    := #$(TOOLCHAIN_PATCHDIR)/qemu-1.0-macos-uint16-hack.patch
-
-# Hack to build on OS X.
-# If you don't have an Apple GCC, install it with
-# brew install https://raw.github.com/Homebrew/homebrew-dupes/master/apple-gcc42.rb
-ifeq ($(shell uname),Darwin)
-# fix compilation issue with llvm/clang (segfault at runtime)
-QEMU_CONFENV = CC=/usr/local/bin/gcc-4.2 CPP=/usr/local/bin/cpp-4.2 CXX=/usr/local/bin/g++-4.2 LD=/usr/local/bin/gcc-4.2
-endif
+QEMU_VERSION		:= 1.2.0
+QEMU_SOURCE	     	:= $(TOOLCHAIN_SRCDIR)/qemu-$(QEMU_VERSION).tar.bz2
+QEMU_DOWNLOAD	    := http://wiki.qemu.org/download/qemu-$(QEMU_VERSION).tar.bz2
+QEMU_PATCHES	    := 
 
 # Download
 $(QEMU_SOURCE):
 	$(call target_mkdir)
-	$(call cmd_msg,WGET,$(subst $(SRC)/,,$(@)))
+	$(call cmd_msg,WGET,$(subst $(ROOT)/,,$(@)))
 	$(Q)wget -c -O $(@).part $(QEMU_DOWNLOAD)
 	$(Q)mv $(@).part $(@)
 
@@ -22,9 +14,9 @@ $(QEMU_SOURCE):
 # Extract
 $(TOOLCHAIN_ROOTDIR)/.qemu-extract: $(QEMU_SOURCE)
 	$(Q)mkdir -p $(TOOLCHAIN_BUILDDIR)
-	$(call cmd_msg,EXTRACT,$(subst $(SRC)/$(SRCSUBDIR)/,,$(QEMU_SOURCE)))
-	$(Q)tar -C $(TOOLCHAIN_BUILDDIR) -xzf $(QEMU_SOURCE)
-	$(call cmd_msg,PATCH,$(subst $(SRC)/$(SRCSUBDIR)/,,$(QEMU_PATCHES)))
+	$(call cmd_msg,EXTRACT,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(QEMU_SOURCE)))
+	$(Q)tar -C $(TOOLCHAIN_BUILDDIR) -xjf $(QEMU_SOURCE)
+	$(call cmd_msg,PATCH,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(QEMU_PATCHES)))
 	$(Q)$(foreach patch,$(QEMU_PATCHES), \
 		cd $(TOOLCHAIN_BUILDDIR)/qemu-$(QEMU_VERSION); \
 		patch -Np1 -i $(patch) $(QOUTPUT); \
@@ -35,32 +27,16 @@ $(TOOLCHAIN_ROOTDIR)/.qemu-extract: $(QEMU_SOURCE)
 # Configure
 $(TOOLCHAIN_ROOTDIR)/.qemu-configure: $(TOOLCHAIN_ROOTDIR)/.qemu-extract
 	$(call cmd_msg,CONFIG,$(TOOLCHAIN_TARGET)/qemu-$(QEMU_VERSION) ($(TOOLCHAIN_TARGET)))
-ifeq ($(shell uname),Darwin)
-	$(Q)cd $(TOOLCHAIN_BUILDDIR)/qemu-$(QEMU_VERSION); \
-		$(QEMU_CONFENV) ./configure \
-		--disable-sdl \
-		--enable-cocoa \
-		--disable-kvm \
-		--enable-system \
-		--disable-linux-user \
-		--disable-darwin-user \
-		--disable-bsd-user \
-		--target-list="i386-softmmu x86_64-softmmu" \
-		--prefix=$(TOOLCHAIN_ROOTDIR) \
-		$(QOUTPUT)
-else
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/qemu-$(QEMU_VERSION); \
 		$(QEMU_CONFENV) ./configure \
 		--enable-sdl \
 		--disable-kvm \
 		--enable-system \
 		--disable-linux-user \
-		--disable-darwin-user \
 		--disable-bsd-user \
 		--target-list="i386-softmmu x86_64-softmmu" \
 		--prefix=$(TOOLCHAIN_ROOTDIR) \
 		$(QOUTPUT)
-endif
 	$(Q)touch $(@)
 
 
@@ -76,7 +52,6 @@ $(TOOLCHAIN_ROOTDIR)/.qemu-install: $(TOOLCHAIN_ROOTDIR)/.qemu-compile
 	$(call cmd_msg,INSTALL,$(TOOLCHAIN_TARGET)/qemu-$(QEMU_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/qemu-$(QEMU_VERSION); $(MAKE) install $(QOUTPUT)
 	$(Q)touch $(@)
-
 
 
 # Download, build and install qemu to run on the host system.

@@ -1,3 +1,6 @@
+OUTDATED!
+
+
 After bootloader:
 Kernel gets loaded at 0x100000
 2 Code-Sections: .setup is linked to 0x100000 and .text to 0xC0000000

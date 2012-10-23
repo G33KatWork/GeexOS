@@ -3,7 +3,7 @@ ifneq ($(BASE_INCLUDED),1)
 BASE_INCLUDED := 1
 
 # Define root directory
-SRC := $(shell cd $(SRC); pwd)
+ROOT := $(shell cd $(ROOT); pwd)
 
 # Fancy colorful output
 ifndef BUILD_COLOUR
@@ -50,11 +50,11 @@ endef
 ifneq ($(V),1)
   ifneq ($(BUILD_COLOUR),1)
     define cmd_msg
-    @printf "[%-8s] %-$$(($(MAKELEVEL)*2))s$(2)\n" $(1) ""
+    @printf "[%-8s] %-$$(($(MAKELEVEL)*2))s$(subst $(ROOT)/,,$(2))\n" $(1) ""
     endef
   else
     define cmd_msg
-    @printf "\033[1;37m[\033[1;34m%-8s\033[1;37m] \033[0;1m%-$$(($(MAKELEVEL)*2))s$(2)\033[0m\n" $(1) ""
+    @printf "\033[1;37m[\033[1;34m%-8s\033[1;37m] \033[0;1m%-$$(($(MAKELEVEL)*2))s$(subst $(ROOT)/,,$(2))\033[0m\n" $(1) ""
     endef
   endif
 endif
@@ -70,11 +70,11 @@ endef
 
 # Define toolchain target
 TOOLCHAIN_TARGET    := i686-pc-mingw32
+#TOOLCHAIN_TARGET    := arm-wince-pe
 #TOOLCHAIN_TARGET    := x86_64-w64-mingw32
-#TOOLCHAIN_TARGET    := i686-elf
 
 # Grab the toolchain information.
-include $(SRC)/build/toolchain.mak
+include $(ROOT)/build/toolchain.mak
 
 ############################
 # Host build configuration #

@@ -19,7 +19,7 @@ void mem_i386_build_memory_map()
     FirmwareMemoryMap[4].Type = MemoryTypeLoaderExecutable;
     FirmwareMemoryMap[4].BasePage = GXLDR_EXEC_BASE/ARCH_PAGE_SIZE;
     FirmwareMemoryMap[4].PageCount = ((size_t)&end)/ARCH_PAGE_SIZE;         //TODO: page align?
-    
+
     //NULL out the rest
     memset(&FirmwareMemoryMap[5], 0, (MAX_MEMORY_MAP_ENTRIES-5) * sizeof(FirmwareMemoryMapItem));
     

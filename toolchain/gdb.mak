@@ -1,4 +1,4 @@
-GDB_VERSION    := 7.3.1
+GDB_VERSION    := 7.5
 GDB_SOURCE     := $(TOOLCHAIN_SRCDIR)/gdb-$(GDB_VERSION).tar.bz2
 GDB_DOWNLOAD   := http://ftp.gnu.org/gnu/gdb/gdb-$(GDB_VERSION).tar.bz2
 GDB_PATCHES    := 
@@ -6,7 +6,7 @@ GDB_PATCHES    :=
 # Download
 $(GDB_SOURCE):
 	$(call target_mkdir)
-	$(call cmd_msg,WGET,$(subst $(SRC)/,,$(@)))
+	$(call cmd_msg,WGET,$(subst $(ROOT)/,,$(@)))
 	$(Q)wget -c -O $(@).part $(GDB_DOWNLOAD)
 	$(Q)mv $(@).part $(@)
 
@@ -14,9 +14,9 @@ $(GDB_SOURCE):
 # Extract
 $(TOOLCHAIN_ROOTDIR)/.gdb-extract: $(GDB_SOURCE)
 	$(Q)mkdir -p $(TOOLCHAIN_BUILDDIR)
-	$(call cmd_msg,EXTRACT,$(subst $(SRC)/$(SRCSUBDIR)/,,$(GDB_SOURCE)))
+	$(call cmd_msg,EXTRACT,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(GDB_SOURCE)))
 	$(Q)tar -C $(TOOLCHAIN_BUILDDIR) -xjf $(GDB_SOURCE)
-	$(call cmd_msg,PATCH,$(subst $(SRC)/$(SRCSUBDIR)/,,$(GDB_PATCHES)))
+	$(call cmd_msg,PATCH,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(GDB_PATCHES)))
 	$(Q)$(foreach patch,$(GDB_PATCHES), \
 		cd $(TOOLCHAIN_BUILDDIR)/gdb-$(GDB_VERSION); \
 		patch -Np1 -i $(patch) $(QOUTPUT); \
@@ -52,7 +52,6 @@ $(TOOLCHAIN_ROOTDIR)/.gdb-install: $(TOOLCHAIN_ROOTDIR)/.gdb-compile
 	$(call cmd_msg,INSTALL,$(TOOLCHAIN_TARGET)/gdb-$(GDB_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/gdb-build; $(MAKE) install $(QOUTPUT)
 	$(Q)touch $(@)
-
 
 
 # Download, build and install gdb to run on the host system.

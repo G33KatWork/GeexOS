@@ -1,6 +1,6 @@
 {
     "hddsize": 102400,
-    "mbrCodeFile": "bootloader/mbr/mbr.bin",
+    "mbrCodeFile": "bootloader/mbr/obj/mbr.bin",
     "partitions": [
         {
             "active": true,
@@ -8,14 +8,14 @@
             "size": 50000,
             "type": 6,
             "fstype": "fat16",
-            "mbrCodeFile": "bootloader/stage1_fat16/stage1.bin",
+            "mbrCodeFile": "bootloader/stage1_fat16/obj/stage1_fat16.bin",
             "filesToCopy": [
                 {
-                    "source": "bootloader/stage2/stage2.bin",
+                    "source": "bootloader/stage2/stage15/obj/stage15.bin",
                     "destination": "GXLDR"
                 },
                 {
-                    "source": "kernel/kernel/kernel.exe",
+                    "source": "kernel/kernel/obj/kernel.exe",
                     "destination": "system/gxoskrnl.exe"
                 }
             ]

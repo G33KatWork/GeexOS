@@ -1,7 +1,7 @@
 [BITS 16]
 [SECTION .text]
 [ORG 0x7C00]
-[MAP ALL stage1.map]
+;[MAP ALL stage1.map]
 
 ROOTDIRSEGMENT  EQU     0x2000
 LOWFATSEGMENT   EQU     0x3000

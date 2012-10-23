@@ -1,13 +1,12 @@
-NASM_VERSION		:= 2.10rc8
+NASM_VERSION		:= 2.10.05
 NASM_SOURCE	     	:= $(TOOLCHAIN_SRCDIR)/nasm-$(NASM_VERSION).tar.bz2
 NASM_DOWNLOAD	    := http://www.nasm.us/pub/nasm/releasebuilds/$(NASM_VERSION)/nasm-$(NASM_VERSION).tar.bz2
 NASM_PATCHES	    := 
 
-
 # Download
 $(NASM_SOURCE):
 	$(call target_mkdir)
-	$(call cmd_msg,WGET,$(subst $(SRC)/,,$(@)))
+	$(call cmd_msg,WGET,$(subst $(ROOT)/,,$(@)))
 	$(Q)wget -c -O $(@).part $(NASM_DOWNLOAD)
 	$(Q)mv $(@).part $(@)
 
@@ -15,9 +14,9 @@ $(NASM_SOURCE):
 # Extract
 $(TOOLCHAIN_ROOTDIR)/.nasm-extract: $(NASM_SOURCE)
 	$(Q)mkdir -p $(TOOLCHAIN_BUILDDIR)
-	$(call cmd_msg,EXTRACT,$(subst $(SRC)/$(SRCSUBDIR)/,,$(NASM_SOURCE)))
+	$(call cmd_msg,EXTRACT,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(NASM_SOURCE)))
 	$(Q)tar -C $(TOOLCHAIN_BUILDDIR) -xjf $(NASM_SOURCE)
-	$(call cmd_msg,PATCH,$(subst $(SRC)/$(SRCSUBDIR)/,,$(NASM_PATCHES)))
+	$(call cmd_msg,PATCH,$(subst $(ROOT)/$(SRCSUBDIR)/,,$(NASM_PATCHES)))
 	$(Q)$(foreach patch,$(NASM_PATCHES), \
 		cd $(TOOLCHAIN_BUILDDIR)/nasm-$(NASM_VERSION); \
 		patch -Np1 -i $(patch) $(QOUTPUT); \
@@ -47,7 +46,6 @@ $(TOOLCHAIN_ROOTDIR)/.nasm-install: $(TOOLCHAIN_ROOTDIR)/.nasm-compile
 	$(call cmd_msg,INSTALL,$(TOOLCHAIN_TARGET)/nasm-$(NASM_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/nasm-$(NASM_VERSION); $(MAKE) install $(QOUTPUT)
 	$(Q)touch $(@)
-
 
 
 # Download, build and install nasm to run on the host system.
