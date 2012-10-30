@@ -1,6 +1,6 @@
 #current directory
 #FIXME: this looks strange somehow...
-CURDIR-$(TARGET) := $(ROOT)/$(SELF_DIR)$(TARGET)
+CURDIR-$(TARGET) := $(SELF_DIR)$(TARGET)
 
 # Variable mangling
 OBJDIR-$(TARGET) := $(addprefix $(CURDIR-$(TARGET))/,$(OBJDIR))
