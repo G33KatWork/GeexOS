@@ -15,6 +15,21 @@
                     "destination": "GXLDR"
                 },
                 {
+                    "source": "bootloader/testkernel/obj/testkernel.elf",
+                    "destination": "system/gxoskrnl.elf"
+                },
+                {
+                    "source": "bootloader/testkernellib/obj/testkernellib.so",
+                    "destination": "system/testkernellib.so"
+                }
+            ],
+
+            "filesToCopy_kernel": [
+                {
+                    "source": "bootloader/stage2/stage15/obj/stage15.bin",
+                    "destination": "GXLDR"
+                },
+                {
                     "source": "kernel/kernel/obj/kernel.exe",
                     "destination": "system/gxoskrnl.exe"
                 }

@@ -5,6 +5,7 @@
 
 void DllEntry(void);
 
+int anotherfunction(void);
 TESTKERNELLIB_API int libfunc(int a);
 
 #endif

@@ -2,16 +2,16 @@
 [SECTION .text]
 
 %macro TRAP_NOERRCODE 1
-	[GLOBAL _ex%1]
-	_ex%1:
+	[GLOBAL ex%1]
+	ex%1:
 		push byte 0
 		push byte %1
 		jmp trap_handler
 %endmacro
 
 %macro TRAP_ERRCODE 1
-	[GLOBAL _ex%1]
-	_ex%1:
+	[GLOBAL ex%1]
+	ex%1:
 		push byte %1
 		jmp trap_handler
 %endmacro
@@ -39,7 +39,7 @@ TRAP_NOERRCODE 18
 TRAP_NOERRCODE 19
 
 ;Our C-Handler for fault interrupts
-[EXTERN _printException]
+[EXTERN printException]
 trap_handler:
 	cli
 	pusha           ; push all registers (see regs.h for corresponding struct)
@@ -59,7 +59,7 @@ trap_handler:
 	mov fs, ax
 	mov gs, ax
 
-	call _printException
+	call printException
 
 	pop eax
 	mov gs, ax

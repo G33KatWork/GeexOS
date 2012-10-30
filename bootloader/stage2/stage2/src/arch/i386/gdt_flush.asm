@@ -1,11 +1,11 @@
 [BITS 32]
-[GLOBAL _gdt_flush]
-[EXTERN _gp]
+[GLOBAL gdt_flush]
+[EXTERN gp]
 [SECTION .text]
 
 ; load the real gdt
-_gdt_flush:
-	lgdt [_gp]
+gdt_flush:
+	lgdt [gp]
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax

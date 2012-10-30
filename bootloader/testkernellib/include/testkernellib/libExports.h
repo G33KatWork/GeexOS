@@ -2,9 +2,9 @@
 #define _TESTKERNELLIB_EXPORTS_H_
 
 #ifdef TESTKERNELLIB_EXPORTS
-#define TESTKERNELLIB_API __declspec(dllexport)
+#define TESTKERNELLIB_API __attribute__ ((visibility ("default")))
 #else
-#define TESTKERNELLIB_API __declspec(dllimport)
+#define TESTKERNELLIB_API
 #endif
 
 #endif

@@ -1,6 +1,6 @@
 [BITS 32]
 global start
-extern _kmain
+extern kmain
 
 extern switchToReal
 extern switchToProt
@@ -14,7 +14,7 @@ start:
 
   ;TODO ctors and dtors
 
-  call _kmain                        ; Jump to C-Code
+  call kmain                        ; Jump to C-Code
 
 .cpuhalt:
   cli

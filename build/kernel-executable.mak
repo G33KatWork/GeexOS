@@ -35,17 +35,16 @@ LIBS-$(TARGET) := $(LIBS)
 LIBDEPS-$(TARGET) := $(LIBS)
 
 # A name to reference tis target
-BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).exe
+BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).elf
 
 # Main targets
 all: $(BINARY-$(TARGET))
 $(TARGET): $(BINARY-$(TARGET))
 
-$(OBJDIR-$(TARGET))/$(TARGET).exe: LDFLAGS := $(LDFLAGS-$(TARGET))
-$(OBJDIR-$(TARGET))/$(TARGET).exe: LIBS := $(LIBS-$(TARGET))
-$(OBJDIR-$(TARGET))/$(TARGET).exe: $(addprefix $(OBJDIR-$(TARGET))/,$(OBJECTS-$(TARGET))) $(LIBDEPS-$(TARGET))
+$(OBJDIR-$(TARGET))/$(TARGET).elf: LDFLAGS := $(LDFLAGS-$(TARGET))
+$(OBJDIR-$(TARGET))/$(TARGET).elf: $(addprefix $(OBJDIR-$(TARGET))/,$(OBJECTS-$(TARGET))) $(LIBDEPS-$(TARGET))
 	$(call cmd_msg,LINK,$(@))
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(LIBS) $^
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^
 
 # Cleaning
 clean: clean-$(TARGET)

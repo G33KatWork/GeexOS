@@ -1,5 +1,5 @@
 [BITS 32]
-[EXTERN _pmodeIdt]  ;defined in arch/i386/idt.c
+[EXTERN pmodeIdt]  ;defined in arch/i386/idt.c
 
 ;also defined in bioscall.h
 ;be sure to change it there too, if necessary
@@ -103,13 +103,13 @@ switchToProt:
     xor     eax, eax
     
     ;reaload protected mode IDT
-    lidt    [_pmodeIdt]
+    lidt    [pmodeIdt]
     
     ret
 
 [BITS 32]
-[global _callInt]
-_callInt:
+[global callInt]
+callInt:
     push    ebp
     mov     ebp, esp
     

@@ -11,7 +11,7 @@ CXXSOURCES =
 ASOURCES = start.asm
 
 # C compiler flags
-CFLAGS  = -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99
+CFLAGS  = -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99 -fvisibility=hidden -fPIC
 CFLAGS += -fno-stack-check -mno-stack-arg-probe -fno-stack-protector
 CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
           -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
@@ -22,21 +22,20 @@ CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 CXXFLAGS  = 
 
 # NASM flags
-NASMFLAGS = -ggdb -f win32
+NASMFLAGS = -f elf -ggdb
 
 # GAS flags
 GASFLAGS = 
 
 # Linker flags
-LDFLAGS = -Map $(ROOT)/kernel/kernel/testkernel.map -entry _start \
-          --image-base 0xC0000000 --subsystem native --disable-auto-import \
-          --exclude-all-symbols -nostdlib -pie
+LDFLAGS = -Map $(ROOT)/bootloader/testkernel/testkernel.map -entry start \
+          -nostdlib -T $(ROOT)/bootloader/testkernel/linker.ld
 
 # Additional include paths to consider
-INCLUDES = $(ROOT)/bootloader/testkernellib/include
+INCLUDES = $(ROOT)/bootloader/testkernel/include $(ROOT)/bootloader/testkernellib/include
 
 # Additional local static libs to link against
-LIBS = $(IMPLIB-testkernellib)
+LIBS = $(BINARY-testkernellib)
 
 # Folder for object files
 OBJDIR = obj
@@ -45,6 +44,6 @@ OBJDIR = obj
 SRCDIR = src
 
 # Additional defines
-DEFINES := -DDEBUG
+DEFINES := -DDEBUG -DKERNELAPI_EXPORTS
 
 include $(ROOT)/build/kernel-executable.mak

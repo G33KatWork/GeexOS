@@ -1,5 +1,5 @@
 #include <testkernellib/lib.h>
-
+#include <testkernel/kernelapi.h>
 
 typedef struct _MEMORY_DESCRIPTOR
 {
@@ -56,4 +56,7 @@ int kmain(PLOADER_BLOCK loaderBlock)
     return 0;
 }
 
-
+int kernelapifunc(int a)
+{
+    return 42;
+}

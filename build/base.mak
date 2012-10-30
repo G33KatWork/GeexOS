@@ -69,9 +69,9 @@ endef
 ############################
 
 # Define toolchain target
-TOOLCHAIN_TARGET    := i686-pc-mingw32
-#TOOLCHAIN_TARGET    := arm-wince-pe
-#TOOLCHAIN_TARGET    := x86_64-w64-mingw32
+TOOLCHAIN_TARGET    := i686-elf
+#TOOLCHAIN_TARGET    := arm-none-eabi
+#TOOLCHAIN_TARGET    := x86_64-eld
 
 # Grab the toolchain information.
 include $(ROOT)/build/toolchain.mak

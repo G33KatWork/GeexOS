@@ -49,13 +49,14 @@ CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 CXXFLAGS  = 
 
 # NASM flags
-NASMFLAGS = -f win32
+NASMFLAGS = -f elf -ggdb
 
 # GAS flags
 GASFLAGS = 
 
 # Linker flags
-LDFLAGS = --image-base 0x8000 --subsystem 0x10 -nostdlib -Map $(ROOT)/bootloader/stage2/stage2/stage2.map
+LDFLAGS = -Map $(ROOT)/bootloader/stage2/stage2/stage2.map -entry start \
+          -nostdlib -T $(ROOT)/bootloader/stage2/stage2/linker.ld
 
 # Additional include paths to consider
 INCLUDES =	$(ROOT)/bootloader/stage2/stage2/include

@@ -1,13 +1,13 @@
 [BITS 32]
-global _start
-extern _kmain
+global start
+extern kmain
 
 section .text
 
-_start:
+start:
   ;loader already pushed pointer to loader block onto stack
   cli
-  call _kmain
+  call kmain
 
 .cpuhalt:
   cli

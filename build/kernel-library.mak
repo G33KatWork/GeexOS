@@ -35,20 +35,16 @@ LIBS-$(TARGET) := $(LIBS)
 LIBDEPS-$(TARGET) := $(LIBS)
 
 # A name to reference tis target
-BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).dll
-IMPLIB-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET)_imp.lib
+BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).so
 
 # Main targets
 all: $(BINARY-$(TARGET))
 $(TARGET): $(BINARY-$(TARGET))
 
-$(IMPLIB-$(TARGET)): $(BINARY-$(TARGET))
-
-$(OBJDIR-$(TARGET))/$(TARGET).dll: LDFLAGS := $(LDFLAGS-$(TARGET))
-$(OBJDIR-$(TARGET))/$(TARGET).dll: LIBS := $(LIBS-$(TARGET))
-$(OBJDIR-$(TARGET))/$(TARGET).dll: $(addprefix $(OBJDIR-$(TARGET))/,$(OBJECTS-$(TARGET))) $(LIBDEPS-$(TARGET))
+$(OBJDIR-$(TARGET))/$(TARGET).so: LDFLAGS := $(LDFLAGS-$(TARGET))
+$(OBJDIR-$(TARGET))/$(TARGET).so: $(addprefix $(OBJDIR-$(TARGET))/,$(OBJECTS-$(TARGET))) $(LIBDEPS-$(TARGET))
 	$(call cmd_msg,LINK,$(@))
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(LIBS) $^
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^
 
 # Cleaning
 clean: clean-$(TARGET)

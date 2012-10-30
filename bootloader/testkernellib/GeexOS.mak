@@ -11,7 +11,7 @@ CXXSOURCES =
 ASOURCES = 
 
 # C compiler flags
-CFLAGS  = -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99
+CFLAGS  = -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99 -fvisibility=hidden -fPIC
 CFLAGS += -fno-stack-check -mno-stack-arg-probe -fno-stack-protector
 CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
           -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
@@ -28,13 +28,11 @@ NASMFLAGS =
 GASFLAGS = 
 
 # Linker flags
-LDFLAGS = -s -Map $(ROOT)/bootloader/testkernellib/testkernellib.map \
-          --out-implib $(ROOT)/bootloader/testkernellib/obj/testkernellib_imp.lib \
-          -entry _DllEntry --disable-auto-import --exclude-all-symbols \
-          -nostdlib -shared --image-base 0xC0000000
+LDFLAGS = -Map $(ROOT)/bootloader/testkernellib/testkernellib.map \
+          -entry DllEntry -nostdlib -shared
 
 # Additional include paths to consider
-INCLUDES = $(ROOT)/bootloader/testkernellib/include
+INCLUDES = $(ROOT)/bootloader/testkernellib/include $(ROOT)/bootloader/testkernel/include
 
 # Additional local static libs to link against
 LIBS = 
