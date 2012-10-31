@@ -23,8 +23,9 @@ CXXSOURCES = main.cpp \
              Objects/ObjectManager.cpp \
              Utils/CRC32.cpp
 
-# List Assembler to be assembled with NASM here
-ASOURCES = 
+# List Files to be assembled here
+NASMSOURCES = 
+GASSOURCES = 
 
 # C compiler flags
 CFLAGS =

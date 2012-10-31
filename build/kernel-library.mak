@@ -23,8 +23,8 @@ NASMFLAGS-$(TARGET) := $(NASMFLAGS)
 LDFLAGS-$(TARGET) := $(LDFLAGS)
 
 # Determinte objects to be created
-OBJECTS-$(TARGET) := $(ASOURCES:%.S=%.o)
-OBJECTS-$(TARGET) := $(ASOURCES:%.asm=%.o)
+OBJECTS-$(TARGET) := $(GASSOURCES:%.S=%.o)
+OBJECTS-$(TARGET) += $(NASMSOURCES:%.asm=%.o)
 OBJECTS-$(TARGET) += $(CCSOURCES:%.c=%.o)
 OBJECTS-$(TARGET) += $(CXXSOURCES:%.cpp=%.o)
 
@@ -91,7 +91,7 @@ $(OBJDIR-$(TARGET))/%.o: GASFLAGS := $(GASFLAGS-$(TARGET))
 $(OBJDIR-$(TARGET))/%.o: $(SRCDIR-$(TARGET))/%.S
 	$(call cmd_msg,AS,$<)
 	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(AS) $(GASFLAGS) -o $@ $<
+	$(Q)$(CC) -c $(GASFLAGS) -o $@ $<
 
 .PHONY: clean-$(TARGET) $(TARGET)
 

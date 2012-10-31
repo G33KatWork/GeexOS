@@ -30,12 +30,13 @@ CCSOURCES += arch/i386/arch.c \
 # List C++ source files here.
 CXXSOURCES = 
 
-# List Assembler to be assembled with NASM here
-ASOURCES = arch/i386/start.asm \
+# List Assembler to be assembled here
+NASMSOURCES = arch/i386/start.asm \
            arch/i386/trap.asm \
            arch/i386/gdt_flush.asm \
            arch/i386/realmode.asm \
            arch/i386/execute_at.asm
+GASSOURCES = 
 
 # C compiler flags
 CFLAGS  = -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99 -mno-ms-bitfields

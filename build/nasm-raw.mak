@@ -10,7 +10,7 @@ SRCDIR-$(TARGET) := $(addprefix $(CURDIR-$(TARGET))/,$(SRCDIR))
 NASMFLAGS-$(TARGET) := $(NASMFLAGS)
 
 # Determinte sources
-SOURCES-$(TARGET) := $(ASOURCES)
+SOURCES-$(TARGET) := $(NASMSOURCES)
 
 # A name to reference tis target
 BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).bin

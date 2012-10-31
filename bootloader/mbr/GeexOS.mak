@@ -2,7 +2,7 @@
 TARGET = mbr
 
 # List Assembler to be assembled with NASM here
-ASOURCES = mbr.asm
+NASMSOURCES = mbr.asm
 
 # NASM flags
 NASMFLAGS = -f bin

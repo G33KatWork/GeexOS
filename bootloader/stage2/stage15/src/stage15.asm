@@ -8,7 +8,7 @@ LOADADDRESS     EQU     0x8000
 
 [BITS 16]
 [ORG 0x0]
-[MAP ALL stage15.map]
+;[MAP ALL stage15.map]
 
 start:
     ;we are loaded at 0x800:0 and upwards by first stage

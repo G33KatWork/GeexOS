@@ -2,7 +2,7 @@
 TARGET = stage15
 
 # List Assembler to be assembled with NASM here
-ASOURCES = stage15.asm
+NASMSOURCES = stage15.asm
 
 # NASM flags
 NASMFLAGS = -f bin -I$(CURDIR-stage15)/

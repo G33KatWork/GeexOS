@@ -2,7 +2,7 @@
 TARGET = hello
 
 # List Assembler to be assembled with NASM here
-ASOURCES = hello.asm
+NASMSOURCES = hello.asm
 
 # NASM flags
 NASMFLAGS = -f bin

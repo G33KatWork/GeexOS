@@ -7,8 +7,9 @@ CCSOURCES = main.c
 # List C++ source files here.
 CXXSOURCES = 
 
-# List Assembler to be assembled with NASM here
-ASOURCES = start.asm
+# List Assembler to be assembled here
+NASMSOURCES = start.asm
+GASSOURCES = 
 
 # C compiler flags
 CFLAGS  = -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99 -fvisibility=hidden -fPIC

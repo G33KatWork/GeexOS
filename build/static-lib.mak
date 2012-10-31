@@ -20,19 +20,19 @@ CXXFLAGS-$(TARGET) += $(DEFINES)
 NASMFLAGS-$(TARGET) := $(NASMFLAGS)
 
 # Determinte objects to be created
-OBJECTS-$(TARGET) := $(ASOURCES:%.S=%.o)
-OBJECTS-$(TARGET) += $(ASOURCES:%.asm=%.o)
+OBJECTS-$(TARGET) := $(GASSOURCES:%.S=%.o)
+OBJECTS-$(TARGET) += $(NASMSOURCES:%.asm=%.o)
 OBJECTS-$(TARGET) += $(CCSOURCES:%.c=%.o)
 OBJECTS-$(TARGET) += $(CXXSOURCES:%.cpp=%.o)
 
 # define a name for linking against this lib
-BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).lib
+BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).a
 
 # Main targets
 all: $(BINARY-$(TARGET))
 $(TARGET): $(BINARY-$(TARGET))
 
-$(OBJDIR-$(TARGET))/$(TARGET).lib: $(addprefix $(OBJDIR-$(TARGET))/, $(OBJECTS-$(TARGET)))
+$(OBJDIR-$(TARGET))/$(TARGET).a: $(addprefix $(OBJDIR-$(TARGET))/, $(OBJECTS-$(TARGET)))
 	$(call cmd_msg,AR,$(@))
 	$(Q)$(AR) rcs $@ $^
 
@@ -80,7 +80,7 @@ $(OBJDIR-$(TARGET))/%.o: GASFLAGS := $(GASFLAGS-$(TARGET))
 $(OBJDIR-$(TARGET))/%.o: $(SRCDIR-$(TARGET))/%.S
 	$(call cmd_msg,AS,$<)
 	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(AS) $(GASFLAGS) -o $@ $<
+	$(Q)$(CC) -c $(GASFLAGS) -o $@ $<
 
 .PHONY: clean-$(TARGET) $(TARGET)
 

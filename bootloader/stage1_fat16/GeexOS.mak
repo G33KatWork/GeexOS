@@ -2,7 +2,7 @@
 TARGET = stage1_fat16
 
 # List Assembler to be assembled with NASM here
-ASOURCES = stage1.asm
+NASMSOURCES = stage1.asm
 
 # NASM flags
 ASFLAGS = -f bin

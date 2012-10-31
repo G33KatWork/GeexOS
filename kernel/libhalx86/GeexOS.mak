@@ -21,8 +21,9 @@ NASMFLAGS = -f win32
 # GAS flags
 GASFLAGS = 
 
-# List Assembler to be assembled with NASM here
-ASOURCES = start.asm gdt_flush.asm interruptStubs.asm
+# List Files to be assembled here
+NASMSOURCES = start.asm gdt_flush.asm interruptStubs.asm
+GASSOURCES = 
 
 # C compiler flags
 CFLAGS =
