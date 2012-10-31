@@ -16,10 +16,13 @@ CXXSOURCES = HAL.cpp \
              x86BootEnvironment.cpp
 
 # NASM flags
-ASFLAGS = -f win32
+NASMFLAGS = -f win32
+
+# GAS flags
+GASFLAGS = 
 
 # List Assembler to be assembled with NASM here
-ASOURCES = start.S gdt_flush.S interruptStubs.S
+ASOURCES = start.asm gdt_flush.asm interruptStubs.asm
 
 # C compiler flags
 CFLAGS =

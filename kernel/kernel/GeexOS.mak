@@ -35,7 +35,10 @@ CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wredundant-decls -Winline -Wno-long-long -fvisibility=default
 
 # NASM flags
-ASFLAGS = 
+NASMFLAGS = 
+
+# GAS flags
+GASFLAGS = 
 
 # Linker flags
 LDFLAGS = -T $(ROOT)/kernel/kernel/linker.ld -Map $(ROOT)/kernel/kernel/kernel.map \

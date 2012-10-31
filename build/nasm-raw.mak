@@ -7,7 +7,7 @@ OBJDIR-$(TARGET) := $(addprefix $(CURDIR-$(TARGET))/,$(OBJDIR))
 SRCDIR-$(TARGET) := $(addprefix $(CURDIR-$(TARGET))/,$(SRCDIR))
 
 # NASM flags
-ASFLAGS-$(TARGET) := $(ASFLAGS)
+NASMFLAGS-$(TARGET) := $(NASMFLAGS)
 
 # Determinte sources
 SOURCES-$(TARGET) := $(ASOURCES)
@@ -19,11 +19,11 @@ BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).bin
 all: $(BINARY-$(TARGET))
 $(TARGET): $(BINARY-$(TARGET))
 
-$(OBJDIR-$(TARGET))/%.bin: ASFLAGS := $(ASFLAGS-$(TARGET))
+$(OBJDIR-$(TARGET))/%.bin: NASMFLAGS := $(NASMFLAGS-$(TARGET))
 $(OBJDIR-$(TARGET))/$(TARGET).bin: $(addprefix $(SRCDIR-$(TARGET))/,$(SOURCES-$(TARGET)))
 	$(call cmd_msg,NASM,$<)
 	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(NASM) $(ASFLAGS) -o $@ $<
+	$(Q)$(NASM) $(NASMFLAGS) -o $@ $<
 
 # Cleaning
 clean: clean-$(TARGET)

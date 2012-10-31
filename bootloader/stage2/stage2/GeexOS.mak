@@ -31,11 +31,11 @@ CCSOURCES += arch/i386/arch.c \
 CXXSOURCES = 
 
 # List Assembler to be assembled with NASM here
-ASOURCES = arch/i386/start.S \
-           arch/i386/trap.S \
-           arch/i386/gdt_flush.S \
-           arch/i386/realmode.S \
-           arch/i386/execute_at.S
+ASOURCES = arch/i386/start.asm \
+           arch/i386/trap.asm \
+           arch/i386/gdt_flush.asm \
+           arch/i386/realmode.asm \
+           arch/i386/execute_at.asm
 
 # C compiler flags
 CFLAGS  = -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99 -mno-ms-bitfields
@@ -49,7 +49,10 @@ CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 CXXFLAGS  = 
 
 # NASM flags
-ASFLAGS = -f win32
+NASMFLAGS = -f win32
+
+# GAS flags
+GASFLAGS = 
 
 # Linker flags
 LDFLAGS = --image-base 0x8000 --subsystem 0x10 -nostdlib -Map $(ROOT)/bootloader/stage2/stage2/stage2.map

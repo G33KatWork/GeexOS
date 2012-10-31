@@ -2,10 +2,10 @@
 TARGET = stage15
 
 # List Assembler to be assembled with NASM here
-ASOURCES = stage15.S
+ASOURCES = stage15.asm
 
 # NASM flags
-ASFLAGS = -f bin -I$(CURDIR-stage15)/
+NASMFLAGS = -f bin -I$(CURDIR-stage15)/
 
 # Folder for sources
 SRCDIR = src

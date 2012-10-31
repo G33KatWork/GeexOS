@@ -19,7 +19,10 @@ CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wredundant-decls -Winline -Wno-long-long
 
 # NASM flags
-ASFLAGS = 
+NASMFLAGS = 
+
+# GAS flags
+GASFLAGS = 
 
 # Additional include paths to consider
 INCLUDES =	$(ROOT)/kernel/libhalinterface/include \

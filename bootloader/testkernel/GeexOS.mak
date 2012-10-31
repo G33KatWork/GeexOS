@@ -8,7 +8,7 @@ CCSOURCES = main.c
 CXXSOURCES = 
 
 # List Assembler to be assembled with NASM here
-ASOURCES = start.S
+ASOURCES = start.asm
 
 # C compiler flags
 CFLAGS  = -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99
@@ -22,7 +22,10 @@ CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 CXXFLAGS  = 
 
 # NASM flags
-ASFLAGS = -ggdb -f win32
+NASMFLAGS = -ggdb -f win32
+
+# GAS flags
+GASFLAGS = 
 
 # Linker flags
 LDFLAGS = -Map $(ROOT)/kernel/kernel/testkernel.map -entry _start \

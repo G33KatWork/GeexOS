@@ -22,7 +22,10 @@ CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 CXXFLAGS  = 
 
 # NASM flags
-ASFLAGS = 
+NASMFLAGS = 
+
+# GAS flags
+GASFLAGS = 
 
 # Linker flags
 LDFLAGS = -s -Map $(ROOT)/bootloader/testkernellib/testkernellib.map \

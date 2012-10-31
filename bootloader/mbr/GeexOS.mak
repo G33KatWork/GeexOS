@@ -2,10 +2,10 @@
 TARGET = mbr
 
 # List Assembler to be assembled with NASM here
-ASOURCES = mbr.S
+ASOURCES = mbr.asm
 
 # NASM flags
-ASFLAGS = -f bin
+NASMFLAGS = -f bin
 
 # Folder for sources
 SRCDIR = src

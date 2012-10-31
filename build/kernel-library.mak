@@ -17,13 +17,14 @@ CXXFLAGS-$(TARGET) += $(addprefix -I,$(INCLUDES))
 CXXFLAGS-$(TARGET) += $(DEFINES)
 
 # NASM flags
-ASFLAGS-$(TARGET) := $(ASFLAGS)
+NASMFLAGS-$(TARGET) := $(NASMFLAGS)
 
 # LD flags
 LDFLAGS-$(TARGET) := $(LDFLAGS)
 
 # Determinte objects to be created
 OBJECTS-$(TARGET) := $(ASOURCES:%.S=%.o)
+OBJECTS-$(TARGET) := $(ASOURCES:%.asm=%.o)
 OBJECTS-$(TARGET) += $(CCSOURCES:%.c=%.o)
 OBJECTS-$(TARGET) += $(CXXSOURCES:%.cpp=%.o)
 
@@ -82,12 +83,19 @@ $(OBJDIR-$(TARGET))/%.o: $(SRCDIR-$(TARGET))/%.cpp
 	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Assembler S files
-$(OBJDIR-$(TARGET))/%.o: ASFLAGS := $(ASFLAGS-$(TARGET))
-$(OBJDIR-$(TARGET))/%.o: $(SRCDIR-$(TARGET))/%.S
+# Assembler asm files with NASM
+$(OBJDIR-$(TARGET))/%.o: NASMFLAGS := $(NASMFLAGS-$(TARGET))
+$(OBJDIR-$(TARGET))/%.o: $(SRCDIR-$(TARGET))/%.asm
 	$(call cmd_msg,NASM,$<)
 	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(NASM) $(ASFLAGS) -o $@ $<
+	$(Q)$(NASM) $(NASMFLAGS) -o $@ $<
+
+# Assemble S files with GAS
+$(OBJDIR-$(TARGET))/%.o: GASFLAGS := $(GASFLAGS-$(TARGET))
+$(OBJDIR-$(TARGET))/%.o: $(SRCDIR-$(TARGET))/%.S
+	$(call cmd_msg,AS,$<)
+	$(Q)$(MKDIR) -p $(dir $@)
+	$(Q)$(AS) $(GASFLAGS) -o $@ $<
 
 .PHONY: clean-$(TARGET) $(TARGET)
 

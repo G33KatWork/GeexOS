@@ -2,10 +2,10 @@
 TARGET = hello
 
 # List Assembler to be assembled with NASM here
-ASOURCES = hello.S
+ASOURCES = hello.asm
 
 # NASM flags
-ASFLAGS = -f bin
+NASMFLAGS = -f bin
 
 # Folder for sources
 SRCDIR = src
