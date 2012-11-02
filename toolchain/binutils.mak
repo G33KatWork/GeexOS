@@ -3,6 +3,9 @@ BINUTILS_SOURCE     := $(TOOLCHAIN_SRCDIR)/binutils-$(BINUTILS_VERSION).tar.bz2
 BINUTILS_DOWNLOAD   := http://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
 BINUTILS_PATCHES    := 
 
+#FIXME: make this dependent on an ARCH-variable later
+BINUTILS_EXTRA_CONFIGURE_ARGS := --enable-targets=i386-efi-pe
+
 # Download
 $(BINUTILS_SOURCE):
 	$(call target_mkdir)
@@ -36,6 +39,7 @@ $(TOOLCHAIN_ROOTDIR)/.binutils-configure: $(TOOLCHAIN_ROOTDIR)/.binutils-extract
 		--disable-werror \
 		--prefix=$(TOOLCHAIN_ROOTDIR) \
 		--target=$(TOOLCHAIN_TARGET) \
+		$(BINUTILS_EXTRA_CONFIGURE_ARGS) \
 		$(QOUTPUT)
 	$(Q)touch $(@)
 

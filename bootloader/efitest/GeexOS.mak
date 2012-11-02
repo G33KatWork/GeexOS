@@ -55,4 +55,4 @@ SRCDIR = src
 # Additional defines
 DEFINES := 
 
-include $(ROOT)/build/kernel-library.mak
+include $(ROOT)/build/efi-executable.mak
