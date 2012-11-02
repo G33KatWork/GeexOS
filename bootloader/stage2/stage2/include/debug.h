@@ -1,7 +1,7 @@
 #ifndef _GXLDR_DEBUG_H_
 #define _GXLDR_DEBUG_H_
 
-#include <types.h>
+#include <stddef.h>
 
 typedef enum { 
 	DBGPORT_SCREEN		=	0x01,

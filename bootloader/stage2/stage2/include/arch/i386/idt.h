@@ -1,7 +1,7 @@
 #ifndef _ARCH_IDT_H
 #define _ARCH_IDT_H
 
-#include <types.h>
+#include <stdint.h>
 
 // idt descriptor type attribute flags
 #define I86_IDT_ATTR_TASK_GATE			0x05		//00000101

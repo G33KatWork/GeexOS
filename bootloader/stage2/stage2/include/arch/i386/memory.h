@@ -1,7 +1,7 @@
 #ifndef _GXLDR_ARCH_I386_MEMORY_H_
 #define _GXLDR_ARCH_I386_MEMORY_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <memory.h>
 
 #define ARCH_PAGE_SIZE          0x1000

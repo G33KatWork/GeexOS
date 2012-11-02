@@ -215,7 +215,7 @@ void gdbstub_i386_handle_exception(trapframe* ctx)
     }
 }
 
-static void set_thread(char* UNUSED(request))
+static void set_thread(char* request)
 {
     //return OK for now, we don't have any threads
     outputBuffer[0] = 'O';

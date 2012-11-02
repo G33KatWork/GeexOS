@@ -37,7 +37,6 @@ $(TOOLCHAIN_ROOTDIR)/.gcc-configure: $(TOOLCHAIN_ROOTDIR)/.gcc-extract
 		$(GCC_CONFENV) ../gcc-$(GCC_VERSION)/configure \
 			--prefix=$(TOOLCHAIN_ROOTDIR) \
 			--target=$(TOOLCHAIN_TARGET) \
-			--without-headers \
 			--enable-languages=c,c++ --disable-nls \
 			$(QOUTPUT) \
 			$(GCC_CONFOPTS)

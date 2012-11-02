@@ -1,7 +1,8 @@
 #ifndef _GXLDR_ARCH_I386_MBR_PARTMAP_H_
 #define _GXLDR_ARCH_I386_MBR_PARTMAP_H_
 
-#include <types.h>
+#include <stdint.h>
+
 #include <disk.h>
 
 struct DiskDevice_;

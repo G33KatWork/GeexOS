@@ -33,24 +33,12 @@
     SUCH DAMAGE.
 */
 
+#include <stdint.h>
+
 //#include <elf.h>
 //#include <link.h>	/* get _DYNAMIC decl and ElfW and ELFW macros */
 
-
 //The following stuff is crap, I know...
-//stdint.h
-typedef     unsigned char   uint8_t;
-typedef     char            int8_t;
-
-typedef     unsigned short  uint16_t;
-typedef     short           int16_t;
-
-typedef     unsigned int    uint32_t;
-typedef     int             int32_t;
-
-typedef     unsigned long long uint64_t;
-typedef     long long       int64_t;
-
 //link.h
 #define __WORDSIZE     32
 #define __ELF_NATIVE_CLASS __WORDSIZE

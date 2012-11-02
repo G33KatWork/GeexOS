@@ -2,6 +2,7 @@
 #define _PRINT_H_
 
 #include <lib.h>
+#include <stdarg.h>
 
 size_t   printf(const char*, ... );
 size_t   snprintf(char*, size_t, const char*, ...);

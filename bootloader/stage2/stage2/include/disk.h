@@ -1,7 +1,8 @@
 #ifndef _GXLDR_DISK_H_
 #define _GXLDR_DISK_H_
 
-#include <types.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <list.h>
 
 typedef struct {

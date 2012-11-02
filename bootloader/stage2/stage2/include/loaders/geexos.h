@@ -1,7 +1,7 @@
 #ifndef _LDR_GEEXOS_H_
 #define _LDR_GEEXOS_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <memory.h>
 
 #define	GEEXOS_KERNEL_STACK_ADDRESS	0xE0000000

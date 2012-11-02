@@ -1,7 +1,7 @@
 #ifndef _ARCH_GDT_H
 #define _ARCH_GDT_H
 
-#include <types.h>
+#include <stdint.h>
 
 // gdt descriptor access bit flags
 #define I86_GDT_DESC_ACCESS			0x0001			//00000001

@@ -1,7 +1,9 @@
 #ifndef _GXLDR_FS_H_
 #define _GXLDR_FS_H_
 
-#include <types.h>
+#include <stdint.h>
+#include <stddef.h>
+
 #include <disk.h>
 #include <list.h>
 

@@ -1,9 +1,15 @@
 #ifndef _ARCH_H_
 #define _ARCH_H_
 
-#include <types.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 #include <disk.h>
 #include <debug.h>
+
+//FIXME: Use uintptr_t here instead defining it...
+typedef uint32_t Address;
+typedef uint32_t PageNumber;
 
 void arch_early_machine_setup(void);
 void arch_machine_setup(void);

@@ -1,7 +1,10 @@
 #ifndef _ARCH_I386_PAGING_H
 #define _ARCH_I386_PAGING_H
 
-#include <types.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#include <arch/i386/memory.h>
 
 #define     PAGE_SIZE       4096
 #define     PAGEALIGN_MASK  0xFFFFF000

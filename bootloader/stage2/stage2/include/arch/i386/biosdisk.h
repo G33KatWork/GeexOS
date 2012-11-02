@@ -1,7 +1,8 @@
 #ifndef _GXLDR_ARCH_I386_BIOSDISK_H_
 #define _GXLDR_ARCH_I386_BIOSDISK_H_
 
-#include <types.h>
+#include <stdint.h>
+
 #include <disk.h>
 
 struct INT13_LBA_Packet {

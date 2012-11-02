@@ -39,7 +39,7 @@ NASMSOURCES = arch/i386/start.asm \
 GASSOURCES = 
 
 # C compiler flags
-CFLAGS  = -ggdb -nostdlib -nostdinc -fno-builtin -std=gnu99 -mno-ms-bitfields
+CFLAGS  = -ggdb -std=gnu99 -mno-ms-bitfields -ffreestanding
 CFLAGS += -fno-stack-check -mno-stack-arg-probe -fno-stack-protector
 CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
           -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \

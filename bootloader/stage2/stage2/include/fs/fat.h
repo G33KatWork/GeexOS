@@ -1,7 +1,7 @@
 #ifndef _GXLDR_FAT_H_
 #define _GXLDR_FAT_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <fs.h>
 
 struct FAT_BPB_ {

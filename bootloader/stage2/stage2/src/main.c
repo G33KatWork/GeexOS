@@ -1,4 +1,3 @@
-#include <types.h>
 #include <arch.h>
 #include <print.h>
 #include <memory.h>

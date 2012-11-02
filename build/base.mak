@@ -71,7 +71,7 @@ endef
 # Define toolchain target
 TOOLCHAIN_TARGET    := i686-elf
 #TOOLCHAIN_TARGET    := arm-none-eabi
-#TOOLCHAIN_TARGET    := x86_64-eld
+#TOOLCHAIN_TARGET    := x86_64-elf
 
 # Grab the toolchain information.
 include $(ROOT)/build/toolchain.mak

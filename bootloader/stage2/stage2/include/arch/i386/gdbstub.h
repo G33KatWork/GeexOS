@@ -3,6 +3,8 @@
 
 #include <arch/i386/trapframe.h>
 
+#include <stdbool.h>
+
 extern bool gdbstub_enabled;
 
 void gdbstub_i386_enable(void);

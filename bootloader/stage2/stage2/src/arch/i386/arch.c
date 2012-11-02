@@ -13,6 +13,11 @@
 #include <arch/i386/cpuid.h>
 #include <arch/i386/gdbstub.h>
 
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <arch.h>
+
 static uint16_t serial_ports[] = {0, 0x3F8, 0x2F8, 0x3E8, 0x2E8};
 
 void arch_early_machine_setup()
@@ -110,14 +115,14 @@ void arch_initialize_virtual_memory()
     
 }
 
-void arch_map_virtual_memory(Address physical, Address virtual, bool writable, bool UNUSED(executable))
+void arch_map_virtual_memory(Address physical, Address virtual, bool writable, bool executable)
 {
     //TDOO: if PAE is enabled, call PAE function
 
     paging_mapVirtualMemoryNonPAE(physical, virtual, false, writable);
 }
 
-void arch_map_virtual_memory_range(Address physical, Address virtual, size_t len, bool writable, bool UNUSED(executable))
+void arch_map_virtual_memory_range(Address physical, Address virtual, size_t len, bool writable, bool executable)
 {
     //TDOO: if PAE is enabled, call PAE function
 

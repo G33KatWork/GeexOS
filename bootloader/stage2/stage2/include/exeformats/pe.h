@@ -1,7 +1,7 @@
 #ifndef _GEEXLDR_PE_H_
 #define _GEEXLDR_PE_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #pragma pack(push,2)
 typedef struct _IMAGE_DOS_HEADER {  // DOS .EXE header

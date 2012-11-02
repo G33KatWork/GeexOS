@@ -1,8 +1,6 @@
 #ifndef _PRINT_I386_H_
 #define _PRINT_I386_H_
 
-#include <types.h>
-
 typedef enum
 {
     Black=0,

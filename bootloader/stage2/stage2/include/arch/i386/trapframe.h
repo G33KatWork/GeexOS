@@ -1,7 +1,7 @@
 #ifndef _ARCH_I386_EXCEPTION_H
 #define _ARCH_I386_EXCEPTION_H
 
-#include <types.h>
+#include <stdint.h>
 
 struct trapframe_
 {

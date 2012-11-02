@@ -19,7 +19,7 @@ NASMSOURCES =
 GASSOURCES = 
 
 # C compiler flags
-CFLAGS  = -std=gnu99 -ggdb -O0 -nostdlib -nostdinc
+CFLAGS  = -std=gnu99 -ggdb -O0
 CFLAGS += -fno-stack-protector -ffreestanding -fPIC -fshort-wchar
 CFLAGS += -Wall 
 

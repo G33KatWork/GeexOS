@@ -12,7 +12,7 @@ NASMSOURCES =
 GASSOURCES = crt0-efi-ia32.S
 
 # C compiler flags
-CFLAGS = -ggdb -fpic -Wall -fshort-wchar -fno-strict-aliasing -fno-merge-constants
+CFLAGS = -ggdb -fpic -Wall -fshort-wchar -fno-strict-aliasing -fno-merge-constants -ffreestanding
 
 # C++ compiler flags
 CXXFLAGS  = 

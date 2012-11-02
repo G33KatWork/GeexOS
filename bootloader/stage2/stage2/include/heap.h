@@ -1,7 +1,8 @@
 #ifndef _GXLDR_HEAP_H_
 #define _GXLDR_HEAP_H_
 
-#include <types.h>
+#include <stddef.h>
+#include <stdint.h>
 
 //#define HEAPBLOCK_MAGIC	0xDEADBEEF
 

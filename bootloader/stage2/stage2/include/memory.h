@@ -1,7 +1,6 @@
 #ifndef _GXLDR_MEMORY_H_
 #define _GXLDR_MEMORY_H_
 
-#include <types.h>
 #include <arch.h>
 
 #define PAGENUM(addr)           ((PageNumber)(((Address)addr) / arch_get_page_size()))
