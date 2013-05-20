@@ -34,7 +34,7 @@ GASFLAGS =
 
 # Additional include paths to consider
 INCLUDES =	$(ROOT)/bootloader/gnuefi/include \
-            $(ROOT)/bootloader/gnuefi/include/ia32 \
+            $(ROOT)/bootloader/gnuefi/include/$(ARCH) \
             $(ROOT)/bootloader/gnuefi/include/protocol \
             $(ROOT)/bootloader/gnuefi/libefi/include
 

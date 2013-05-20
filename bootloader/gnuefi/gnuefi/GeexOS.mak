@@ -2,14 +2,14 @@
 TARGET = gnuefi
 
 # List C source files here.
-CCSOURCES = reloc_ia32.c
+CCSOURCES = reloc_$(ARCH).c
 
 # List C++ source files here.
 CXXSOURCES = 
 
 # List Assembler to be assembled here
 NASMSOURCES = 
-GASSOURCES = crt0-efi-ia32.S
+GASSOURCES = crt0-efi-$(ARCH).S
 
 # C compiler flags
 CFLAGS = -ggdb -fpic -Wall -fshort-wchar -fno-strict-aliasing -fno-merge-constants -ffreestanding
@@ -24,7 +24,7 @@ NASMFLAGS =
 GASFLAGS = 
 
 # Additional include paths to consider
-INCLUDES =	$(ROOT)/bootloader/gnuefi/include $(ROOT)/bootloader/gnuefi/include/ia32
+INCLUDES =	$(ROOT)/bootloader/gnuefi/include $(ROOT)/bootloader/gnuefi/include/$(ARCH)
 
 # Folder for object files
 OBJDIR = obj

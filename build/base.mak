@@ -68,6 +68,10 @@ endef
 # Core build configuration #
 ############################
 
+# Define architecture
+ARCH := ia32
+#ARCH := arm
+
 # Define toolchain target
 TOOLCHAIN_TARGET    := i686-elf
 #TOOLCHAIN_TARGET    := arm-none-eabi

@@ -35,12 +35,12 @@ GASFLAGS =
 # Linker flags
 LDFLAGS = -shared -Bsymbolic -znocombreloc \
           -Map $(ROOT)/bootloader/efitest/efitest.map \
-          -nostdlib -T $(ROOT)/bootloader/gnuefi/gnuefi/src/elf_ia32_efi.lds \
-          $(ROOT)/bootloader/gnuefi/gnuefi/obj/crt0-efi-ia32.o #horrible hack!
+          -nostdlib -T $(ROOT)/bootloader/gnuefi/gnuefi/src/elf_$(ARCH)_efi.lds \
+          $(ROOT)/bootloader/gnuefi/gnuefi/obj/crt0-efi-$(ARCH).o #horrible hack!
 
 # Additional include paths to consider
 INCLUDES = $(ROOT)/bootloader/gnuefi/include \
-           $(ROOT)/bootloader/gnuefi/include/ia32 \
+           $(ROOT)/bootloader/gnuefi/include/$(ARCH) \
            $(ROOT)/bootloader/gnuefi/include/protocol
 
 # Additional local static libs to link against
