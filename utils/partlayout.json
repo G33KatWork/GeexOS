@@ -19,8 +19,8 @@
                     "destination": "system/gxoskrnl.elf"
                 },
                 {
-                    "source": "bootloader/testkernellib/obj/testkernellib.so",
-                    "destination": "system/testkernellib.so"
+                    "source": "bootloader/testkernellib/obj/libtestkernellib.so",
+                    "destination": "system/libtestkernellib.so"
                 }
             ],
 
