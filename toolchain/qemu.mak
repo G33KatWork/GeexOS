@@ -1,4 +1,4 @@
-QEMU_VERSION		:= 1.2.0
+QEMU_VERSION		:= 1.4.1
 QEMU_SOURCE	     	:= $(TOOLCHAIN_SRCDIR)/qemu-$(QEMU_VERSION).tar.bz2
 QEMU_DOWNLOAD	    := http://wiki.qemu.org/download/qemu-$(QEMU_VERSION).tar.bz2
 QEMU_PATCHES	    := 

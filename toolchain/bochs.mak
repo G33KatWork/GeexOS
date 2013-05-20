@@ -1,4 +1,4 @@
-BOCHS_VERSION		:= 2.6
+BOCHS_VERSION		:= 2.6.1
 BOCHS_SOURCE	    := $(TOOLCHAIN_SRCDIR)/bochs-$(BOCHS_VERSION).tar.gz
 BOCHS_DOWNLOAD	    := http://downloads.sourceforge.net/project/bochs/bochs/$(BOCHS_VERSION)/bochs-$(BOCHS_VERSION).tar.gz
 BOCHS_PATCHES	    := 
