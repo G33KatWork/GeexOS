@@ -28,7 +28,7 @@ $(TOOLCHAIN_ROOTDIR)/.bochs-extract: $(BOCHS_SOURCE)
 $(TOOLCHAIN_ROOTDIR)/.bochs-configure: $(TOOLCHAIN_ROOTDIR)/.bochs-extract
 	$(call cmd_msg,CONFIG,$(TOOLCHAIN_TARGET)/bochs-$(BOCHS_VERSION) ($(TOOLCHAIN_TARGET)))
 	$(Q)cd $(TOOLCHAIN_BUILDDIR)/bochs-$(BOCHS_VERSION); \
-		./configure \
+		LDFLAGS=-lpthread ./configure \
 		--with-sdl \
 	  --with-x11 \
 		--enable-debugger \
