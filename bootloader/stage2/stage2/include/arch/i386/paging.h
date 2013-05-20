@@ -7,10 +7,6 @@
 #include <arch/i386/memory.h>
 
 #define     PAGE_SIZE       4096
-#define     PAGEALIGN_MASK  0xFFFFF000
-#define     PAGE_ALIGN(x)       ((x & PAGEALIGN_MASK) + PAGE_SIZE)
-#define     PAGE_ALIGN_DOWN(x)  (x & PAGEALIGN_MASK)
-#define     IS_PAGE_ALIGNED(x)  ((x % PAGE_SIZE) == 0)
 
 struct page {
     unsigned int present        : 1;    // Page present in memory

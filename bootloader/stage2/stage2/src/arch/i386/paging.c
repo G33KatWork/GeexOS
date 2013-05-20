@@ -3,6 +3,11 @@
 #include <print.h>
 #include <lib.h>
 
+#define     _PAGEALIGN_MASK  0xFFFFF000
+#define     PAGE_ALIGN(x)       ((x & _PAGEALIGN_MASK) + PAGE_SIZE)
+#define     PAGE_ALIGN_DOWN(x)  (x & _PAGEALIGN_MASK)
+#define     IS_PAGE_ALIGNED(x)  ((x % PAGE_SIZE) == 0)
+
 page_directory_t* pageDirectory;
 
 void paging_allocateNonPAE()

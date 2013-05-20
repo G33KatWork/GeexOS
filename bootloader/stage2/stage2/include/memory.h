@@ -3,9 +3,14 @@
 
 #include <arch.h>
 
-#define PAGENUM(addr)           ((PageNumber)(((Address)addr) / arch_get_page_size()))
-#define PAGEALIGN_DOWN(addr)    (((Address)addr) & ~((arch_get_page_size()) - 1))
-#define PAGEALIGN_UP(addr)      PAGEALIGN_DOWN(((Address)addr) + (arch_get_page_size()) - 1)
+#define PAGENUM(addr)           ((PageNumber)(((Address)addr) / arch_pagesize))
+#define PAGEALIGN_DOWN(addr)    (((Address)addr) & ~((arch_pagesize) - 1))
+#define PAGEALIGN_UP(addr)      PAGEALIGN_DOWN(((Address)addr) + (arch_pagesize) - 1)
+
+#define PAGE_MASK               (~(arch_pagesize-1))
+#define PAGE_OFFSET(x)          ((x) & ~PAGE_MASK)
+#define PAGE_START(x)           ((x) & PAGE_MASK)
+#define PAGE_END(x)             PAGE_START((x) + (arch_pagesize-1))
 
 typedef enum {
     MemoryTypeFree,

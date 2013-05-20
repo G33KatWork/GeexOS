@@ -165,4 +165,9 @@ static inline void cpuid_getBrandString(char* buffer)
     buffer += 4;
 }
 
+static inline void rdtsc(uint32_t* upper, uint32_t* lower)
+{
+    asm volatile("rdtsc" : "=a"(*lower), "=d"(*upper));
+}
+
 #endif

@@ -9,10 +9,13 @@ CCSOURCES = main.c \
             memory.c \
             heap.c \
             disk.c \
+            rand.c \
             fs/fat.c \
             fs.c \
             loaders/geexos.c \
-            exeformats/peloader.c
+            exeformats/loader.c \
+            exeformats/peloader.c \
+            exeformats/elfloader.c
 
 CCSOURCES += arch/i386/arch.c \
              arch/i386/gdt.c \

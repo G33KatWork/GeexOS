@@ -1,9 +1,12 @@
 #include <testkernellib/lib.h>
 #include <testkernel/kernelapi.h>
 
-void DllEntry()
+int globalvariable = 1;
+
+void ctor(void) __attribute__((constructor));
+void ctor()
 {
-	
+	globalvariable = 23;
 }
 
 int anotherfunction()
@@ -13,5 +16,6 @@ int anotherfunction()
 
 int libfunc(int a)
 {
-	return anotherfunction()* a + 4;
+	globalvariable++;
+	return anotherfunction()* a + globalvariable;
 }

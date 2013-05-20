@@ -2,9 +2,10 @@
 #include <fs.h>
 #include <print.h>
 
-LIST_HEAD(pe_loadedImages);
-
-static const char* librarySearchPath;
+static PIMAGE_NT_HEADERS pe_getHeaders(void* base);
+static void* pe_getDirectoryEntry(LoadedImage* image, uint16_t directoryIndex, size_t* directorySize);
+static bool pe_resolveImports(LoadedImage* image);
+static bool pe_relocateImage(LoadedImage* image, int64_t bias);
 
 bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageInformation)
 {
@@ -36,6 +37,7 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	debug_printf("PE: NT Headers look valid\n");
 
 	//TODO: check characteristics
+	//TODO: sanity check header fields like SizeOfImage
 
 	debug_printf("PE: Size of image is: 0x%x\n", ntHeadersTemp.OptionalHeader.SizeOfImage);
 	debug_printf("PE: Image base is 0x%x\n", ntHeadersTemp.OptionalHeader.ImageBase);
@@ -61,6 +63,7 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 		return false;
 
 	Address virtualBase = ntHeaders->OptionalHeader.ImageBase;
+	Address originalBase = ntHeaders->OptionalHeader.ImageBase;
 
 	//HACK FOR RELOCATION TESTING!
 	//virtualBase = 0xE0000000;
@@ -141,10 +144,12 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	loadedImageInfo->Name[31] = 0;
 	loadedImageInfo->PhysicalBase = (Address)physicalBase;
 	loadedImageInfo->VirtualBase = virtualBase;
+	loadedImageInfo->OriginalBase = originalBase;
 	loadedImageInfo->VirtualEntryPoint = virtualBase + ntHeaders->OptionalHeader.AddressOfEntryPoint;
 	loadedImageInfo->SizeOfImage = ntHeaders->OptionalHeader.SizeOfImage;
+	loadedImageInfo->ImageType = LOADER_IMAGETYPE_PE;
 
-	list_add(&loadedImageInfo->Link, &pe_loadedImages);
+	list_add(&loadedImageInfo->Link, &loader_loadedImages);
 
 	//relocate the image if necessary
 	if(ntHeaders->OptionalHeader.ImageBase != virtualBase)
@@ -161,7 +166,7 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	return true;
 }
 
-bool pe_resolveImports(LoadedImage* image)
+static bool pe_resolveImports(LoadedImage* image)
 {
 	size_t importDirectorySize;
 	PIMAGE_IMPORT_DESCRIPTOR importDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)pe_getDirectoryEntry(image, IMAGE_DIRECTORY_ENTRY_IMPORT, &importDirectorySize);
@@ -178,7 +183,7 @@ bool pe_resolveImports(LoadedImage* image)
 
 		//get or load referenced image
 		LoadedImage* importedImageInfo;
-		if(!pe_isImageLoaded(importName, &importedImageInfo))
+		if(!loader_isImageLoaded(importName, &importedImageInfo))
 		{
 			debug_printf("PE: imported library %s is not yet loaded, loading...\n", importName);
 
@@ -280,7 +285,7 @@ bool pe_resolveImports(LoadedImage* image)
 	return true;
 }
 
-bool pe_relocateImage(LoadedImage* image, int64_t bias)
+static bool pe_relocateImage(LoadedImage* image, int64_t bias)
 {
 	debug_printf("PE: Relocating image %s with bias 0x%X\n", image->Name, bias);
 	
@@ -350,49 +355,7 @@ bool pe_relocateImage(LoadedImage* image, int64_t bias)
 	return true;
 }
 
-void pe_printLoadedImages()
-{
-	LoadedImage *img;
-	list_for_each_entry(img, &pe_loadedImages, Link) {
-		debug_printf("%s: Physical load address: 0x%x - Virtual base: 0x%x - Entrypoint: 0x%x - Imagesize: 0x%x\n", img->Name, img->PhysicalBase, img->VirtualBase, img->VirtualEntryPoint, img->SizeOfImage);
-	}
-}
-
-int pe_getLoadedImageCount()
-{
-	//Yeah! O(n) -_-
-	int i = 0;
-	LoadedImage *img;
-	list_for_each_entry(img, &pe_loadedImages, Link) {
-		i++;
-	}
-
-	return i;
-}
-
-bool pe_isImageLoaded(char* name, LoadedImage** imageInfo)
-{
-	LoadedImage* image;
-	list_for_each_entry(image, &pe_loadedImages, Link) {
-		if(stricmp(name, image->Name) == 0)
-		{
-			if(imageInfo)
-				*imageInfo = image;
-
-			return true;
-		}
-	}
-
-	return false;
-}
-
-void pe_setLibrarySearchPath(const char* path)
-{
-	//TODO: allow more than one path
-	librarySearchPath = path;
-}
-
-PIMAGE_NT_HEADERS pe_getHeaders(void* base)
+static PIMAGE_NT_HEADERS pe_getHeaders(void* base)
 {
 	if(!base)
 		return NULL;
@@ -410,7 +373,7 @@ PIMAGE_NT_HEADERS pe_getHeaders(void* base)
 	return ntHeaders;
 }
 
-void* pe_getDirectoryEntry(LoadedImage* image, uint16_t directoryIndex, size_t* directorySize)
+static void* pe_getDirectoryEntry(LoadedImage* image, uint16_t directoryIndex, size_t* directorySize)
 {
 	PIMAGE_NT_HEADERS ntHeaders = pe_getHeaders((void*)image->PhysicalBase);
 	if(!ntHeaders)

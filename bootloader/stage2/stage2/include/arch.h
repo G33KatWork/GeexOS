@@ -11,12 +11,13 @@
 typedef uint32_t Address;
 typedef uint32_t PageNumber;
 
+extern size_t arch_pagesize;
+
 void arch_early_machine_setup(void);
 void arch_machine_setup(void);
 void arch_disksystem_setup(AddDiskDeviceCallback cb);
 
 void arch_panic(const char* format, ...) __attribute__((noreturn));
-size_t arch_get_page_size(void);
 
 void arch_screen_putchar(char c);
 

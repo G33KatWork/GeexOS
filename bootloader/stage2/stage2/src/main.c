@@ -6,6 +6,8 @@
 #include <heap.h>
 #include <loaders/geexos.h>
 
+#include <rand.h>
+
 int kmain(void);
 
 //extern int start;

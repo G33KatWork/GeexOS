@@ -2,6 +2,7 @@
 #include <print.h>
 #include <arch.h>
 #include <exeformats/peloader.h>
+#include <exeformats/elfloader.h>
 
 void loader_loadGeexOS()
 {
@@ -17,13 +18,15 @@ void loader_loadGeexOS()
 
 	LoadedImage* kernelImageInfo;
 
-	pe_setLibrarySearchPath("hd(0,0)/system/");
+	loader_setLibrarySearchPath("hd(0,0)/system/");
 
 	//TODO: read kernel location from a config-file
-	if(!pe_loadFile("hd(0,0)/system/gxoskrnl.exe", MemoryTypeGeexOSKernelExecutable, &kernelImageInfo))
-		arch_panic("Error loading kernel pe file");
+	// if(!pe_loadFile("hd(0,0)/system/gxoskrnl.exe", MemoryTypeGeexOSKernelExecutable, &kernelImageInfo))
+	// 	arch_panic("Error loading kernel PE file");
+	if(!elf_loadFile("hd(0,0)/system/gxoskrnl.elf", MemoryTypeGeexOSKernelExecutable, &kernelImageInfo))
+		arch_panic("Error loading kernel ELF file");
 
-	pe_printLoadedImages();
+	loader_printLoadedImages();
 
 	//Map bottom 4 MB, the code we are running currently hopefully is located here
 	arch_map_virtual_memory_range(0x0, 0x0, 4*1024*1024, true, true);
@@ -31,7 +34,10 @@ void loader_loadGeexOS()
 	//TODO: build loader block with memory map, loaded images, etc.
 	/*PLOADER_BLOCK loaderBlock = */loader_allocateAndPopulateLoaderBlock();
 
+	debug_printf("GXLDR: Enabling paging\n");
 	arch_enable_paging();
+
+	// while(1);
 	printf("Jumping into GeexOS kernel\n");
 	arch_execute_at_address_with_stack(kernelImageInfo->VirtualEntryPoint, GEEXOS_KERNEL_STACK_ADDRESS + GEEXOS_KERNEL_STACK_SIZE, (void*)GEEXOS_ENV_INFO_ADDRESS);
 }
@@ -109,7 +115,7 @@ void loader_addPhysicalMemoryBlock(PLOADER_BLOCK loaderBlock, PageNumber start, 
 
 PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 {
-	int totalSize = sizeof(LOADER_BLOCK) + (pe_getLoadedImageCount() * sizeof(LoadedImage));
+	int totalSize = sizeof(LOADER_BLOCK) + (loader_getLoadedImageCount() * sizeof(LoadedImage));
 	debug_printf("GXLDR: Total loader block size is 0x%x\n", totalSize);
 	PLOADER_BLOCK loaderBlock = memory_allocate(totalSize, MemoryTypeGeexOSKernelEnvironmentInformation);
 	memset(loaderBlock, 0, totalSize);
@@ -118,7 +124,7 @@ PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 
 	int i = 0;
 	LoadedImage *img;
-	list_for_each_entry(img, &pe_loadedImages, Link) {
+	list_for_each_entry(img, &loader_loadedImages, Link) {
 		if(i >= GEEXOS_MAX_IMAGE_DESCRIPTORS)
 			arch_panic("GXLDR: No more space left for loaded image descriptors");
 
@@ -128,6 +134,7 @@ PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 		loaderBlock->LoadedImages[i].VirtualEntryPoint = img->VirtualEntryPoint;
 		loaderBlock->LoadedImages[i].SizeOfImage = img->SizeOfImage;
 		loaderBlock->LoadedImages[i].IsKernelImage = i==0 ? true : false;
+		//loaderBlock->LoadedImages[i].ImageType = img->ImageType;
 		loaderBlock->LoadedImageCount++;
 		
 		i++;
@@ -141,7 +148,7 @@ PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 	
 	//We want the memory amount, so add one to the highest usable page
 	//FIXME: this is crap, get it directly from the bios memory map!
-	loaderBlock->UpperMemoryBoundary = (memory_getHighestPhysicalPage()+1) * arch_get_page_size();
+	loaderBlock->UpperMemoryBoundary = (memory_getHighestPhysicalPage()+1) * arch_pagesize;
 
 	//TODO: virtual memory map?
 

@@ -664,6 +664,8 @@ uint32_t fat_countClustersInChain(FilesystemMount* mount, uint32_t startCluster)
 			return 0;
 	}
 
+	debug_printf("FAT: chain consists of %x clusters\n", i);
+
 	return i;
 }
 

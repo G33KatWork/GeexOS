@@ -62,8 +62,8 @@ Heap* heap_create(size_t MaxSize)
 
 void heap_destroy(Heap* heap)
 {
-	PageNumber pageCount = heap->MaxSize / arch_get_page_size();
-	PageNumber heapStart = (Address)heap / arch_get_page_size();
+	PageNumber pageCount = heap->MaxSize / arch_pagesize;
+	PageNumber heapStart = (Address)heap / arch_pagesize;
 	memory_mark_pages(heapStart, pageCount, MemoryTypeFree);
 }
 

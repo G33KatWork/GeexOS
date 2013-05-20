@@ -25,6 +25,7 @@ typedef struct _LDRBLK_LOADED_IMAGE {
 	Address VirtualEntryPoint;
 	size_t 	SizeOfImage;
     int     IsKernelImage;
+    //int     ImageType;
 } LOADED_IMAGE, *PLOADED_IMAGE;
 
 typedef struct _LOADER_BLOCK

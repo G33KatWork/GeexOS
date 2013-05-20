@@ -17,6 +17,9 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <arch.h>
+#include <rand.h>
+
+size_t arch_pagesize = ARCH_PAGE_SIZE;
 
 static uint16_t serial_ports[] = {0, 0x3F8, 0x2F8, 0x3E8, 0x2E8};
 
@@ -38,6 +41,11 @@ void arch_machine_setup()
 
     cpuid_getVendorString(cpuvendor);
     cpuid_getBrandString(cpubrand);
+
+    //seed the PRNG with lower 32 bits of timestamp counter value
+    uint32_t u, l;
+    rdtsc(&u, &l);
+    srand(l);
 
     printf("Running on %s - %s\n", cpuvendor, cpubrand);
 }
@@ -96,11 +104,6 @@ void arch_panic(const char* format, ...)
     va_end(params);
     
     for(;;);
-}
-
-size_t arch_get_page_size()
-{
-    return ARCH_PAGE_SIZE;
 }
 
 void arch_initialize_virtual_memory()

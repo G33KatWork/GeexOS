@@ -106,7 +106,7 @@ void memory_init()
             memory_mark_pages(cur->BasePage, cur->PageCount, cur->Type);
     
     PageNumber lookupTableStartPage = PAGENUM(pageLookupTable);
-    PageNumber lookupTablePageLen = PAGENUM((usablePages * sizeof(PageLookupTableItem)) + arch_get_page_size());
+    PageNumber lookupTablePageLen = PAGENUM((usablePages * sizeof(PageLookupTableItem)) + arch_pagesize);
     debug_printf("MM: startpage: 0x%x plen: 0x%x\n", lookupTableStartPage, lookupTablePageLen);
     memory_mark_pages(lookupTableStartPage, lookupTablePageLen, MemoryTypePageLookupTable);
 }
@@ -134,13 +134,11 @@ void* memory_find_page_lookup_table_location(PageNumber totalPageCount, Firmware
 {
     //Search in memory for uppermost region which is big enough to hold array of all available pages
     
-    size_t pageSize = arch_get_page_size();
-    
     void* curAddr = NULL;
     PageNumber curStart = 0;
     
     size_t totalTableSize = totalPageCount * sizeof(PageLookupTableItem);
-    PageNumber totalTableSizeInPages = totalTableSize / pageSize;            //FIXME: align up to pagesize?
+    PageNumber totalTableSizeInPages = totalTableSize / arch_pagesize;            //FIXME: align up to pagesize?
     
     for(FirmwareMemoryMapItem* cur = map; cur->PageCount > 0; cur++)
     {
@@ -149,7 +147,7 @@ void* memory_find_page_lookup_table_location(PageNumber totalPageCount, Firmware
         if(cur->BasePage < curStart) continue;
 
         curStart = cur->BasePage;
-        curAddr = (void*)((cur->BasePage + cur->PageCount) * pageSize - totalTableSize);
+        curAddr = (void*)((cur->BasePage + cur->PageCount) * arch_pagesize - totalTableSize);
     }
 
     return curAddr;
@@ -198,7 +196,7 @@ void* memory_allocate(size_t s, MemoryType type)
     if(s <= 0)
         arch_panic("MM: memory_allocate() size was <= 0");
 
-    PageNumber pagesNeeded = PAGEALIGN_UP(s) / arch_get_page_size();
+    PageNumber pagesNeeded = PAGEALIGN_UP(s) / arch_pagesize;
     //printf("%x pages needed for memalloc\n", pagesNeeded);
 
     PageNumber firstFreePage = memory_find_available_pages(pagesNeeded);
@@ -206,7 +204,7 @@ void* memory_allocate(size_t s, MemoryType type)
 
     memory_mark_pages(firstFreePage, pagesNeeded, type);
 
-    return (void*)(firstFreePage * arch_get_page_size());
+    return (void*)(firstFreePage * arch_pagesize);
 }
 
 Address memory_getHighestPhysicalPage()
@@ -229,7 +227,7 @@ void memory_print_alloc_map()
     for(PageNumber i = 0; i < highestPhysicalPage - lowestPhysicalPage; i++)
     {
         if(i % 32 == 0)
-            debug_printf("\n0x%x:\t", i * arch_get_page_size());
+            debug_printf("\n0x%x:\t", i * arch_pagesize);
         else if(i % 4 == 0)
             debug_printf(" ");
         
