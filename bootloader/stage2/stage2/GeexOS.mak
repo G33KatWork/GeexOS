@@ -65,6 +65,9 @@ INCLUDES =	$(ROOT)/bootloader/stage2/stage2/include
 # Additional local static libs to link against
 LIBS = 
 
+# Shared libraries
+SODEPS = 
+
 # Folder for object files
 OBJDIR = obj
 

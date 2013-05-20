@@ -55,6 +55,9 @@ INCLUDES =	$(ROOT)/kernel/kernel/include \
 # Additional local static libs to link against
 LIBS = $(BINARY-libhalinterface) $(BINARY-libhalx86) $(BINARY-libkcpp)
 
+# Shared libraries
+SODEPS = 
+
 # Folder for object files
 OBJDIR = obj
 

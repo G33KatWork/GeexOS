@@ -28,11 +28,11 @@ OBJECTS-$(TARGET) += $(NASMSOURCES:%.asm=%.o)
 OBJECTS-$(TARGET) += $(CCSOURCES:%.c=%.o)
 OBJECTS-$(TARGET) += $(CXXSOURCES:%.cpp=%.o)
 
-# Build lib search directories
-LIBS-$(TARGET) := $(LIBS)
-
 # Build dependency list of libraries
 LIBDEPS-$(TARGET) := $(LIBS)
+
+# Shared libraries
+SODEPS-$(TARGET) := $(SODEPS)
 
 # A name to reference tis target
 BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).elf
@@ -41,10 +41,12 @@ BINARY-$(TARGET) := $(OBJDIR-$(TARGET))/$(TARGET).elf
 all: $(BINARY-$(TARGET))
 $(TARGET): $(BINARY-$(TARGET))
 
-$(OBJDIR-$(TARGET))/$(TARGET).elf: LDFLAGS := $(LDFLAGS-$(TARGET))
-$(OBJDIR-$(TARGET))/$(TARGET).elf: $(addprefix $(OBJDIR-$(TARGET))/,$(OBJECTS-$(TARGET))) $(LIBDEPS-$(TARGET))
+$(BINARY-$(TARGET)): LDFLAGS := $(LDFLAGS-$(TARGET))
+$(BINARY-$(TARGET)): SODIRS := $(sort $(dir $(SODEPS-$(TARGET))))
+$(BINARY-$(TARGET)): SOFILES := $(sort $(notdir $(SODEPS-$(TARGET))))
+$(BINARY-$(TARGET)): $(addprefix $(OBJDIR-$(TARGET))/,$(OBJECTS-$(TARGET))) $(LIBDEPS-$(TARGET))
 	$(call cmd_msg,LINK,$(@))
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^
+	$(Q)$(LD) $(LDFLAGS) $(addprefix -L, $(SODIRS)) $(addprefix -l, $(SOFILES:lib%.so=%)) -o $@ $^
 
 # Cleaning
 clean: clean-$(TARGET)

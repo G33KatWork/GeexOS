@@ -12,7 +12,8 @@ NASMSOURCES = start.asm
 GASSOURCES = 
 
 # C compiler flags
-CFLAGS  = -ggdb -std=gnu99 -fvisibility=hidden -fPIC
+CFLAGS  = -ggdb -std=gnu99
+CFLAGS += -fPIE -fvisibility=hidden
 CFLAGS += -fno-stack-check -mno-stack-arg-probe -fno-stack-protector
 CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
           -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
@@ -31,12 +32,16 @@ GASFLAGS =
 # Linker flags
 LDFLAGS = -Map $(ROOT)/bootloader/testkernel/testkernel.map -entry start \
           -nostdlib -T $(ROOT)/bootloader/testkernel/linker.ld
+LDFLAGS += -pie
 
 # Additional include paths to consider
 INCLUDES = $(ROOT)/bootloader/testkernel/include $(ROOT)/bootloader/testkernellib/include
 
 # Additional local static libs to link against
-LIBS = $(BINARY-testkernellib)
+LIBS = 
+
+# Shared libraries
+SODEPS = $(BINARY-testkernellib)
 
 # Folder for object files
 OBJDIR = obj

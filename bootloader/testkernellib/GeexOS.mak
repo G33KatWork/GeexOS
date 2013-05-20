@@ -12,7 +12,8 @@ NASMSOURCES =
 GASSOURCES = 
 
 # C compiler flags
-CFLAGS  = -ggdb -std=gnu99 -fvisibility=hidden -fPIC
+CFLAGS  = -ggdb -std=gnu99 -fvisibility=hidden
+CFLAGS += -fPIC
 CFLAGS += -fno-stack-check -mno-stack-arg-probe -fno-stack-protector
 CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
           -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
@@ -30,13 +31,16 @@ GASFLAGS =
 
 # Linker flags
 LDFLAGS = -Map $(ROOT)/bootloader/testkernellib/testkernellib.map \
-          -entry DllEntry -nostdlib -shared
+          -nostdlib -shared
 
 # Additional include paths to consider
 INCLUDES = $(ROOT)/bootloader/testkernellib/include $(ROOT)/bootloader/testkernel/include
 
 # Additional local static libs to link against
 LIBS = 
+
+# Shared libraries
+SODEPS = 
 
 # Folder for object files
 OBJDIR = obj
