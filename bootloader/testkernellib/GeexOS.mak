@@ -31,7 +31,7 @@ GASFLAGS =
 
 # Linker flags
 LDFLAGS = -Map $(ROOT)/bootloader/testkernellib/testkernellib.map \
-          -nostdlib -shared
+          -nostdlib -shared -T $(ROOT)/bootloader/testkernellib/linker.ld
 
 # Additional include paths to consider
 INCLUDES = $(ROOT)/bootloader/testkernellib/include $(ROOT)/bootloader/testkernel/include

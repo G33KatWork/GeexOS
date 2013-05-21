@@ -25,6 +25,7 @@ extern const char* librarySearchPath;
 void loader_printLoadedImages(void);
 int loader_getLoadedImageCount(void);
 bool loader_isImageLoaded(const char* name, LoadedImage** imageInfo);
+LoadedImage* loader_getExecutable(void);
 
 void loader_setLibrarySearchPath(const char* path);
 

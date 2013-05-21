@@ -75,8 +75,8 @@ int kmain(PLOADER_BLOCK loaderBlock)
 
     for(unsigned int i = 0; i < sizeof(bigArray); i++)
     {
-    	//bigArray[i] = libfunc(i);
-        bigArray[i] = 0;
+        bigArray[i] = libfunc(i);
+        //bigArray[i] = 0;
     }
     
     return 0;

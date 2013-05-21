@@ -53,3 +53,12 @@ void loader_setLibrarySearchPath(const char* path)
 	//TODO: allow more than one path
 	librarySearchPath = path;
 }
+
+LoadedImage* loader_getExecutable()
+{
+	//Return the tail of the list, this has to be the executable because it's first loaded
+	if(!list_empty(&loader_loadedImages))
+		return list_entry(loader_loadedImages.prev, LoadedImage, Link);
+
+	return NULL;
+}

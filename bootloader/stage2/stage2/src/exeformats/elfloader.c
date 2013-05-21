@@ -8,11 +8,14 @@ static bool elf_getElf32Phdrs(FILE* imageFile, LoadedImage* imageInformation);
 
 static bool elf_loadElf32File(FILE* imageFile, MemoryType memType, LoadedImage* imageInformation);
 static bool elf_linkElf32File(LoadedImage* imageInformation);
-static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount, Elf32_Rel* relocs);
-static Elf32_Sym* elf_elf32lookupSymbol(LoadedImage* imageInformation, const char* symbol);
+static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount, Elf32_Rel* relocs, LoadedImage** neededImages);
+static Elf32_Sym* elf_elf32lookupSymbol(LoadedImage* imageInformation, const char* symbol, LoadedImage** neededImages);
+static Elf32_Sym* elf_elf32lookupSymbolInImage(LoadedImage* imageInformation, const char* symbol);
 static Elf32_Addr elf32_getImageSize(LoadedImage* imageInformation, Elf32_Addr* minAddr, Elf32_Addr* maxAddr);
 
 static bool elf_loadElf64File(FILE* imageFile, MemoryType memType, LoadedImage* imageInformation);
+
+static unsigned elfhash(const char* _name);
 
 typedef struct
 {
@@ -40,6 +43,9 @@ typedef struct
 	size_t nchain;
 	unsigned* bucket;
 	unsigned* chain;
+
+	//Symbolic flag
+	bool has_symbolic;
 } elf32_loaderContext;
 
 static void elf32_freeLoaderContext(elf32_loaderContext* context)
@@ -318,7 +324,7 @@ static bool elf_loadElf32File(FILE* imageFile, MemoryType memType, LoadedImage* 
 				debug_printf("ELF32: reading 0x%x bytes to 0x%x\n", phdr.p_filesz, targetAddress);
 				if(read(imageFile, (void*)targetAddress, phdr.p_filesz) != phdr.p_filesz)
 				{
-					debug_printf("ELF: Error while reading segment data from ELF32 file\n");
+					debug_printf("ELF32: Error while reading segment data from ELF32 file\n");
 					return false;
 				}
 			}
@@ -328,6 +334,8 @@ static bool elf_loadElf32File(FILE* imageFile, MemoryType memType, LoadedImage* 
 				debug_printf("ELF32: zeroing memory from 0x%x to 0x%x\n", targetAddress + phdr.p_filesz, targetAddress + phdr.p_filesz + (phdr.p_memsz - phdr.p_filesz));
 				memset((void*)(targetAddress + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz);
 			}
+
+			//TODO: Set RWX-Flags for pages correctly
 		}
 	}
 
@@ -371,6 +379,8 @@ static bool elf_linkElf32File(LoadedImage* imageInformation)
 				debug_printf("ELF32: DYNAMIC PHDRs doesn't seem to be in memory\n");
 				return false;
 			}
+
+			uint32_t neededCount = 0;
 
 			//loop through DYNAMIC headers
 			for(Elf32_Dyn* d = (Elf32_Dyn*)phdrPhysMemoryAddr; d->d_tag != DT_NULL; d++)
@@ -426,6 +436,15 @@ static bool elf_linkElf32File(LoadedImage* imageInformation)
 						context->bucket = (unsigned *) (imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase) + 8);
 						context->chain = (unsigned *) (imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase) + 8 + context->nbucket * 4);
 						break;
+
+					case DT_SYMBOLIC:
+						context->has_symbolic = true;
+						break;
+
+					case DT_NEEDED:
+						neededCount++;
+						break;
+
 					//TODO: INIT, FINI, PREINIT, DEBUG
 				}
 			}
@@ -452,48 +471,67 @@ static bool elf_linkElf32File(LoadedImage* imageInformation)
 				return false;
 			}
 
-			//load all needed libraries
-			for(Elf32_Dyn* d = (Elf32_Dyn*)phdrPhysMemoryAddr; d->d_tag != DT_NULL; d++)
+			//allocate memory for a list of all referenced libraries + NULL-Pointer as terminator
+			LoadedImage** neededImages = malloc(sizeof(LoadedImage*) * (neededCount+1));
+			memset(neededImages, 0, sizeof(LoadedImage*) * (neededCount+1));
+
+			if(neededCount > 0)
 			{
-				if(d->d_tag == DT_NEEDED)
+				unsigned int j = 0;
+
+				//load all needed libraries
+				for(Elf32_Dyn* d = (Elf32_Dyn*)phdrPhysMemoryAddr; d->d_tag != DT_NULL; d++)
 				{
-					const char* libname = context->strtab + d->d_un.d_val;
-
-					//get or load referenced image
-					LoadedImage* importedImageInfo;
-					if(!loader_isImageLoaded(libname, &importedImageInfo))
+					if(d->d_tag == DT_NEEDED)
 					{
-						debug_printf("ELF: needed library %s is not yet loaded, loading...\n", libname);
+						const char* libname = context->strtab + d->d_un.d_val;
+						debug_printf("ELF32: Library %s needed\n", libname);
 
-						char fullPath[256] = {0};
-						strncpy(fullPath, librarySearchPath, 255);
-						fs_concatPath(fullPath, libname, 256);
-
-						if(!elf_loadFile(fullPath, MemoryTypeGeexOSKernelLibrary, &importedImageInfo))
+						//get or load referenced image
+						LoadedImage* importedImageInfo;
+						if(!loader_isImageLoaded(libname, &importedImageInfo))
 						{
-							debug_printf("ELF: Error loading needed library %s\n", libname);
-							return false;
-						}
-					}
+							debug_printf("ELF32: needed library %s is not yet loaded, loading...\n", libname);
 
-					debug_printf("ELF: Library %s needed\n", libname);
+							char fullPath[256] = {0};
+							strncpy(fullPath, librarySearchPath, 255);
+							fs_concatPath(fullPath, libname, 256);
+
+							if(!elf_loadFile(fullPath, MemoryTypeGeexOSKernelLibrary, &importedImageInfo))
+							{
+								debug_printf("ELF32: Error loading needed library %s\n", libname);
+								return false;
+							}
+						}
+
+						neededImages[j++] = importedImageInfo;
+					}
 				}
 			}
 
 			//Apply relocations (symbol references are also resolved)
 			if(context->relCount > 0 && context->rel)
 			{
-				debug_printf("ELF: applying rel relocations\n");
-				elf_elf32doRelocation(imageInformation, context->relCount, context->rel);
+				debug_printf("ELF32: applying rel relocations\n");
+				if(!elf_elf32doRelocation(imageInformation, context->relCount, context->rel, neededImages))
+				{
+					free(neededImages);
+					return false;
+				}
 			}
 
 			if(context->pltRelCount > 0 && context->pltRel)
 			{
-				debug_printf("ELF: applying pltrel relocations\n");
-				elf_elf32doRelocation(imageInformation, context->pltRelCount, context->pltRel);
+				debug_printf("ELF32: applying pltrel relocations\n");
+				if(!elf_elf32doRelocation(imageInformation, context->pltRelCount, context->pltRel, neededImages))
+				{
+					free(neededImages);
+					return false;
+				}
 			}
 
-			// debug_printf("Vaddr: 0x%x, Offset: 0x%x, Memsize: 0x%x, Filesize: 0x%x\n", phdr.p_vaddr, phdr.p_offset, phdr.p_memsz, phdr.p_filesz);
+			//Free list of all referenced libraries
+			free(neededImages);
 
 			return true;
 		}
@@ -503,7 +541,7 @@ static bool elf_linkElf32File(LoadedImage* imageInformation)
 	return false;
 }
 
-static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount, Elf32_Rel* relocs)
+static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount, Elf32_Rel* relocs, LoadedImage** neededImages)
 {
 	elf32_loaderContext* context = elf32_getLoaderContext(imageInformation);
 	if(!context)
@@ -517,54 +555,67 @@ static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount
 		uint32_t type = ELF32_R_TYPE(relocs->r_info);
 		uint32_t sym = ELF32_R_SYM(relocs->r_info);
 
-		Elf32_Addr relocPosition = (Elf32_Addr)((relocs->r_offset - imageInformation->OriginalBase) + imageInformation->VirtualBase);
+		Elf32_Addr relocPosition = (Elf32_Addr)((relocs->r_offset - imageInformation->OriginalBase) + imageInformation->PhysicalBase);
+		Elf32_Addr symbolAddress = NULL;
 
-		debug_printf("ELF: Relocation type: 0x%x - symbol: 0x%x - position: 0x%x\n", type, sym, relocPosition);
+		debug_printf("ELF32: Relocation type: 0x%x - symbol: 0x%x - position: 0x%x\n", type, sym, relocPosition);
 
 		if(type == 0)
 			continue;
 
 		if(sym != 0)
 		{
-			const char* symbolName = (const char *)(context->strtab + context->symtab[sym].st_name);
-			debug_printf("ELF: there is a symbol name assigned to this relocation: %s\n", symbolName);
+			//TODO: Weak symbols?
 
-			Elf32_Sym* resolvedSymbol = elf_elf32lookupSymbol(imageInformation, symbolName);
+			const char* symbolName = (const char *)(context->strtab + context->symtab[sym].st_name);
+			debug_printf("ELF32: there is a symbol name assigned to this relocation: %s\n", symbolName);
+
+			Elf32_Sym* resolvedSymbol = elf_elf32lookupSymbol(imageInformation, symbolName, neededImages);
 			if(resolvedSymbol)
-				debug_printf("ELF32: resolved symbol to 0x%x", resolvedSymbol->st_value);
+			{
+				symbolAddress = resolvedSymbol->st_value;
+				debug_printf("ELF32: resolved symbol to 0x%x\n", resolvedSymbol->st_value);
+			}
 			else
+			{
 				debug_printf("ELF32: failed to resolv symbol %s\n", symbolName);
+				return false;
+			}
 		}
 
 		switch(type)
 		{
 			case R_386_JMP_SLOT:
-				//*(Elf32_Addr*)relocPosition = symbolAddress;
+				debug_printf("ELF32: R_386_JMP_SLOT relocation at 0x%x encountered, symbol address: 0x%x\n", relocPosition, symbolAddress);
+				*(Elf32_Addr*)relocPosition = symbolAddress;
 				break;
 
 			case R_386_GLOB_DAT:
-				//*(Elf32_Addr*)relocPosition = symbolAddress;
+				debug_printf("ELF32: R_386_GLOB_DAT relocation encountered, symbol address: 0x%x\n", symbolAddress);
+				*(Elf32_Addr*)relocPosition = symbolAddress;
 				break;
 
 			case R_386_RELATIVE:
 				if(sym)
 				{
-					debug_printf("ELF: R_386_RELATIVE relocation with defined symbol encountered\n");
+					debug_printf("ELF32: R_386_RELATIVE relocation with defined symbol encountered\n");
 					return false;
 				}
 				*(Elf32_Addr*)relocPosition += imageInformation->VirtualBase;
 				break;
 
 			case R_386_32:
-				//*(Elf32_Addr*)relocPosition += symbolAddress;
+				debug_printf("ELF32: R_386_32 relocation encountered, symbol address: 0x%x\n", symbolAddress);
+				*(Elf32_Addr*)relocPosition += symbolAddress;
 				break;
 
 			case R_386_PC32:
-				//*(Elf32_Addr*)relocPosition += (symbolAddress - relocPosition);
+				debug_printf("ELF32: R_386_PC32 relocation encountered, symbol address: 0x%x\n", symbolAddress);
+				*(Elf32_Addr*)relocPosition += (symbolAddress - relocPosition);
 				break;
 
 			default:
-				debug_printf("ELF: encountered unknown relocation with type 0x%x\n", type);
+				debug_printf("ELF32: encountered unknown relocation with type 0x%x\n", type);
 				return false;
 		}
 	}
@@ -572,9 +623,72 @@ static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount
 	return true;
 }
 
-static Elf32_Sym* elf_elf32lookupSymbol(LoadedImage* imageInformation, const char* symbol)
+static Elf32_Sym* elf_elf32lookupSymbol(LoadedImage* imageInformation, const char* symbol, LoadedImage** neededImages)
 {
-	//TODO: actually resolv symbols
+	elf32_loaderContext* context = elf32_getLoaderContext(imageInformation);
+	if(!context)
+	{
+		debug_printf("ELF32: Loader context is NULL, whut?");
+		return false;
+	}
+
+	//1. Lookup in scope of the library, if symbolic flag is set
+	if(context->has_symbolic)
+	{
+		Elf32_Sym* sym = elf_elf32lookupSymbolInImage(imageInformation, symbol);
+		if(sym)
+			return sym;
+	}
+
+	//2. Lookup in scope of the main executable
+	LoadedImage* mainExecutable = loader_getExecutable();
+	if(mainExecutable)
+	{
+		Elf32_Sym* sym = elf_elf32lookupSymbolInImage(mainExecutable, symbol);
+		if(sym)
+			return sym;
+	}
+
+	//3. Then look up the symbol in all needed libraries
+	for(LoadedImage* image = *neededImages; image; image++)
+	{
+		Elf32_Sym* sym = elf_elf32lookupSymbolInImage(image, symbol);
+		if(sym)
+			return sym;
+	}
+
+	return NULL;
+}
+
+static Elf32_Sym* elf_elf32lookupSymbolInImage(LoadedImage* imageInformation, const char* symbol)
+{
+	unsigned hash = elfhash(symbol);
+	debug_printf("ELF32: Hash of symbol %s is 0x%x\n", symbol, hash);
+
+	elf32_loaderContext* context = elf32_getLoaderContext(imageInformation);
+	if(!context)
+	{
+		debug_printf("ELF32: Loader context is NULL, whut?");
+		return false;
+	}
+
+	for(unsigned n = context->bucket[hash % context->nbucket]; n != 0; n = context->chain[n])
+	{
+		Elf32_Sym* s = context->symtab + n;
+		if(strcmp(context->strtab + s->st_name, symbol)) continue;
+
+		switch(ELF32_ST_BIND(s->st_info))
+		{
+			case STB_GLOBAL:
+			case STB_WEAK:
+				if (s->st_shndx == SHN_UNDEF)
+					continue;
+
+				debug_printf("ELF32: Found symbol %s at 0x%x in %s\n", symbol, s->st_value, imageInformation->Name);
+				return s;
+		}
+	}
+
 	return NULL;
 }
 
@@ -608,7 +722,7 @@ static Elf32_Addr elf32_getImageSize(LoadedImage* imageInformation, Elf32_Addr* 
 
 	if(minVaddr > maxVaddr)
 	{
-		debug_printf("ELF: Unable to determine total ELF virtual image size\n");
+		debug_printf("ELF32: Unable to determine total ELF virtual image size\n");
 		return 0;
 	}
 
@@ -627,6 +741,22 @@ static Elf32_Addr elf32_getImageSize(LoadedImage* imageInformation, Elf32_Addr* 
 
 static bool elf_loadElf64File(FILE* imageFile, MemoryType memType, LoadedImage* imageInformation)
 {
-	debug_printf("ELF: ELF64 is not implemented yet\n");
+	debug_printf("ELF64: ELF64 is not implemented yet\n");
 	return false;
+}
+
+
+static unsigned elfhash(const char* _name)
+{
+	const unsigned char* name = (const unsigned char*) _name;
+	unsigned h = 0, g;
+
+	while(*name)
+	{
+		h = (h << 4) + *name++;
+		g = h & 0xf0000000;
+		h ^= g;
+		h ^= g >> 24;
+	}
+	return h;
 }
