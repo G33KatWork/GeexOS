@@ -294,10 +294,6 @@ static bool elf_loadElf32File(FILE* imageFile, MemoryType memType, LoadedImage* 
 		return false;
 	}
 
-	//Map into virtual address space
-	arch_map_virtual_memory_range((Address)physicalBase, virtualBase, totalImageSize, false, false);
-
-
 	elf32_loaderContext* context = elf32_getLoaderContext(imageInformation);
 	if(!context)
 	{
@@ -335,7 +331,14 @@ static bool elf_loadElf32File(FILE* imageFile, MemoryType memType, LoadedImage* 
 				memset((void*)(targetAddress + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz);
 			}
 
-			//TODO: Set RWX-Flags for pages correctly
+			//Map region described by LOAD-PHDR into virtual memory
+			arch_map_virtual_memory_range(
+				(Address)targetAddress,
+				(phdr.p_vaddr - originalVirtualBase) + virtualBase,
+				phdr.p_memsz,
+				(phdr.p_flags & PF_W) == PF_W,
+				(phdr.p_flags & PF_X) == PF_X
+			);
 		}
 	}
 
@@ -552,11 +555,11 @@ static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount
 
 	for(size_t i = 0; i < relCount; i++)
 	{
-		uint32_t type = ELF32_R_TYPE(relocs->r_info);
-		uint32_t sym = ELF32_R_SYM(relocs->r_info);
+		uint32_t type = ELF32_R_TYPE(relocs[i].r_info);
+		uint32_t sym = ELF32_R_SYM(relocs[i].r_info);
 
-		Elf32_Addr relocPosition = (Elf32_Addr)((relocs->r_offset - imageInformation->OriginalBase) + imageInformation->PhysicalBase);
-		Elf32_Addr symbolAddress = NULL;
+		Elf32_Addr relocPosition = (Elf32_Addr)((relocs[i].r_offset - imageInformation->OriginalBase) + imageInformation->PhysicalBase);
+		Elf32_Addr symbolAddress = 0;
 
 		debug_printf("ELF32: Relocation type: 0x%x - symbol: 0x%x - position: 0x%x\n", type, sym, relocPosition);
 
@@ -573,7 +576,7 @@ static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount
 			Elf32_Sym* resolvedSymbol = elf_elf32lookupSymbol(imageInformation, symbolName, neededImages);
 			if(resolvedSymbol)
 			{
-				symbolAddress = resolvedSymbol->st_value;
+				symbolAddress = (resolvedSymbol->st_value - imageInformation->OriginalBase) + imageInformation->VirtualBase;
 				debug_printf("ELF32: resolved symbol to 0x%x\n", resolvedSymbol->st_value);
 			}
 			else
@@ -601,7 +604,7 @@ static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount
 					debug_printf("ELF32: R_386_RELATIVE relocation with defined symbol encountered\n");
 					return false;
 				}
-				*(Elf32_Addr*)relocPosition += imageInformation->VirtualBase;
+				*(Elf32_Addr*)relocPosition += imageInformation->VirtualBase - imageInformation->OriginalBase;
 				break;
 
 			case R_386_32:
