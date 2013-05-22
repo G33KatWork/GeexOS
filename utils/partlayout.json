@@ -15,8 +15,12 @@
                     "destination": "GXLDR"
                 },
                 {
-                    "source": "bootloader/testkernel/obj/testkernel.elf",
+                    "source": "kernel/kernel/obj/kernel.elf",
                     "destination": "system/gxoskrnl.elf"
+                },
+                {
+                    "source": "bootloader/testkernel/obj/testkernel.elf",
+                    "destination": "system/testkernel.elf"
                 },
                 {
                     "source": "bootloader/testkernellib/obj/libtestkernellib.so",

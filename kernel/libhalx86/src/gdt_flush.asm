@@ -1,10 +1,10 @@
 [SECTION .text]
-global _gdt_flush
-extern _gp
+global gdt_flush
+extern gp
 
 ; load the real gdt
-_gdt_flush:
-	lgdt [_gp]
+gdt_flush:
+	lgdt [gp]
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
@@ -16,8 +16,8 @@ _gdt_flush:
 flush2:
 	ret
 
-global _tss_flush
-_tss_flush:
+global tss_flush
+tss_flush:
     mov ax, 0x2B        ;5th selector in GDT = 0x26 - lowest 2 bits set to define rpl to ring 3
     ltr ax
     ret

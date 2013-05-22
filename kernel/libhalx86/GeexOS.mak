@@ -16,7 +16,7 @@ CXXSOURCES = HAL.cpp \
              x86BootEnvironment.cpp
 
 # NASM flags
-NASMFLAGS = -f win32
+NASMFLAGS = -f elf
 
 # GAS flags
 GASFLAGS = 

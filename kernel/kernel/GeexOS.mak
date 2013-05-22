@@ -33,7 +33,8 @@ CFLAGS =
 # C++ compiler flags
 CXXFLAGS  = -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs -mno-ms-bitfields
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
-            -Wwrite-strings -Wredundant-decls -Winline -Wno-long-long -fvisibility=default
+            -Wwrite-strings -Wredundant-decls -Winline -Wno-long-long
+CXXFLAGS += -fPIE -fvisibility=hidden
 
 # NASM flags
 NASMFLAGS = 
@@ -43,8 +44,7 @@ GASFLAGS =
 
 # Linker flags
 LDFLAGS = -T $(ROOT)/kernel/kernel/linker.ld -Map $(ROOT)/kernel/kernel/kernel.map \
-          -entry _start --image-base 0xC0000000 --subsystem native \
-          --disable-auto-import --exclude-all-symbols -nostdlib -pie
+          -nostdlib -pie
 
 # Additional include paths to consider
 INCLUDES =	$(ROOT)/kernel/kernel/include \

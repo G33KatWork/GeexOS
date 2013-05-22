@@ -26,7 +26,7 @@ void kmain()
     CurrentHAL->GetCurrentDebugOutputDevice()->Clear();
     
     CurrentHAL->Initialize();
-    
+
     MAIN_DEBUG_MSG("Kernel commandline: " << CurrentHAL->GetBootEnvironment()->GetKernelCommandline());
     
     //Initialize Memory

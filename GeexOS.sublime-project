@@ -16,7 +16,7 @@
         	"-fno-exceptions"
         ],
         "sublimegdb_workingdir": "${folder:${project_path:GeexOS.sublime-project}}",
-        "sublimegdb_commandline": "${folder:${project_path:GeexOS.sublime-project}}/toolchain/i686-elf/bin/i686-elf-gdb --interpreter=mi bootloader/stage2/stage2/obj/stage2.elf",
+        "sublimegdb_commandline": "${folder:${project_path:GeexOS.sublime-project}}/toolchain/i686-elf/bin/i686-elf-gdb --interpreter=mi kernel/kernel/obj/kernel.elf",
         "sublimegdb_exec_cmd": "-target-select remote localhost:1234"
     },
     "build_systems":

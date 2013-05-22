@@ -1,7 +1,7 @@
 ROOT := $(PWD)
 include $(ROOT)/build/base.mak
 
-SUBDIRS = bootloader
+SUBDIRS = bootloader kernel
 
 STARTTIME := $(shell date +%s)
 # Main targets
