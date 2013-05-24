@@ -31,7 +31,7 @@ GASSOURCES =
 CFLAGS =
 
 # C++ compiler flags
-CXXFLAGS  = -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs -mno-ms-bitfields
+CXXFLAGS  = -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wredundant-decls -Winline -Wno-long-long
 CXXFLAGS += -fPIE -fvisibility=hidden

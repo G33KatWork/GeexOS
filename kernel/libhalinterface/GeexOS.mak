@@ -15,7 +15,7 @@ GASSOURCES =
 CFLAGS =
 
 # C++ compiler flags
-CXXFLAGS  = -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs -mno-ms-bitfields
+CXXFLAGS  = -ggdb -fno-builtin -fno-exceptions -fno-rtti -nostdlib -nostartfiles -nodefaultlibs
 CXXFLAGS += -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wredundant-decls -Winline -Wno-long-long
 
@@ -36,6 +36,6 @@ OBJDIR = obj
 SRCDIR = src
 
 # Additional defines
-DEFINES := 
+DEFINES := -DDEBUG
 
 include $(ROOT)/build/static-lib.mak
