@@ -26,6 +26,8 @@ static const char* MemoryTypeNames[] = {
 
 x86BootEnvironment::x86BootEnvironment(KernelInformation* info)
 {
+    ASSERT(sizeof(KernelInformation) == info->LoaderBlockSize, "Size missmatch of KernelInformation struct. Incompatible loader?");
+
     kernelInformation = (KernelInformation*)kmalloc(info->LoaderBlockSize);
     memcpy(kernelInformation, info, info->LoaderBlockSize);
 
