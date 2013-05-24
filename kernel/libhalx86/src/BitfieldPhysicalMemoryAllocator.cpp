@@ -18,6 +18,8 @@ BitfieldPhysicalMemoryAllocator::BitfieldPhysicalMemoryAllocator(size_t memorySi
 
 Address BitfieldPhysicalMemoryAllocator::AllocateFrame()
 {
+    ASSERT(CurrentHAL->IsHALFullyInitialized(), "Allocation of physical memory is only possible after the HAL was fully initialized");
+
     uint32_t pageIndex = frames->GetFirstClearedIndex();
     if(pageIndex == (uint32_t)-1)
         PANIC("Desperately out of memory: No more frames left to allocate");

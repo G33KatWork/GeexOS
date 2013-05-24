@@ -20,6 +20,7 @@ namespace Arch
         
         virtual void Initialize();
         virtual void InitializationDone();
+        virtual bool IsHALFullyInitialized() { return halFullyInitialized; }
         
         virtual void EnableInterruptsOnCurrentCPU();
         virtual void DisableInterruptsOnCurrentCPU();
@@ -41,6 +42,8 @@ namespace Arch
         void initializeBootGraphics();
         
     private:
+        bool halFullyInitialized;
+
         BasePaging *paging;
         BootEnvironment* bootenv;
         Debug::NullDebugOutputDevice nullDebug;

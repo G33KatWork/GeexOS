@@ -29,6 +29,12 @@ namespace Arch
          * The HAL assumes that the VirtualMemoryManager is initialized here.
         **/
         virtual void InitializationDone() = 0;
+
+        /**
+         * This method returns wether the HAL is fullly initialized and physical
+         * memory allocations are therefore safe
+        **/
+         virtual bool IsHALFullyInitialized() = 0;
         
         /**
          * This call globally enables interrupt handling by setting the

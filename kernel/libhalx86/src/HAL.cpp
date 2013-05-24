@@ -33,6 +33,7 @@ x86HAL::x86HAL()
     nullDebug = NullDebugOutputDevice();
     currentDebugDevice = None;
     pageFaultHandler = NULL;
+    halFullyInitialized = false;
 }
 
 void x86HAL::Initialize()
@@ -137,6 +138,7 @@ void x86HAL::InitializationDone()
     //FIXME: takes so much RAM...
     GetPaging()->InitDone();
     
+    halFullyInitialized = true;
     HAL_DEBUG_MSG("Arch initialization done...");
     
     //Now, that we have IO Memory management, we can use some more sophisticated text output
