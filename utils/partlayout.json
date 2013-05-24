@@ -26,17 +26,6 @@
                     "source": "bootloader/testkernellib/obj/libtestkernellib.so",
                     "destination": "system/libtestkernellib.so"
                 }
-            ],
-
-            "filesToCopy_kernel": [
-                {
-                    "source": "bootloader/stage2/stage15/obj/stage15.bin",
-                    "destination": "GXLDR"
-                },
-                {
-                    "source": "kernel/kernel/obj/kernel.exe",
-                    "destination": "system/gxoskrnl.exe"
-                }
             ]
         },
         {
