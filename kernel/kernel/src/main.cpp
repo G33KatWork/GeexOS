@@ -25,6 +25,7 @@ void kmain()
     #endif
     CurrentHAL->GetCurrentDebugOutputDevice()->Clear();
     
+    MAIN_DEBUG_MSG("Performing HAL initialization");
     CurrentHAL->Initialize();
 
     MAIN_DEBUG_MSG("Kernel commandline: " << CurrentHAL->GetBootEnvironment()->GetKernelCommandline());
@@ -48,9 +49,14 @@ void kmain()
     VirtualMemoryManager::GetInstance()->KernelSpace()->AddRegion(slabAlloc);
     InitializeSizeCaches(slabAlloc);
     VirtualMemoryManager::GetInstance()->SlabAllocator(slabAlloc);
+
+    //Dump boot environment
+    CurrentHAL->GetBootEnvironment()->DumpBootEnvironment(CurrentHAL->GetCurrentDebugOutputDevice());
+
+    //Dump used physical memory
+    //CurrentHAL->GetPhysicalMemoryAllocator()->DumpUsed(CurrentHAL->GetCurrentDebugOutputDevice());
     
     //Yeeha! At this point all platform related memory stuff should be set up and safe.
-    
     MAIN_DEBUG_MSG("GeexOS Kernel booting...");
 
     ObjectManager* obj = new ObjectManager();

@@ -16,6 +16,7 @@ namespace Arch
         //FIXME: make this actually do something...
         virtual uint64_t GetInstalledMemory() { return memory; }
         virtual const char* GetKernelCommandline() { return ""; }
+        virtual void DumpBootEnvironment(Debug::BaseOutputDevice* c);
 
         //HAL-internal functions
         virtual PMEMORY_DESCRIPTOR GetMemoryRegions(size_t* totalCount);

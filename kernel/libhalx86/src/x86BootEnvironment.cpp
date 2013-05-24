@@ -107,3 +107,41 @@ PMEMORY_DESCRIPTOR x86BootEnvironment::GetMemoryRegionByType(PMEMORY_DESCRIPTOR 
 
     return NULL;
 }
+
+void x86BootEnvironment::DumpBootEnvironment(BaseOutputDevice* c)
+{
+    *c << hex;
+
+    *c << "x86 boot environment passed from stage 2 of bootloader: " << endl;
+    *c << "Loader Block:" << endl;
+    *c << "\tLoaderBlockSize: " << this->kernelInformation->LoaderBlockSize << endl;
+    *c << endl;
+
+    *c << "\tLoadedImageCount: " << this->kernelInformation->LoadedImageCount << endl;
+    *c << "\tLoadedImages:" << endl;
+    for(int i = 0; i < this->kernelInformation->LoadedImageCount; i++)
+    {
+        *c << "\t\tImage " << i << ":" << endl;
+        *c << "\t\t\tName: " << this->kernelInformation->LoadedImages[i].Name << endl;
+        *c << "\t\t\tPhysicalBase: " << this->kernelInformation->LoadedImages[i].PhysicalBase << endl;
+        *c << "\t\t\tVirtualBase: " << this->kernelInformation->LoadedImages[i].VirtualBase << endl;
+        *c << "\t\t\tVirtualEntryPoint: " << this->kernelInformation->LoadedImages[i].VirtualEntryPoint << endl;
+        *c << "\t\t\tSizeOfImage: " << this->kernelInformation->LoadedImages[i].SizeOfImage << endl;
+        *c << "\t\t\tIsKernelImage: " << this->kernelInformation->LoadedImages[i].IsKernelImage << endl;
+    }
+    *c << endl;
+
+    *c << "\tMemoryDescriptorCount: " << this->kernelInformation->MemoryDescriptorCount << endl;
+    *c << "\tMemoryDescriptors:" << endl;
+    for(int i = 0; i < this->kernelInformation->MemoryDescriptorCount; i++)
+    {
+        *c << "\t\tMemoryDescriptor " << i << ":" << endl;
+        *c << "\t\t\tStart: " << this->kernelInformation->MemoryDescriptors[i].Start << endl;
+        *c << "\t\t\tLength: " << this->kernelInformation->MemoryDescriptors[i].Length << endl;
+        *c << "\t\t\tType: " << MemoryTypeNames[this->kernelInformation->MemoryDescriptors[i].Type] << endl;
+    }
+    *c << endl;
+
+    *c << "\tACPIRDSPDescriptor: " << this->kernelInformation->ACPIRDSPDescriptor << endl;
+    *c << "\tUpperMemoryBoundary: " << this->kernelInformation->UpperMemoryBoundary << endl;
+}

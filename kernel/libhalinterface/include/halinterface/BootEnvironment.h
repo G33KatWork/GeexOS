@@ -2,6 +2,7 @@
 #define _HAL_INTERFACES_BOOTENVIRONMENT_H
 
 #include <types.h>
+#include <halinterface/BaseOutputDevice.h>
 
 #define BOOTMODULES_MAGIC   0xAABB0011
 
@@ -54,6 +55,9 @@ namespace Arch
         
         /// Returns the kernel command line passed by the bootloader
         virtual const char* GetKernelCommandline() = 0;
+
+        /// Dumps the boot environtment to the passed output device for debugging purposes
+        virtual void DumpBootEnvironment(Debug::BaseOutputDevice* c) = 0;
     };
 }
 
