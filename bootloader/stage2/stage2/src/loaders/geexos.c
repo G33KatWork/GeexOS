@@ -115,7 +115,7 @@ void loader_addPhysicalMemoryBlock(PLOADER_BLOCK loaderBlock, PageNumber start, 
 
 PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 {
-	int totalSize = sizeof(LOADER_BLOCK) + (loader_getLoadedImageCount() * sizeof(LoadedImage));
+	int totalSize = sizeof(LOADER_BLOCK);
 	debug_printf("GXLDR: Total loader block size is 0x%x\n", totalSize);
 	PLOADER_BLOCK loaderBlock = memory_allocate(totalSize, MemoryTypeGeexOSKernelEnvironmentInformation);
 	memset(loaderBlock, 0, totalSize);
