@@ -14,7 +14,6 @@ CCSOURCES = main.c \
             fs.c \
             loaders/geexos.c \
             exeformats/loader.c \
-            exeformats/peloader.c \
             exeformats/elfloader.c
 
 CCSOURCES += arch/i386/arch.c \

@@ -1,7 +1,6 @@
 #include <loaders/geexos.h>
 #include <print.h>
 #include <arch.h>
-#include <exeformats/peloader.h>
 #include <exeformats/elfloader.h>
 
 void loader_loadGeexOS()
