@@ -1,4 +1,4 @@
-ROOT := $(PWD)
+ROOT := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 include $(ROOT)/build/base.mak
 
 SUBDIRS = bootloader kernel
