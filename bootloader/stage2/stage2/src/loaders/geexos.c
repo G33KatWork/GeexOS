@@ -14,7 +14,7 @@ void loader_loadGeexOS()
 	
 	//allocate and map a kernel stack in virtual memory
 	void* kernelStack = memory_allocate(GEEXOS_KERNEL_STACK_SIZE, MemoryTypeGeexOSKernelStack);
-	arch_map_virtual_memory_range((Address)kernelStack, GEEXOS_KERNEL_STACK_ADDRESS, GEEXOS_KERNEL_STACK_SIZE, true, false);
+	arch_map_virtual_memory_range((uintptr_t)kernelStack, GEEXOS_KERNEL_STACK_ADDRESS, GEEXOS_KERNEL_STACK_SIZE, true, false);
 
 	LoadedImage* kernelImageInfo;
 
@@ -37,7 +37,7 @@ void loader_loadGeexOS()
 	debug_printf("GXLDR: Enabling paging\n");
 	arch_enable_paging();
 
-	// while(1);
+	//while(1);
 	printf("Jumping into GeexOS kernel\n");
 	arch_execute_at_address_with_stack(kernelImageInfo->VirtualEntryPoint, GEEXOS_KERNEL_STACK_ADDRESS + GEEXOS_KERNEL_STACK_SIZE, (void*)GEEXOS_ENV_INFO_ADDRESS);
 }
@@ -51,8 +51,8 @@ void loader_buildPhysicalMemoryMap(PLOADER_BLOCK loaderBlock)
 		arch_panic("GXLDR: Unable to retrieve memory map\n");
 
 	//try to make regions out of the allocation blocks
-	PageNumber pagesCount = 0;
-	PageNumber lastPageIndex = 0;
+	uint64_t pagesCount = 0;
+	uint64_t lastPageIndex = 0;
 	MemoryType lastPageType = mmap[0].type;
 	for(size_t i = 0; i < mmap_elementCount; i++)
 	{
@@ -60,7 +60,7 @@ void loader_buildPhysicalMemoryMap(PLOADER_BLOCK loaderBlock)
 			pagesCount++;
 		else
 		{
-			debug_printf("GXLDR: Built physical memory region from 0x%x with size 0x%x of type %s\n", lastPageIndex, pagesCount, memory_getTypeName(lastPageType));
+			debug_printf("GXLDR: Built physical memory region from 0x%X with size 0x%X of type %s\n", lastPageIndex, pagesCount, memory_getTypeName(lastPageType));
 			loader_addPhysicalMemoryBlock(loaderBlock, lastPageIndex, pagesCount, lastPageType);
 
 			//go to next entry in allocation map
@@ -71,15 +71,8 @@ void loader_buildPhysicalMemoryMap(PLOADER_BLOCK loaderBlock)
 	}
 }
 
-void loader_addPhysicalMemoryBlock(PLOADER_BLOCK loaderBlock, PageNumber start, PageNumber len, MemoryType type)
+void loader_addPhysicalMemoryBlock(PLOADER_BLOCK loaderBlock, uint64_t start, uint64_t len, MemoryType type)
 {
-	//FIXME: make this architecture independent
-	if(start >= 0xFFFFF)
-		return;
-
-	if(start + len > 0xFFFFF)
-		len = 0xFFFFF - start;
-
 	if(loaderBlock->MemoryDescriptorCount >= GEEXOS_MAX_MEMORY_DESCRIPTORS)
 		arch_panic("GXLDR: No more space left for memory descriptors");
 
@@ -97,6 +90,7 @@ void loader_addPhysicalMemoryBlock(PLOADER_BLOCK loaderBlock, PageNumber start, 
 
 		case MemoryTypeBad:
 		case MemoryTypeSpecial:
+		case MemoryTypeUnusable:
 		case MemoryTypeFirmware:
 		case MemoryTypeGeexOSPageStructures:
 		case MemoryTypeGeexOSPageDirectory:
@@ -119,7 +113,7 @@ PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock()
 	debug_printf("GXLDR: Total loader block size is 0x%x\n", totalSize);
 	PLOADER_BLOCK loaderBlock = memory_allocate(totalSize, MemoryTypeGeexOSKernelEnvironmentInformation);
 	memset(loaderBlock, 0, totalSize);
-	arch_map_virtual_memory((Address)loaderBlock, GEEXOS_ENV_INFO_ADDRESS, false, false);
+	arch_map_virtual_memory((uintptr_t)loaderBlock, GEEXOS_ENV_INFO_ADDRESS, false, false);
 	loaderBlock->LoaderBlockSize = totalSize;
 
 	int i = 0;
@@ -164,15 +158,15 @@ struct RSDPDescriptor {
 };
 
 //TODO: move to arch?
-Address loader_findAndMapACPITables()
+uint64_t loader_findAndMapACPITables()
 {
 	//TODO: get from a config?
-	Address searchStart = 0;
-	Address searchEnd = 0x100000;
+	uintptr_t searchStart = 0;
+	uintptr_t searchEnd = 0x100000;
 
 	struct RSDPDescriptor* d;
 	bool found = false;
-	Address curAddr = searchStart;
+	uintptr_t curAddr = searchStart;
 
 	while(!found && curAddr < searchEnd)
 	{
@@ -186,7 +180,7 @@ Address loader_findAndMapACPITables()
 	if(found)
 	{
 		debug_printf("GXLDR: Found ACPI RDSP at 0x%x\n", d);
-		return (Address)d;
+		return (uint64_t)((uintptr_t)d);
 	}
 	else
 		return -1;

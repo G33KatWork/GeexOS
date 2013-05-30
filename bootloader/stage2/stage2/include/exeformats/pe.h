@@ -226,8 +226,8 @@ enum {
 
 //Helper macros
 //#define FIELD_OFFSET(t,f) ((Address)&(((t*) 0)->f))
-#define FIELD_OFFSET(t,f) ((Address)__builtin_offsetof(t,f))
-#define IMAGE_FIRST_SECTION(h) ((PIMAGE_SECTION_HEADER) ((Address)h+FIELD_OFFSET(IMAGE_NT_HEADERS,OptionalHeader)+((PIMAGE_NT_HEADERS)(h))->FileHeader.SizeOfOptionalHeader))
+#define FIELD_OFFSET(t,f) ((uintptr_t)__builtin_offsetof(t,f))
+#define IMAGE_FIRST_SECTION(h) ((PIMAGE_SECTION_HEADER) ((uintptr_t)h+FIELD_OFFSET(IMAGE_NT_HEADERS,OptionalHeader)+((PIMAGE_NT_HEADERS)(h))->FileHeader.SizeOfOptionalHeader))
 
 //Data directories
 //Direcory types

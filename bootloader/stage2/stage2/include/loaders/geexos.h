@@ -13,16 +13,16 @@
 
 typedef struct _MEMORY_DESCRIPTOR
 {
-	Address start;
-	Address length;
+	uint64_t start;
+	uint64_t length;
 	MemoryType type;
 } MEMORY_DESCRIPTOR, *PMEMORY_DESCRIPTOR;
 
 typedef struct _LDRBLK_LOADED_IMAGE {
 	char 	Name[32];
-	Address PhysicalBase;
-	Address VirtualBase;
-	Address VirtualEntryPoint;
+	uint64_t PhysicalBase;
+	uint64_t VirtualBase;
+	uint64_t VirtualEntryPoint;
 	size_t 	SizeOfImage;
     int     IsKernelImage;
     //int     ImageType;
@@ -35,16 +35,16 @@ typedef struct _LOADER_BLOCK
 	LOADED_IMAGE LoadedImages[GEEXOS_MAX_IMAGE_DESCRIPTORS];
 	uint16_t MemoryDescriptorCount;
 	MEMORY_DESCRIPTOR MemoryDescriptors[GEEXOS_MAX_MEMORY_DESCRIPTORS];
-	Address ACPIRDSPDescriptor;
-	Address UpperMemoryBoundary;
+	uint64_t ACPIRDSPDescriptor;
+	uint64_t UpperMemoryBoundary;
 	//TODO: more?
 } LOADER_BLOCK, *PLOADER_BLOCK;
 
 void loader_loadGeexOS(void);
 void loader_buildPhysicalMemoryMap(PLOADER_BLOCK loaderBlock);
-void loader_addPhysicalMemoryBlock(PLOADER_BLOCK loaderBlock, PageNumber start, PageNumber len, MemoryType type);
+void loader_addPhysicalMemoryBlock(PLOADER_BLOCK loaderBlock, uint64_t start, uint64_t len, MemoryType type);
 PLOADER_BLOCK loader_allocateAndPopulateLoaderBlock(void);
 
-Address loader_findAndMapACPITables(void);
+uint64_t loader_findAndMapACPITables(void);
 
 #endif

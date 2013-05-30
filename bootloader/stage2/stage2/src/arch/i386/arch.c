@@ -118,26 +118,26 @@ void arch_initialize_virtual_memory()
     
 }
 
-void arch_map_virtual_memory(Address physical, Address virtual, bool writable, bool executable)
+void arch_map_virtual_memory(uint64_t physical, uint64_t virtual, bool writable, bool executable)
 {
     //TDOO: if PAE is enabled, call PAE function
 
     paging_mapVirtualMemoryNonPAE(physical, virtual, false, writable);
 }
 
-void arch_map_virtual_memory_range(Address physical, Address virtual, size_t len, bool writable, bool executable)
+void arch_map_virtual_memory_range(uint64_t physical, uint64_t virtual, size_t len, bool writable, bool executable)
 {
     //TDOO: if PAE is enabled, call PAE function
 
     paging_mapRangeNonPAE(physical, virtual, len, false, writable);
 }
 
-bool arch_is_virtual_memory_range_free(Address virtual, size_t len)
+bool arch_is_virtual_memory_range_free(uint64_t virtual, size_t len)
 {
     return paging_isRangeFreeNonPAE(virtual, len);
 }
 
-Address arch_find_free_virtual_memory_region(Address base, size_t len)
+uint64_t arch_find_free_virtual_memory_region(uint64_t base, size_t len)
 {
     return paging_findFreeRangeNonPAE(base, len);
 }

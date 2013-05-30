@@ -9,6 +9,7 @@
 	],
 	"settings":
     {
+        "sublimeclang_enabled": true,
         "sublimeclang_dont_prepend_clang_includes": true,
         "sublimeclang_options":
         [

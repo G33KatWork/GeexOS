@@ -42,7 +42,7 @@ Heap* heap_create(size_t MaxSize)
 {
 	Heap* heap;
 
-	MaxSize = PAGEALIGN_UP(MaxSize);
+	MaxSize = PAGE_END(MaxSize);
 	heap = (Heap*)memory_allocate(MaxSize, MemoryTypeLoaderHeap);
 
 	heap->MaxSize = MaxSize;
@@ -52,7 +52,7 @@ Heap* heap_create(size_t MaxSize)
 
 	size_t dataSpace = MaxSize - sizeof(Heap) - sizeof(size_t);
 
-	struct __freelist* firstBlock = (struct __freelist*)((Address)heap + sizeof(Heap));
+	struct __freelist* firstBlock = (struct __freelist*)((uintptr_t)heap + sizeof(Heap));
 	firstBlock->sz = dataSpace;
 	firstBlock->nx = NULL;
 	heap->Freelist = firstBlock;
@@ -62,8 +62,8 @@ Heap* heap_create(size_t MaxSize)
 
 void heap_destroy(Heap* heap)
 {
-	PageNumber pageCount = heap->MaxSize / arch_pagesize;
-	PageNumber heapStart = (Address)heap / arch_pagesize;
+	uint64_t pageCount = heap->MaxSize / arch_pagesize;
+	uint64_t heapStart = (uintptr_t)heap / arch_pagesize;
 	memory_mark_pages(heapStart, pageCount, MemoryTypeFree);
 }
 

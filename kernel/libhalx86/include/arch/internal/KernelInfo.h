@@ -26,16 +26,16 @@ typedef enum {
 
 typedef struct _MEMORY_DESCRIPTOR
 {
-    Address Start;
-    Address Length;
+    uint64_t Start;
+    uint64_t Length;
     MemoryType Type;
 } MEMORY_DESCRIPTOR, *PMEMORY_DESCRIPTOR;
 
 typedef struct _LDRBLK_LOADED_IMAGE {
     char    Name[32];
-    Address PhysicalBase;
-    Address VirtualBase;
-    Address VirtualEntryPoint;
+    uint64_t PhysicalBase;
+    uint64_t VirtualBase;
+    uint64_t VirtualEntryPoint;
     size_t  SizeOfImage;
     int     IsKernelImage;
 } LOADED_IMAGE, *PLOADED_IMAGE;
@@ -47,8 +47,8 @@ typedef struct _LOADER_BLOCK
     LOADED_IMAGE LoadedImages[32];
     uint16_t MemoryDescriptorCount;
     MEMORY_DESCRIPTOR MemoryDescriptors[32];
-    Address ACPIRDSPDescriptor;
-    Address UpperMemoryBoundary;
+    uint64_t ACPIRDSPDescriptor;
+    uint64_t UpperMemoryBoundary;
     //TODO: more?
 } KernelInformation;
 

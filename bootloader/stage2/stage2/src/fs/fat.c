@@ -203,7 +203,7 @@ size_t fat_read(FILE* f, void* buffer, size_t s)
 
 		s -= lengthInCluster;
 		f->filePointer += lengthInCluster;
-		buffer = (void*)(((Address)buffer) + lengthInCluster);
+		buffer = (void*)(((uintptr_t)buffer) + lengthInCluster);
 	}
 
 	//read all the full clusters
@@ -222,7 +222,7 @@ size_t fat_read(FILE* f, void* buffer, size_t s)
 
 			s -= numberOfClusters * bytesPerCluster;
 			f->filePointer += numberOfClusters * bytesPerCluster;
-			buffer = (void*)(((Address)buffer) + (numberOfClusters * bytesPerCluster));
+			buffer = (void*)(((uintptr_t)buffer) + (numberOfClusters * bytesPerCluster));
 		}
 	}
 
@@ -238,7 +238,7 @@ size_t fat_read(FILE* f, void* buffer, size_t s)
 
 		s -= s;
 		f->filePointer += s;
-		buffer = (void*)(((Address)buffer) + s);
+		buffer = (void*)(((uintptr_t)buffer) + s);
 	}
 
 	return bytesRead;
@@ -539,7 +539,7 @@ bool fat_readClusterChain(FilesystemMount* mount, uint32_t startCluster, uint32_
 		memcpy(buffer, tmpbuf, volume->SectorsPerCluster * volume->BytesPerSector);
 		maxClusters--;
 
-		buffer = (void*)(((Address)buffer) + (volume->SectorsPerCluster * volume->BytesPerSector));
+		buffer = (void*)(((uintptr_t)buffer) + (volume->SectorsPerCluster * volume->BytesPerSector));
 
 		if(!fat_getFatEntry(mount, startCluster, &startCluster))
 			return false;
@@ -565,7 +565,7 @@ bool fat_readPartialCluster(FilesystemMount* mount, uint32_t clusterNumber, size
 	if(!mount->Device->read_sectors(mount->Device, startSector, volume->SectorsPerCluster, tmpbuf))
 		return false;
 
-	memcpy(buffer, (void*)(((Address)tmpbuf) + offset), length);
+	memcpy(buffer, (void*)(((uintptr_t)tmpbuf) + offset), length);
 
 	return true;
 }
@@ -601,7 +601,7 @@ bool fat_getFatEntry(FilesystemMount* mount, uint32_t cluster, uint32_t* result)
 					return false;
 			}
 
-			fat = *((uint16_t*) (((Address)buffer) + thisFatEntOffset));
+			fat = *((uint16_t*) (((uintptr_t)buffer) + thisFatEntOffset));
 			fat = LE_TO_HOST16(fat);
 
 			if(cluster & 0x0001)
@@ -618,7 +618,7 @@ bool fat_getFatEntry(FilesystemMount* mount, uint32_t cluster, uint32_t* result)
 			if(!mount->Device->read_sectors(mount->Device, thisFatSecNum, 1, buffer))
 				return false;
 
-			fat = *((uint16_t*) (((Address)buffer) + thisFatEntOffset));
+			fat = *((uint16_t*) (((uintptr_t)buffer) + thisFatEntOffset));
 			fat = LE_TO_HOST16(fat);
 		break;
 
@@ -630,7 +630,7 @@ bool fat_getFatEntry(FilesystemMount* mount, uint32_t cluster, uint32_t* result)
 			if(!mount->Device->read_sectors(mount->Device, thisFatSecNum, 1, buffer))
 				return false;
 
-			fat = *((uint32_t*) (((Address)buffer) + thisFatEntOffset)) & 0x0FFFFFFF;
+			fat = *((uint32_t*) (((uintptr_t)buffer) + thisFatEntOffset)) & 0x0FFFFFFF;
 			fat = LE_TO_HOST32(fat);
 		break;
 

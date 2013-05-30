@@ -53,19 +53,20 @@ void mem_i386_e820_detect()
         
         memcpy(&map, (void*)BIOSCALLBUFFER, regs.ecx);
         
-        /*debug_printf("Base address: 0x%x ", (uint32_t)map.BaseAddress);
-        debug_printf("Length: 0x%x ", (uint32_t)map.Length);
-        debug_printf("Type: 0x%x\r\n", map.Type);*/
+        debug_printf("Got BIOS descriptor: Base: %X - Lenght: %X - Type: %x\n", map.BaseAddress, map.Length, map.Type);
         
         //convert bios entry to loader memory map entry
         if(map.Type == BiosMemoryUsable)
         {
             MemoryType t = MemoryTypeFree;
-            PageNumber basePage = map.BaseAddress & ~(ARCH_PAGE_SIZE - 1ULL);
-            PageNumber size = map.BaseAddress + map.Length - basePage;
-            size &= ~(ARCH_PAGE_SIZE - 1ULL);
+            // uint64_t basePage = map.BaseAddress & ~(ARCH_PAGE_SIZE - 1ULL);
+            // uint64_t size = map.BaseAddress + map.Length - basePage;
+            // size &= ~(ARCH_PAGE_SIZE - 1ULL);
             
-            memory_add_map_entry(FirmwareMemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage / ARCH_PAGE_SIZE, size / ARCH_PAGE_SIZE, t);
+            uint64_t basePage = PAGE_START(map.BaseAddress) / ARCH_PAGE_SIZE;
+            uint64_t size = PAGE_END(map.Length) / ARCH_PAGE_SIZE;
+
+            memory_add_map_entry(FirmwareMemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage, size, t);
         }
         else
         {
@@ -73,13 +74,12 @@ void mem_i386_e820_detect()
             if(map.Type == BiosMemoryBad)
                 t = MemoryTypeBad;
             
-            PageNumber basePage = map.BaseAddress & ~(ARCH_PAGE_SIZE - 1ULL);
-            PageNumber size = map.BaseAddress + map.Length - basePage;
-            size &= ~(ARCH_PAGE_SIZE - 1ULL);
-            
-            memory_add_map_entry(FirmwareMemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage / ARCH_PAGE_SIZE, size / ARCH_PAGE_SIZE, t);
+            uint64_t basePage = PAGE_START(map.BaseAddress) / ARCH_PAGE_SIZE;
+            uint64_t size = PAGE_END(map.Length) / ARCH_PAGE_SIZE;
+
+            memory_add_map_entry(FirmwareMemoryMap, MAX_MEMORY_MAP_ENTRIES, basePage, size, t);
         }
-        
+
         if(regs.ebx == 0)
             return;
         

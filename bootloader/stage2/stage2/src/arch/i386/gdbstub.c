@@ -240,8 +240,8 @@ static void import_registers(trapframe* ctx)
     for(int i = 0; i < NUMREGS; i++)
     {
         memcpy(
-            (void*)(((Address)gdbRegisters) + registerConversion[i].offsetGDB),
-            (void*)(((Address)ctx) + registerConversion[i].offsetTF),
+            (void*)(((uintptr_t)gdbRegisters) + registerConversion[i].offsetGDB),
+            (void*)(((uintptr_t)ctx) + registerConversion[i].offsetTF),
             registerConversion[i].Size
         );
     }
@@ -252,8 +252,8 @@ static void export_registers(trapframe* ctx)
     for(int i = 0; i < NUMREGS; i++)
     {
         memcpy(
-            (void*)(((Address)ctx) + registerConversion[i].offsetTF),
-            (void*)(((Address)gdbRegisters) + registerConversion[i].offsetGDB),
+            (void*)(((uintptr_t)ctx) + registerConversion[i].offsetTF),
+            (void*)(((uintptr_t)gdbRegisters) + registerConversion[i].offsetGDB),
             registerConversion[i].Size
         );
     }

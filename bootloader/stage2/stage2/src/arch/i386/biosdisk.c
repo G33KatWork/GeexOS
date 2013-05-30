@@ -93,7 +93,7 @@ bool biosdisk_i386_read_sectors(uint8_t driveNumber, uint64_t startSector, uint3
 	//if((Address)buffer > 0x100000)
 	//	arch_panic("Can't perform a disk read into a buffer above 1M. Buffer is at 0x%x\n", buffer);
 
-	if((Address)buffer > 0x100000)
+	if((uintptr_t)buffer > 0x100000)
 	{
 		//FIXME: HACKHACK do this in a loop to read more than 24k
 		//read 24k into the bios buffer in low memory and then copy it over
@@ -221,8 +221,8 @@ bool biosdisk_i386_read_lba(uint8_t driveNumber, uint64_t startSector, uint32_t 
 		packet->NumSectors = sectorCount;
 		packet->LBAStartSector = (uint32_t)(startSector & 0xFFFFFFFFL);
 		packet->LBAStartSectorHigh = (uint32_t)((startSector >> 32) & 0xFFFFFFFFL);
-		packet->BufferSegment = ((Address)buffer) >> 4;
-		packet->BufferOffset = ((Address)buffer) & 0x0F;
+		packet->BufferSegment = ((uintptr_t)buffer) >> 4;
+		packet->BufferOffset = ((uintptr_t)buffer) & 0x0F;
 
 		bios_int_registers regs;
 		memset(&regs, 0, sizeof(bios_int_registers));
@@ -302,8 +302,8 @@ bool biosdisk_i386_read_chs(uint8_t driveNumber, uint64_t startSector, uint32_t 
 			regs.eax = (0x02 << 8) | numberOfSectorsToRead;
 			regs.ecx = (((physicalTrack & 0xFF)) << 8) | (uint8_t)(physicalSector + ((physicalTrack & 0x300) >> 2));
 			regs.edx = (physicalHead << 8) | driveNumber;
-			regs.es = (uint16_t)(((Address)buffer) >> 4);
-			regs.ebx = (uint16_t)(((Address)buffer) & 0x0F);
+			regs.es = (uint16_t)(((uintptr_t)buffer) >> 4);
+			regs.ebx = (uint16_t)(((uintptr_t)buffer) & 0x0F);
 			callInt(0x13, &regs);
 
 			if(!EFLAGS_IS_SET(regs.flags, EFLAGS_CARRY))
@@ -320,7 +320,7 @@ bool biosdisk_i386_read_chs(uint8_t driveNumber, uint64_t startSector, uint32_t 
 			return false;
 		}
 
-		buffer = (void*)(((Address)buffer) + numberOfSectorsToRead * g.BytesPerSector);
+		buffer = (void*)(((uintptr_t)buffer) + numberOfSectorsToRead * g.BytesPerSector);
 		sectorCount -= numberOfSectorsToRead;
 		startSector32 += numberOfSectorsToRead;
    	}

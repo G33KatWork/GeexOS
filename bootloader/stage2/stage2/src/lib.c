@@ -164,25 +164,17 @@ void* memmove(void *dest, const void* src, size_t count)
 {
 	char *d = (char *)dest;
 	const char *s = (const char *)src;
-	size_t i;
 	
-	if(d <= s || d >= s+count)
-	{
-		for(i = 0; i < count; i++) {
+	if(d < s)
+		while(count--)
 			*d++ = *s++;
-		}
-	}
 	else
 	{
-		d = (char *)dest + count - 1;
-		s = (const char *)s + count - 1;
+		d += count;
+		s += count;
 		
-		while(count > 0)
-		{
-			for(i = 0; i < count; i++) {
-				*d-- = *s--;
-			}
-		}
+		while(count--)
+			*d-- = *s--;
 	}
 	
 	return dest;

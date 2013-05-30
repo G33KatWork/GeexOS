@@ -3,18 +3,16 @@
 
 #include <arch.h>
 
-#define PAGENUM(addr)           ((PageNumber)(((Address)addr) / arch_pagesize))
-#define PAGEALIGN_DOWN(addr)    (((Address)addr) & ~((arch_pagesize) - 1))
-#define PAGEALIGN_UP(addr)      PAGEALIGN_DOWN(((Address)addr) + (arch_pagesize) - 1)
-
-#define PAGE_MASK               (~(arch_pagesize-1))
+#define PAGENUM(addr)           (((uint64_t)addr) / arch_pagesize)
+#define PAGE_MASK               (~(arch_pagesize-1ULL))
 #define PAGE_OFFSET(x)          ((x) & ~PAGE_MASK)
 #define PAGE_START(x)           ((x) & PAGE_MASK)
-#define PAGE_END(x)             PAGE_START((x) + (arch_pagesize-1))
+#define PAGE_END(x)             PAGE_START((x) + (arch_pagesize-1ULL))
 
 typedef enum {
     MemoryTypeFree,
     MemoryTypeBad,
+    MemoryTypeUnusable,
     MemoryTypeSpecial,
     MemoryTypeLoaderExecutable,
     MemoryTypeLoaderTemporary,
@@ -32,13 +30,13 @@ typedef enum {
 
 typedef struct {
     MemoryType Type;
-    PageNumber BasePage;
-    PageNumber PageCount;
+    uint64_t BasePage;
+    uint64_t PageCount;
 } FirmwareMemoryMapItem;
 
 typedef struct {
     MemoryType type;            //Type of memory allocation
-    PageNumber length;          //Continous length of allocated pages
+    uint64_t length;          //Continous length of allocated pages
 } PageLookupTableItem;
 
 //Firmware memory map items
@@ -46,17 +44,17 @@ typedef struct {
 extern FirmwareMemoryMapItem FirmwareMemoryMap[MAX_MEMORY_MAP_ENTRIES];
 
 //Firmware memory map handling
-uint32_t memory_add_map_entry(FirmwareMemoryMapItem* map, uint32_t maxEntries, PageNumber base, PageNumber size, MemoryType type);
+uint32_t memory_add_map_entry(FirmwareMemoryMapItem* map, uint32_t maxEntries, uint64_t base, uint64_t size, MemoryType type);
 void memory_print_map(FirmwareMemoryMapItem* map);
 
 //Loader memory map handling
 void memory_init(void);
-PageNumber memory_count_usable_pages(FirmwareMemoryMapItem* map);
-void* memory_find_page_lookup_table_location(PageNumber TotalPageCount, FirmwareMemoryMapItem* map);
-void memory_mark_pages(PageNumber start, PageNumber count, MemoryType type);
-PageNumber memory_find_available_pages(PageNumber count);
+uint64_t memory_count_usable_pages(FirmwareMemoryMapItem* map);
+uintptr_t memory_find_page_lookup_table_location(uint64_t TotalPageCount, FirmwareMemoryMapItem* map);
+void memory_mark_pages(uint64_t start, uint64_t count, MemoryType type);
+uint64_t memory_find_available_pages(uint64_t count);
 void* memory_allocate(size_t s, MemoryType type);
-Address memory_getHighestPhysicalPage(void);
+uint64_t memory_getHighestPhysicalPage(void);
 
 PageLookupTableItem* memory_getMemoryMap(size_t* noEntries);
 

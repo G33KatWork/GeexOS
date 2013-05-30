@@ -9,10 +9,10 @@
 
 typedef struct {
 	char    Name[32];
-	Address PhysicalBase;
-	Address VirtualBase;
-	Address OriginalBase;
-	Address VirtualEntryPoint;
+	uint64_t PhysicalBase;
+	uint64_t VirtualBase;
+	uint64_t OriginalBase;
+	uint64_t VirtualEntryPoint;
 	size_t  SizeOfImage;
 	struct list_head Link;
 	int     ImageType;

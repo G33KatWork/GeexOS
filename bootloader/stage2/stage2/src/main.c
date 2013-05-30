@@ -36,15 +36,16 @@ int kmain()
     memory_print_map(FirmwareMemoryMap);
 
     memory_init();
+    //memory_print_alloc_map();
+    
     default_heap_init();
     disk_init();
     fs_init();
 
     //TODO: parse a config here or drop to a shell
 
+    
     loader_loadGeexOS();
-
-    //memory_print_alloc_map();
 
     fs_shutdown();
     disk_destroy();

@@ -18,25 +18,25 @@ void paging_allocateNonPAE()
     debug_printf("ARCH PAGING: PD is at %x\n", pageDirectory);
 }
 
-void paging_mapVirtualMemoryNonPAE(Address physical, Address virtual, bool usermode, bool writable)
+void paging_mapVirtualMemoryNonPAE(uint64_t physical, uint64_t virtual, bool usermode, bool writable)
 {
     uint32_t pdirIndex = (virtual >> 22) & 0x3FF;
     uint32_t ptblIndex = (virtual >> 12) & 0x3FF;
     
     //Allocate and assign new page table if necessary
-    if(!((Address)(pageDirectory->page_tables[pdirIndex]) & 0x1))
+    if(!((uintptr_t)(pageDirectory->page_tables[pdirIndex]) & 0x1))
     {
         debug_printf("PAGING: Allocating new page table for index 0x%x\n", pdirIndex);
         
         void* newPageTbl = memory_allocate(sizeof(page_table_t), MemoryTypeGeexOSPageStructures);
         memset(newPageTbl, 0, sizeof(page_table_t));
 
-        pageDirectory->page_tables[pdirIndex] = (page_table_t*)((Address)newPageTbl | 3);
+        pageDirectory->page_tables[pdirIndex] = (page_table_t*)((uintptr_t)((uint32_t)newPageTbl | 3));
     }
     
     //NOTE: This only works, because paging is still switched off
     //and we are working with physical addresses here
-    page_table_t* ptbl = (page_table_t*)((Address)pageDirectory->page_tables[pdirIndex] & 0xFFFFF000);
+    page_table_t* ptbl = (page_table_t*)((uintptr_t)pageDirectory->page_tables[pdirIndex] & 0xFFFFF000);
     
     ptbl->pages[ptblIndex].frame = (physical >> 12) & 0xFFFFF;
     ptbl->pages[ptblIndex].present = 1;
@@ -44,7 +44,7 @@ void paging_mapVirtualMemoryNonPAE(Address physical, Address virtual, bool userm
     ptbl->pages[ptblIndex].user = usermode ? 1 : 0;
 }
 
-void paging_mapRangeNonPAE(Address physical, Address virtual, size_t len, bool usermode, bool writable)
+void paging_mapRangeNonPAE(uint64_t physical, uint64_t virtual, size_t len, bool usermode, bool writable)
 {
     physical = PAGE_ALIGN_DOWN(physical);
     virtual = PAGE_ALIGN_DOWN(virtual);
@@ -52,31 +52,31 @@ void paging_mapRangeNonPAE(Address physical, Address virtual, size_t len, bool u
 
     debug_printf("PAGING: Mapping from physical 0x%x to virtual 0x%x with len 0x%x\n", physical, virtual, len);
 
-    for(Address p = physical, v = virtual; p < physical + len; p += PAGE_SIZE, v += PAGE_SIZE)
+    for(uint64_t p = physical, v = virtual; p < physical + len; p += PAGE_SIZE, v += PAGE_SIZE)
         paging_mapVirtualMemoryNonPAE(p, v, usermode, writable);
 }
 
-bool paging_isAddressPresentNonPAE(Address virtual)
+bool paging_isAddressPresentNonPAE(uint64_t virtual)
 {
     uint32_t pdirIndex = (virtual >> 22) & 0x3FF;
     uint32_t ptblIndex = (virtual >> 12) & 0x3FF;
     
-    if(!((Address)(pageDirectory->page_tables[pdirIndex]) & 0x1))
+    if(!((uintptr_t)(pageDirectory->page_tables[pdirIndex]) & 0x1))
         return false;
 
-    page_table_t* ptbl = (page_table_t*)((Address)pageDirectory->page_tables[pdirIndex] & 0xFFFFF000);
+    page_table_t* ptbl = (page_table_t*)((uintptr_t)pageDirectory->page_tables[pdirIndex] & 0xFFFFF000);
 
     return ptbl->pages[ptblIndex].present == 1;
 }
 
-bool paging_isRangeFreeNonPAE(Address virtual, size_t len)
+bool paging_isRangeFreeNonPAE(uint64_t virtual, size_t len)
 {
     virtual = PAGE_ALIGN_DOWN(virtual);
     len = IS_PAGE_ALIGNED(len) ? len : PAGE_ALIGN(len);
 
     debug_printf("PAGING: Checking if range from 0x%x with length 0x%x is in use\n", virtual, len);
 
-    for(Address v = virtual; v < virtual + len; v += PAGE_SIZE)
+    for(uint64_t v = virtual; v < virtual + len; v += PAGE_SIZE)
         if(paging_isAddressPresentNonPAE(v))
         {
             debug_printf("PAGING: 0x%x is in use\n", v);
@@ -86,11 +86,11 @@ bool paging_isRangeFreeNonPAE(Address virtual, size_t len)
     return true;
 }
 
-Address paging_findFreeRangeNonPAE(Address base, size_t size)
+uint64_t paging_findFreeRangeNonPAE(uint64_t base, size_t size)
 {
     size_t continousFreeSpace = 0;
 
-    for(Address curAddr = base; curAddr != 0/*implicit overflow*/; curAddr += PAGE_SIZE)
+    for(uint64_t curAddr = base; curAddr != 0/*implicit overflow*/; curAddr += PAGE_SIZE)
     {
         if(continousFreeSpace >= size)
             return curAddr-size;

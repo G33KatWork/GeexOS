@@ -8,7 +8,7 @@ void loader_printLoadedImages()
 {
 	LoadedImage *img;
 	list_for_each_entry(img, &loader_loadedImages, Link) {
-		debug_printf("%s: Physical load address: 0x%x - Virtual base: 0x%x - Original base: 0x%x - Entrypoint: 0x%x - Imagesize: 0x%x - Type: %s\n",
+		debug_printf("%s: Physical load address: 0x%X - Virtual base: 0x%X - Original base: 0x%X - Entrypoint: 0x%X - Imagesize: 0x%x - Type: %s\n",
 			img->Name,
 			img->PhysicalBase,
 			img->VirtualBase,

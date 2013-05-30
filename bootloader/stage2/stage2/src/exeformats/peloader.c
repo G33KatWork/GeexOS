@@ -62,8 +62,8 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	if(!ntHeaders)
 		return false;
 
-	Address virtualBase = ntHeaders->OptionalHeader.ImageBase;
-	Address originalBase = ntHeaders->OptionalHeader.ImageBase;
+	uint64_t virtualBase = ntHeaders->OptionalHeader.ImageBase;
+	uint64_t originalBase = ntHeaders->OptionalHeader.ImageBase;
 
 	//HACK FOR RELOCATION TESTING!
 	//virtualBase = 0xE0000000;
@@ -80,7 +80,7 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	}
 
 	//Map headers
-	arch_map_virtual_memory_range((Address)physicalBase, virtualBase, ntHeadersTemp.OptionalHeader.SizeOfHeaders, false, false);
+	arch_map_virtual_memory_range((uintptr_t)physicalBase, virtualBase, ntHeadersTemp.OptionalHeader.SizeOfHeaders, false, false);
 
 	//get first section
 	PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(ntHeaders);
@@ -116,17 +116,17 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 			seek(imageFile, section->PointerToRawData, SEEK_SET);
 
 			//read into memory at RVA for current section
-			if(read(imageFile, (void*)(((Address)physicalBase) + section->VirtualAddress), sizeOfRawData) != sizeOfRawData)
+			if(read(imageFile, (void*)(((uintptr_t)physicalBase) + section->VirtualAddress), sizeOfRawData) != sizeOfRawData)
 				return false;
 		}
 
 		if(sizeOfRawData < virtualSize)
-			memset((void*)(((Address)physicalBase) + section->VirtualAddress + sizeOfRawData), 0, virtualSize - sizeOfRawData);
+			memset((void*)(((uintptr_t)physicalBase) + section->VirtualAddress + sizeOfRawData), 0, virtualSize - sizeOfRawData);
 
 		//map this section into virtual memory
 		//TODO: check if memory free and look for other place
 		arch_map_virtual_memory_range(
-			((Address)physicalBase) + section->VirtualAddress,
+			((uintptr_t)physicalBase) + section->VirtualAddress,
 			virtualBase + section->VirtualAddress,
 			virtualSize,
 			section->Characteristics & IMAGE_SCN_MEM_WRITE,
@@ -142,7 +142,7 @@ bool pe_loadFile(const char* filename, MemoryType memType, LoadedImage** imageIn
 	LoadedImage* loadedImageInfo = malloc(sizeof(LoadedImage));
 	strncpy(loadedImageInfo->Name, fs_getFilename(filename), 31);
 	loadedImageInfo->Name[31] = 0;
-	loadedImageInfo->PhysicalBase = (Address)physicalBase;
+	loadedImageInfo->PhysicalBase = physicalBase;
 	loadedImageInfo->VirtualBase = virtualBase;
 	loadedImageInfo->OriginalBase = originalBase;
 	loadedImageInfo->VirtualEntryPoint = virtualBase + ntHeaders->OptionalHeader.AddressOfEntryPoint;
@@ -270,7 +270,7 @@ static bool pe_resolveImports(LoadedImage* image)
 			}
 
 			uint32_t* functionTable = (uint32_t*)(exportDirectory->AddressOfFunctions + importedImageInfo->PhysicalBase);
-			importThunk->u1.Function = (Address)(functionTable[ordinal] + importedImageInfo->VirtualBase);
+			importThunk->u1.Function = (uint32_t)(functionTable[ordinal] + importedImageInfo->VirtualBase);
 
 			debug_printf("PE: determined function to be at 0x%x\n", (functionTable[ordinal] + importedImageInfo->VirtualBase));
 
@@ -291,7 +291,7 @@ static bool pe_relocateImage(LoadedImage* image, int64_t bias)
 	
 	size_t directorySize;
 	PIMAGE_BASE_RELOCATION RelocationDir = (PIMAGE_BASE_RELOCATION)pe_getDirectoryEntry(image, IMAGE_DIRECTORY_ENTRY_BASERELOC, &directorySize);
-	PIMAGE_BASE_RELOCATION RelocationEnd = (PIMAGE_BASE_RELOCATION)((Address)RelocationDir + directorySize);
+	PIMAGE_BASE_RELOCATION RelocationEnd = (PIMAGE_BASE_RELOCATION)((uintptr_t)RelocationDir + directorySize);
 
 	//check if relocations are available
 	if(!RelocationDir)
@@ -301,7 +301,7 @@ static bool pe_relocateImage(LoadedImage* image, int64_t bias)
 	while(RelocationDir < RelocationEnd && RelocationDir->SizeOfBlock > 0)
 	{
 		size_t relocationCount = (RelocationDir->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(uint16_t);
-		Address address = image->PhysicalBase + RelocationDir->VirtualAddress;
+		uint64_t address = image->PhysicalBase + RelocationDir->VirtualAddress;
 		uint16_t* TypeOffset = (uint16_t*)(RelocationDir + 1);
 
 		//printf("PE: Having 0x%x relocations at 0x%x. Type offset: 0x%x\n", relocationCount, address, *TypeOffset);
@@ -366,7 +366,7 @@ static PIMAGE_NT_HEADERS pe_getHeaders(void* base)
     	return NULL;
 
     //TODO: check offset
-	PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)(((Address)base) + dosHeader->PEHeader);
+	PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)(((uintptr_t)base) + dosHeader->PEHeader);
 	if(ntHeaders->Signature != IMAGE_NT_SIGNATURE)
 		return NULL;
 
@@ -382,11 +382,11 @@ static void* pe_getDirectoryEntry(LoadedImage* image, uint16_t directoryIndex, s
 	if(directoryIndex >= ntHeaders->OptionalHeader.NumberOfRvaAndSizes)
 		return NULL;
 
-	Address rva = ntHeaders->OptionalHeader.DataDirectory[directoryIndex].VirtualAddress;
+	uint64_t rva = ntHeaders->OptionalHeader.DataDirectory[directoryIndex].VirtualAddress;
 	if(rva == 0)
 		return NULL;
 
 	*directorySize = ntHeaders->OptionalHeader.DataDirectory[directoryIndex].Size;
 
-	return (void*)(image->PhysicalBase + rva);
+	return (void*)((uintptr_t)(image->PhysicalBase + rva));
 }

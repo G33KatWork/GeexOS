@@ -310,7 +310,7 @@ static bool elf_loadElf32File(FILE* imageFile, MemoryType memType, LoadedImage* 
 		{
 			debug_printf("ELF32: PHDR: Vaddr: 0x%x, Offset: 0x%x, Memsize: 0x%x, Filesize: 0x%x\n", phdr.p_vaddr, phdr.p_offset, phdr.p_memsz, phdr.p_filesz);
 
-			Address targetAddress = ((Address)physicalBase) + (phdr.p_vaddr - originalVirtualBase);
+			uintptr_t targetAddress = ((uintptr_t)physicalBase) + (phdr.p_vaddr - originalVirtualBase);
 
 			if(phdr.p_filesz > 0)
 			{
@@ -333,7 +333,7 @@ static bool elf_loadElf32File(FILE* imageFile, MemoryType memType, LoadedImage* 
 
 			//Map region described by LOAD-PHDR into virtual memory
 			arch_map_virtual_memory_range(
-				(Address)targetAddress,
+				targetAddress,
 				(phdr.p_vaddr - originalVirtualBase) + virtualBase,
 				phdr.p_memsz,
 				(phdr.p_flags & PF_W) == PF_W,
@@ -342,9 +342,9 @@ static bool elf_loadElf32File(FILE* imageFile, MemoryType memType, LoadedImage* 
 		}
 	}
 
-	Address entrypoint = (context->header->e_entry - originalVirtualBase) + virtualBase;
+	uintptr_t entrypoint = (context->header->e_entry - originalVirtualBase) + virtualBase;
 
-	imageInformation->PhysicalBase = (Address)physicalBase;
+	imageInformation->PhysicalBase = (uintptr_t)physicalBase;
 	imageInformation->VirtualBase = virtualBase;
 	imageInformation->OriginalBase = originalVirtualBase;
 	imageInformation->VirtualEntryPoint = entrypoint;
@@ -372,7 +372,7 @@ static bool elf_linkElf32File(LoadedImage* imageInformation)
 		{
 			debug_printf("ELF32: Found DYNAMIC PHDR at index %x\n", i);
 
-			Address phdrPhysMemoryAddr = imageInformation->PhysicalBase + (phdr.p_vaddr - imageInformation->OriginalBase);
+			uintptr_t phdrPhysMemoryAddr = imageInformation->PhysicalBase + (phdr.p_vaddr - imageInformation->OriginalBase);
 			debug_printf("ELF32: dynamic headers may be mapped at 0x%x\n", phdrPhysMemoryAddr);
 
 			//Check wether the DYNAMIC headers are already somewhere in memory
@@ -405,7 +405,7 @@ static bool elf_linkElf32File(LoadedImage* imageInformation)
 						return false;
 
 					case DT_JMPREL:
-						context->pltRel = (Elf32_Rel*)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase));
+						context->pltRel = (Elf32_Rel*)((uintptr_t)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase)));
 						break;
 
 					case DT_PLTRELSZ:
@@ -413,7 +413,7 @@ static bool elf_linkElf32File(LoadedImage* imageInformation)
 						break;
 
 					case DT_REL:
-						context->rel = (Elf32_Rel*)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase));
+						context->rel = (Elf32_Rel*)((uintptr_t)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase)));
 						break;
 
 					case DT_RELSZ:
@@ -426,18 +426,18 @@ static bool elf_linkElf32File(LoadedImage* imageInformation)
 						break;
 
 					case DT_SYMTAB:
-						context->symtab = (Elf32_Sym*)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase));
+						context->symtab = (Elf32_Sym*)((uintptr_t)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase)));
 						break;
 
 					case DT_STRTAB:
-						context->strtab = (const char*)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase));
+						context->strtab = (const char*)((uintptr_t)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase)));
 						break;
 
 					case DT_HASH:
-						context->nbucket = ((unsigned *) (imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase)))[0];
-						context->nchain = ((unsigned *) (imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase)))[1];
-						context->bucket = (unsigned *) (imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase) + 8);
-						context->chain = (unsigned *) (imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase) + 8 + context->nbucket * 4);
+						context->nbucket = ((unsigned *) ((uintptr_t)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase))))[0];
+						context->nchain = ((unsigned *) ((uintptr_t)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase))))[1];
+						context->bucket = (unsigned *) ((uintptr_t)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase) + 8));
+						context->chain = (unsigned *) ((uintptr_t)(imageInformation->PhysicalBase + (d->d_un.d_ptr - imageInformation->OriginalBase) + 8 + context->nbucket * 4));
 						break;
 
 					case DT_SYMBOLIC:
@@ -590,12 +590,12 @@ static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount
 		{
 			case R_386_JMP_SLOT:
 				debug_printf("ELF32: R_386_JMP_SLOT relocation at 0x%x encountered, symbol address: 0x%x\n", relocPosition, symbolAddress);
-				*(Elf32_Addr*)relocPosition = symbolAddress;
+				*(Elf32_Addr*)((uintptr_t)relocPosition) = symbolAddress;
 				break;
 
 			case R_386_GLOB_DAT:
 				debug_printf("ELF32: R_386_GLOB_DAT relocation encountered, symbol address: 0x%x\n", symbolAddress);
-				*(Elf32_Addr*)relocPosition = symbolAddress;
+				*(Elf32_Addr*)((uintptr_t)relocPosition) = symbolAddress;
 				break;
 
 			case R_386_RELATIVE:
@@ -604,17 +604,17 @@ static bool elf_elf32doRelocation(LoadedImage* imageInformation, size_t relCount
 					debug_printf("ELF32: R_386_RELATIVE relocation with defined symbol encountered\n");
 					return false;
 				}
-				*(Elf32_Addr*)relocPosition += imageInformation->VirtualBase - imageInformation->OriginalBase;
+				*(Elf32_Addr*)((uintptr_t)relocPosition) += imageInformation->VirtualBase - imageInformation->OriginalBase;
 				break;
 
 			case R_386_32:
 				debug_printf("ELF32: R_386_32 relocation encountered, symbol address: 0x%x\n", symbolAddress);
-				*(Elf32_Addr*)relocPosition += symbolAddress;
+				*(Elf32_Addr*)((uintptr_t)relocPosition) += symbolAddress;
 				break;
 
 			case R_386_PC32:
 				debug_printf("ELF32: R_386_PC32 relocation encountered, symbol address: 0x%x\n", symbolAddress);
-				*(Elf32_Addr*)relocPosition += (symbolAddress - relocPosition);
+				*(Elf32_Addr*)((uintptr_t)relocPosition) += (symbolAddress - relocPosition);
 				break;
 
 			default:

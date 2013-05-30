@@ -35,11 +35,11 @@ typedef struct page_directory page_directory_t;
 
 
 void paging_allocateNonPAE(void);
-void paging_mapVirtualMemoryNonPAE(Address physical, Address virtual, bool usermode, bool writable);
-void paging_mapRangeNonPAE(Address physical, Address virtual, size_t len, bool usermode, bool writable);
-bool paging_isAddressPresentNonPAE(Address virtual);
-bool paging_isRangeFreeNonPAE(Address virtual, size_t len);
-Address paging_findFreeRangeNonPAE(Address base, size_t size);
+void paging_mapVirtualMemoryNonPAE(uint64_t physical, uint64_t virtual, bool usermode, bool writable);
+void paging_mapRangeNonPAE(uint64_t physical, uint64_t virtual, size_t len, bool usermode, bool writable);
+bool paging_isAddressPresentNonPAE(uint64_t virtual);
+bool paging_isRangeFreeNonPAE(uint64_t virtual, size_t len);
+uint64_t paging_findFreeRangeNonPAE(uint64_t base, size_t size);
 
 extern page_directory_t* pageDirectory;
 
