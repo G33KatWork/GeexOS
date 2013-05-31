@@ -31,12 +31,16 @@ void loader_loadGeexOS()
 	arch_map_virtual_memory_range(0x0, 0x0, 4*1024*1024, true, true);
 
 	//TODO: build loader block with memory map, loaded images, etc.
-	/*PLOADER_BLOCK loaderBlock = */loader_allocateAndPopulateLoaderBlock();
+	PLOADER_BLOCK loaderBlock = loader_allocateAndPopulateLoaderBlock();
+	if((uintptr_t)loaderBlock > 4*1024*1024)
+		arch_panic("Loader block is allocated at memory above 4MB and thus not mapped into virtual memory for the kernel");
+
+	if((uintptr_t)kernelImageInfo > 4*1024*1024)
+		arch_panic("Kernel image information struct is allocated at memory above 4MB and thus not mapped into virtual memory");
 
 	debug_printf("GXLDR: Enabling paging\n");
 	arch_enable_paging();
 
-	//while(1);
 	printf("Jumping into GeexOS kernel\n");
 	arch_execute_at_address_with_stack(kernelImageInfo->VirtualEntryPoint, GEEXOS_KERNEL_STACK_ADDRESS + GEEXOS_KERNEL_STACK_SIZE, (void*)GEEXOS_ENV_INFO_ADDRESS);
 }

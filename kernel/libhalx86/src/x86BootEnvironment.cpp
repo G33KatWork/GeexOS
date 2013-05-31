@@ -9,6 +9,7 @@ using namespace Debug;
 static const char* MemoryTypeNames[] = {
     "MemoryTypeFree",
     "MemoryTypeBad",
+    "MemoryTypeUnusable",
     "MemoryTypeSpecial",
     "MemoryTypeLoaderExecutable",
     "MemoryTypeLoaderTemporary",

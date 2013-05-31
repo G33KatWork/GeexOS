@@ -5,7 +5,7 @@
 
 static const char *i386ExceptionDescriptionText[] =
 {
-    "Exception 00: DIVIDE BY ZERO",
+	"Exception 00: DIVIDE BY ZERO",
 	"Exception 01: DEBUG EXCEPTION",
 	"Exception 02: NON-MASKABLE INTERRUPT EXCEPTION",
 	"Exception 03: BREAKPOINT (INT 3)",
@@ -37,21 +37,28 @@ void printException(trapframe ctx)
 		return;
 
 	print_i386_setBackgroundColor(Red);
-    print_i386_clear();
-    
-    printf("Exception occured in GXLDR:\r\n%s\r\n\r\n", i386ExceptionDescriptionText[ctx.ex_no]);
-    printf("Registers:\r\n");
-    
-    printf("EAX: 0x%x\tESP: 0x%x\r\n", ctx.eax, ctx.esp);
-    printf("EBX: 0x%x\tEBP: 0x%x\r\n", ctx.ebx, ctx.ebp);
-    printf("ECX: 0x%x\tESI: 0x%x\r\n", ctx.ecx, ctx.esi);
-    printf("EDX: 0x%x\tEDI: 0x%x\r\n\r\n", ctx.edx, ctx.edi);
-    printf("CS:  0x%x\tEIP:  0x%x\r\n", ctx.cs, ctx.eip);
-    printf("DS:  0x%x\tERROR CODE:  0x%x\r\n", ctx.ds, ctx.err_code);
-    printf("ES:  0x%x\tEFLAGS:  0x%x\r\n", ctx.es, ctx.eflags);
-    printf("FS:  0x%x\r\n", ctx.fs);
-    printf("GS:  0x%x\r\n", ctx.gs);
+	print_i386_clear();
 
-    while(1)
-    	asm volatile("hlt");
+	printf("Exception occured in GXLDR:\r\n%s\r\n\r\n", i386ExceptionDescriptionText[ctx.ex_no]);
+	printf("Registers:\r\n");
+
+	printf("EAX: 0x%x\tESP: 0x%x\r\n", ctx.eax, ctx.esp);
+	printf("EBX: 0x%x\tEBP: 0x%x\r\n", ctx.ebx, ctx.ebp);
+	printf("ECX: 0x%x\tESI: 0x%x\r\n", ctx.ecx, ctx.esi);
+	printf("EDX: 0x%x\tEDI: 0x%x\r\n\r\n", ctx.edx, ctx.edi);
+	printf("CS:  0x%x\tEIP:  0x%x\r\n", ctx.cs, ctx.eip);
+	printf("DS:  0x%x\tERROR CODE:  0x%x\r\n", ctx.ds, ctx.err_code);
+	printf("ES:  0x%x\tEFLAGS:  0x%x\r\n", ctx.es, ctx.eflags);
+	printf("FS:  0x%x\r\n", ctx.fs);
+	printf("GS:  0x%x\r\n", ctx.gs);
+
+	if(ctx.ex_no == 0x0E)
+	{
+		uint32_t cr2;
+		asm volatile("mov %%cr2, %%eax\n mov %%eax, %0\n" : "=m"(cr2) : : "%eax");
+		printf("Faulting Address: 0x%x\n", cr2);
+	}
+
+	while(1)
+		asm volatile("hlt");
 }

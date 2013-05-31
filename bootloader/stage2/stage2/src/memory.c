@@ -149,11 +149,16 @@ uintptr_t memory_find_page_lookup_table_location(uint64_t totalPageCount, Firmwa
     {
         if(cur->Type != MemoryTypeFree) continue;
         if(cur->PageCount < totalTableSizeInPages) continue;
+        if(cur->BasePage * arch_pagesize > 0xFFFFFFFF) continue;
 
-        uint64_t loc = cur->BasePage * arch_pagesize;
-
-        if(loc + totalTableSize > 0xFFFFFFFF)
-            arch_panic("MM: Page lookup table location is bigger than 32 bit");
+        uint64_t loc = ((cur->BasePage + cur->PageCount) * arch_pagesize) - totalTableSize;
+        if(loc > 0xFFFFFFFF)
+        {
+            if(0x100000000 - totalTableSize > cur->BasePage * arch_pagesize)
+                return (uintptr_t)(0x100000000 - totalTableSize);
+            else
+                return 0;
+        }
 
         return (uintptr_t)loc;
     }

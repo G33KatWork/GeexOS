@@ -44,7 +44,6 @@ int kmain()
 
     //TODO: parse a config here or drop to a shell
 
-    
     loader_loadGeexOS();
 
     fs_shutdown();
